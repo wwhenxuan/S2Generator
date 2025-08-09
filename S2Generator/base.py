@@ -10,6 +10,7 @@ import numpy as np
 from numpy import ndarray
 from numpy.random import RandomState
 import scipy.special
+from scipy.integrate import cumulative_trapezoid
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import (
@@ -329,6 +330,14 @@ class NodeList(object):
         """Connect all multivariate symbolic expressions with ,|,"""
         return ",|,".join([node.prefix() for node in self.nodes])
 
+    def val_router(self, xs: ndarray, deterministic: Optional[bool] = True, diff: Optional[int] = 0) -> ndarray:
+        if diff == 0:
+            return self.val(xs, deterministic=deterministic)
+        elif diff == 1:
+            return self.val_diff(xs, deterministic=deterministic)
+        else:
+            raise ValueError(f"Unsupported diff value: {diff}")
+
     def val(self, xs: ndarray, deterministic: Optional[bool] = True) -> ndarray:
         """Sample the entire multivariate symbolic expression to obtain a specific numerical sequence"""
         batch_vals = [
@@ -336,6 +345,32 @@ class NodeList(object):
             for node in self.nodes
         ]
         return np.concatenate(batch_vals, -1)
+
+    def val_diff(
+        self, xs: ndarray, deterministic: Optional[bool] = True
+    ) -> ndarray:
+        """Solve differential equation dy/dx = f(x) to get time series y(x)"""
+        # Get the derivatives f(x) for each equation
+        derivatives = self.val(xs, deterministic=deterministic)
+
+        # Initialize result array
+        solutions = np.zeros_like(derivatives)
+
+        # Extract x values for integration
+        x_values = xs[:, 0] if xs.ndim > 1 else xs
+
+        # For each equation in the multivariate system
+        for i in range(derivatives.shape[1]):
+            f_x = derivatives[:, i]
+            # Use scipy's cumulative_trapezoid for integration
+            # Starting with initial condition y(x[0]) = 0
+            if len(x_values) > 1:
+                integrated = cumulative_trapezoid(f_x, x_values, initial=0.0)
+                solutions[:, i] = integrated
+            else:
+                solutions[:, i] = 0.0
+
+        return solutions
 
     def replace_node_value(self, old_value: str, new_value: str) -> None:
         """Traverse the entire symbolic expression to replace a specific value"""
