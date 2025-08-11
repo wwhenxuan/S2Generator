@@ -723,7 +723,7 @@ class Generator(object):
         rotate: Optional[bool] = False,
         offset: Tuple[float, float] = None,
         output_norm: Optional[bool] = False,
-        diff: Optional[bool] = False,
+        diff: Optional[int] = 0,
     ) -> tuple[None, None, None] | tuple[NodeList, ndarray, ndarray]:
         """Generate sampling sequences using a mixture distribution"""
         # Obtain the generated symbolic expressions
