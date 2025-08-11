@@ -25,3 +25,6 @@ venv/
 
 # save the test data
 /data/
+
+# test files
+/tests/

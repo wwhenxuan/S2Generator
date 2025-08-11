@@ -3,6 +3,10 @@
 Created on 2025/01/23 18:25:07
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
+
+Edited on 2025/08/09 16:51:36
+@author:Yifan Wu
+@email: wy3370868155@outlook.com
 """
 import functools
 
@@ -330,7 +334,9 @@ class NodeList(object):
         """Connect all multivariate symbolic expressions with ,|,"""
         return ",|,".join([node.prefix() for node in self.nodes])
 
-    def val_router(self, xs: ndarray, deterministic: Optional[bool] = True, diff: Optional[int] = 0) -> ndarray:
+    def val_router(
+        self, xs: ndarray, deterministic: Optional[bool] = True, diff: Optional[int] = 0
+    ) -> ndarray:
         if diff == 0:
             return self.val(xs, deterministic=deterministic)
         elif diff == 1:
@@ -346,29 +352,76 @@ class NodeList(object):
         ]
         return np.concatenate(batch_vals, -1)
 
-    def val_diff(
-        self, xs: ndarray, deterministic: Optional[bool] = True
-    ) -> ndarray:
+    def val_diff(self, xs: ndarray, deterministic: Optional[bool] = True) -> ndarray:
         """Solve differential equation dy/dx = f(x) to get time series y(x)"""
-        # Get the derivatives f(x) for each equation
-        derivatives = self.val(xs, deterministic=deterministic)
-
-        # Initialize result array
-        solutions = np.zeros_like(derivatives)
-
         # Extract x values for integration
         x_values = xs[:, 0] if xs.ndim > 1 else xs
 
+        if len(x_values) <= 1:
+            solutions = np.zeros_like(
+                self.val(xs, deterministic=deterministic), dtype=np.float64
+            )
+            return solutions
+
+        # Create a uniform grid for integration from min to max of x_values
+        x_min, x_max = np.min(x_values), np.max(x_values)
+
+        # Always ensure the integration grid includes x=0 as the starting point
+        grid_min = min(0.0, x_min)
+        grid_max = max(0.0, x_max)
+
+        integration_step = 0.001  # Adjust to your needs
+        n_integration_points = max(100, int((grid_max - grid_min) / integration_step))
+        x_uniform = np.linspace(grid_min, grid_max, n_integration_points)
+
+        # Create input array for uniform grid evaluation
+        if xs.ndim > 1:
+            # For multivariate case, keep other dimensions constant
+            x_uniform_input = np.tile(np.mean(xs, axis=0), (n_integration_points, 1))
+            x_uniform_input[:, 0] = (
+                x_uniform  # Replace first dimension with uniform grid
+            )
+        else:
+            x_uniform_input = x_uniform.reshape(-1, 1)  # Ensure 2D array for val method
+
+        # Evaluate the symbolic expressions on uniform grid to get f'(x)
+        derivatives_uniform = self.val(x_uniform_input, deterministic=deterministic)
+
+        # Initialize result array
+        solutions = np.zeros(
+            (len(x_values), derivatives_uniform.shape[1]), dtype=np.float64
+        )
+
         # For each equation in the multivariate system
-        for i in range(derivatives.shape[1]):
-            f_x = derivatives[:, i]
-            # Use scipy's cumulative_trapezoid for integration
-            # Starting with initial condition y(x[0]) = 0
-            if len(x_values) > 1:
-                integrated = cumulative_trapezoid(f_x, x_values, initial=0.0)
-                solutions[:, i] = integrated
-            else:
-                solutions[:, i] = 0.0
+        for i in range(derivatives_uniform.shape[1]):
+            f_x_uniform = derivatives_uniform[:, i]
+
+            # Find the index corresponding to x=0 in the uniform grid
+            zero_idx = np.argmin(np.abs(x_uniform - 0.0))
+
+            # Split the integration: from x=0 to positive side and from x=0 to negative side
+            integrated_uniform = np.zeros_like(x_uniform)
+
+            # Integrate from x=0 to the right (positive direction)
+            if zero_idx < len(x_uniform) - 1:
+                x_right = x_uniform[zero_idx:]
+                f_right = f_x_uniform[zero_idx:]
+                integ_right = cumulative_trapezoid(f_right, x_right, initial=0.0)
+                integrated_uniform[zero_idx:] = integ_right
+
+            # Integrate from x=0 to the left (negative direction)
+            if zero_idx > 0:
+                x_left = x_uniform[: zero_idx + 1][
+                    ::-1
+                ]  # Reverse for integration from 0 to left
+                f_left = f_x_uniform[: zero_idx + 1][::-1]
+                integ_left = cumulative_trapezoid(f_left, x_left, initial=0.0)
+                integrated_uniform[: zero_idx + 1] = -integ_left[
+                    ::-1
+                ]  # Reverse back and negate
+
+            # Interpolate the integrated values to match the original x_values
+            solutions[:, i] = np.interp(x_values, x_uniform, integrated_uniform)
 
         return solutions
 
