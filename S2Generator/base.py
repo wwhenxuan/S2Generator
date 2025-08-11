@@ -416,7 +416,7 @@ class NodeList(object):
                 ]  # Reverse for integration from 0 to left
                 f_left = f_x_uniform[: zero_idx + 1][::-1]
                 integ_left = cumulative_trapezoid(f_left, x_left, initial=0.0)
-                integrated_uniform[: zero_idx + 1] = -integ_left[
+                integrated_uniform[: zero_idx + 1] = integ_left[
                     ::-1
                 ]  # Reverse back and negate
 
