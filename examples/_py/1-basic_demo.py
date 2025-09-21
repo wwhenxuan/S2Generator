@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-
 """
 The Demo of :math:`S^2` Generator for Series-Symbol Data Generation
 ===================================================================
@@ -9,11 +8,15 @@ Time series data serves as the external manifestation of complex dynamical syste
 
 **Note: Because the values of the stimulus time series can inflate or fall outside the domain of complex systems, the following examples may not work if your Python version and library version are inconsistent with ours. In this case, please adjust the random seed value in the random number generator.**
 """
+
+
+
 # %%
 
 import numpy as np
 import sys
 import os
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
 sys.path.append(os.path.abspath(".."))
 
@@ -21,7 +24,6 @@ sys.path.append(os.path.abspath(".."))
 from S2Generator import Generator, SeriesParams, SymbolParams, plot_series, print_hello
 
 print_hello()
-
 
 # %%
 

@@ -55,6 +55,7 @@ import numpy as np
 from tqdm import tqdm
 
 from S2Generator import Generator, SymbolParams
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
 # %%
 # In the following experiment, we generate time series data with a length interval of 16 and calculate the specific time required.

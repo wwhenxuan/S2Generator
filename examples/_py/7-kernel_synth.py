@@ -49,6 +49,7 @@ When we create a data generation object instance, we can adjust the parameters, 
 import numpy as np
 from matplotlib import pyplot as plt
 from S2Generator.excitation import KernelSynth
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
 # Create the instance for ForecastPFN
 kernel_synth = KernelSynth(

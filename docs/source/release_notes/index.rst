@@ -2,7 +2,7 @@ Release notes
 ======================
 
 .. card:: 0.0.2
-    :link: https://arxiv.org/abs/2502.15466
+    :link: #
     :link-type: url
     :width: 100%
 

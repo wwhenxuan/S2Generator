@@ -61,6 +61,9 @@ How to Save and Load :math:`S^2` data
       :download:`Download zipped: 9-save_and_load_s2data.zip <9-save_and_load_s2data.zip>`
 
 
+.. include:: 9-save_and_load_s2data.recommendations
+
+
 .. only:: html
 
  .. rst-class:: sphx-glr-signature

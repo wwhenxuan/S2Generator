@@ -82,7 +82,7 @@ fig = plot_series(inputs, outputs)
 
 ## 🧮 Algorithm 
 
-The advantage of :math:`S^2` data lies in its diversity and unrestricted generation capacity. <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/images/trees.png?raw=true">
+The advantage of $S^2$ data lies in its diversity and unrestricted generation capacity. <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/images/trees.png?raw=true">
 
 On the one hand, we can build a complex system with diversity based on binary trees (right); 
 
@@ -100,7 +100,7 @@ For detailed on the data generation process, please refer to our [paper](https:/
 (Citation)=
 ## 🎖️ Citation <a id="Citation"></a>
 
-If you find this :math:`S^2` data generation method helpful, please cite the following paper:
+If you find this $S^2$ data generation method helpful, please cite the following paper:
 
 ~~~latex
 @misc{wang2025mitigatingdatascarcitytime,

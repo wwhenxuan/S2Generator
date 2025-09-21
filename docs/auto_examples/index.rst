@@ -16,7 +16,7 @@ This gallery contains examples demonstrating the usage of S2Generator for signal
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Note: Because the values of the stimulus time series can inflate or fall outside the domain of complex systems, the following examples may not work if your Python version and library version are inconsistent with ours. In this case, please adjust the random seed value in the random number generator.">
+    <div class="sphx-glr-thumbcontainer" tooltip="Time series data serves as the external manifestation of complex dynamical systems. This method aims to generate diverse complex systems represented by symbolic expressions f(\cdot) — through unconstrained construction. It simultaneously generates excitation time series X \in \mathbb{R} ^ {M \times L}, which are then fed into the complex systems to produce their responses Y=f(X) \in \mathbb{R} ^ {N \times L}. Here, M, N and L denote the number of input channels, output channels, and series length, respectively.">
 
 .. only:: html
 

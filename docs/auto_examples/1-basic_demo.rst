@@ -20,12 +20,12 @@
 
 The Demo of :math:`S^2` Generator for Series-Symbol Data Generation
 ===================================================================
- 
+
 Time series data serves as the external manifestation of complex dynamical systems. This method aims to generate diverse complex systems represented by symbolic expressions :math:`f(\cdot)` — through unconstrained construction. It simultaneously generates excitation time series :math:`X \in \mathbb{R} ^ {M \times L}`, which are then fed into the complex systems to produce their responses :math:`Y=f(X) \in \mathbb{R} ^ {N \times L}`. Here, :math:`M`, :math:`N` and :math:`L` denote the number of input channels, output channels, and series length, respectively.
 
 **Note: Because the values of the stimulus time series can inflate or fall outside the domain of complex systems, the following examples may not work if your Python version and library version are inconsistent with ours. In this case, please adjust the random seed value in the random number generator.**
 
-.. GENERATED FROM PYTHON SOURCE LINES 13-26
+.. GENERATED FROM PYTHON SOURCE LINES 15-27
 
 .. code-block:: Python
 
@@ -40,7 +40,6 @@ Time series data serves as the external manifestation of complex dynamical syste
     from S2Generator import Generator, SeriesParams, SymbolParams, plot_series, print_hello
 
     print_hello()
-
 
 
 
@@ -67,7 +66,7 @@ Time series data serves as the external manifestation of complex dynamical syste
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-35
+.. GENERATED FROM PYTHON SOURCE LINES 29-37
 
 .. code-block:: Python
 
@@ -86,7 +85,7 @@ Time series data serves as the external manifestation of complex dynamical syste
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-44
+.. GENERATED FROM PYTHON SOURCE LINES 38-46
 
 The core of the :math:`S^2` data generation mechanism is to randomly construct a large number of symbolic expressions (complex systems) :math:`f(\cdot)` and stimulus time series :math:`X`, and obtain the response of the complex system by inputting the stimulus into the complex system:
 
@@ -97,7 +96,7 @@ where, the sampling multivariate time series :math:`X = \left [ x_1, x_2, \cdots
 
 After constructing the input parameters, we can complete this process end-to-end by creating a data generation object and executing the `run` method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-62
+.. GENERATED FROM PYTHON SOURCE LINES 46-64
 
 .. code-block:: Python
 
@@ -137,7 +136,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-76
+.. GENERATED FROM PYTHON SOURCE LINES 65-78
 
 .. code-block:: Python
 
@@ -172,7 +171,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-90
+.. GENERATED FROM PYTHON SOURCE LINES 79-92
 
 .. code-block:: Python
 
@@ -207,7 +206,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-95
+.. GENERATED FROM PYTHON SOURCE LINES 93-97
 
 .. code-block:: Python
 
@@ -225,7 +224,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.731 seconds)
+   **Total running time of the script:** (0 minutes 1.737 seconds)
 
 
 .. _sphx_glr_download_auto_examples_1-basic_demo.py:
@@ -245,6 +244,9 @@ After constructing the input parameters, we can complete this process end-to-end
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 1-basic_demo.zip <1-basic_demo.zip>`
+
+
+.. include:: 1-basic_demo.recommendations
 
 
 .. only:: html

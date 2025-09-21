@@ -43,6 +43,7 @@ where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized
 import numpy as np
 from matplotlib import pyplot as plt
 from S2Generator.excitation import IntrinsicModeFunction
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
 # Create the instance for IntrinsicModeFunction
 imfs = IntrinsicModeFunction(

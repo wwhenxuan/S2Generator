@@ -27,9 +27,9 @@ The core of the :math:`S^2` data generation mechanism is to randomly construct a
    Y = f(X).
 
 However, in this process, since the generated symbolic expression :math:`f(\cdot)` has a domain, for example, the domain of :math:`f(x) = \mathrm{ln} (x)` is :math:`x \in (0, + \infty ]`, the domain of :math:`f(x) = \frac{1}{x}` is :math:`x \in \Set{ x \mid x \ne 0 }`.Although we usually replace :math:`f(x) = \mathrm{ln}(x)` and :math:`f(x) = \frac{1}{x}` with :math:`f(x) = \mathrm{ln}(|x|)` and :math:`f(x) = \frac{1}{x + \varepsilon}` respectively when constructing symbolic expressions to increase the range of their domains without changing their symbolic operation logic, there are still many cases where the values fall outside the domain. When this happens, we will abandon the time series data and generate a new :math:`X` for resampling.
- 
+
 In addition, since we use the power operation pow and exponent exp when constructing the complex system $f(\cdot)$, numerical explosion may occur when performing numerical sampling. To this end, we will limit the value of the response time series to a certain range to improve the quality of the basic representation of the time series data.
- 
+
 For these two reasons, we provide a status monitoring module for the data generation process. This module allows you to intuitively determine whether the stimulus time series data is successfully sampled and how many times it has been successfully sampled. You can specify the ``print_status`` and ``logging_path`` parameters in ``Generator`` to print and log status information during the execution of the data generation algorithm.
 
 .. GENERATED FROM PYTHON SOURCE LINES 19-25
@@ -102,18 +102,18 @@ For these two reasons, we provide a status monitoring module for the data genera
     -------------------------------------------------------------------------------
      Index | Target                               | Time                | Results
     -------+--------------------------------------+---------------------+----------
-     1     | Create the Symbolic Expression       | 2025-09-21 11:55:01 | success 
-     2     | Generate Excitation Time Series 1    | 2025-09-21 11:55:01 | success 
-     3     | Generate Response Time Series 1      | 2025-09-21 11:55:01 | failure 
-     4     | Generate Excitation Time Series 2    | 2025-09-21 11:55:01 | success 
-     5     | Generate Response Time Series 2      | 2025-09-21 11:55:01 | success 
+     1     | Create the Symbolic Expression       | 2025-09-21 20:18:10 | success 
+     2     | Generate Excitation Time Series 1    | 2025-09-21 20:18:10 | success 
+     3     | Generate Response Time Series 1      | 2025-09-21 20:18:10 | failure 
+     4     | Generate Excitation Time Series 2    | 2025-09-21 20:18:10 | success 
+     5     | Generate Response Time Series 2      | 2025-09-21 20:18:10 | success 
     -------------------------------------------------------------------------------
 
     The Generated Symbolic Expression: 
     (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))
     
     Running Time: 
-    0.04549
+    0.04234
 
 
 
@@ -169,22 +169,22 @@ For these two reasons, we provide a status monitoring module for the data genera
     -------------------------------------------------------------------------------
      Index | Target                               | Time                | Results
     -------+--------------------------------------+---------------------+----------
-     1     | Create the Symbolic Expression       | 2025-09-21 11:55:01 | success 
-     2     | Generate Excitation Time Series 1    | 2025-09-21 11:55:01 | success 
-     3     | Generate Response Time Series 1      | 2025-09-21 11:55:01 | success 
+     1     | Create the Symbolic Expression       | 2025-09-21 20:18:10 | success 
+     2     | Generate Excitation Time Series 1    | 2025-09-21 20:18:10 | success 
+     3     | Generate Response Time Series 1      | 2025-09-21 20:18:10 | success 
     -------------------------------------------------------------------------------
 
     The Generated Symbolic Expression: 
     (0.846 add ((0.265 mul sqrt((45.7 add (38.8 mul rand)))) add (62.8 mul sqrt((((-2.6 mul x_0) sub (90.4 mul tan((0.382 add (9.34 mul 1))))) add (-0.016 mul ((6.56 add (0.244 mul x_0)))**2))))))
     
     Running Time: 
-    0.00311
+    0.00275
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-66
+.. GENERATED FROM PYTHON SOURCE LINES 57-65
 
 .. code-block:: Python
 
@@ -196,7 +196,6 @@ For these two reasons, we provide a status monitoring module for the data genera
 
     # Visualize the time series
     fig = plot_series(x, y)
-
 
 
 
@@ -230,19 +229,19 @@ For these two reasons, we provide a status monitoring module for the data genera
     -------------------------------------------------------------------------------
      Index | Target                               | Time                | Results
     -------+--------------------------------------+---------------------+----------
-     1     | Create the Symbolic Expression       | 2025-09-21 11:55:01 | success 
-     2     | Generate Excitation Time Series 1    | 2025-09-21 11:55:01 | success 
-     3     | Generate Response Time Series 1      | 2025-09-21 11:55:01 | failure 
-     4     | Generate Excitation Time Series 2    | 2025-09-21 11:55:01 | success 
-     5     | Generate Response Time Series 2      | 2025-09-21 11:55:01 | failure 
-     6     | Generate Excitation Time Series 3    | 2025-09-21 11:55:01 | success 
-     7     | Generate Response Time Series 3      | 2025-09-21 11:55:01 | failure 
-     8     | Generate Excitation Time Series 4    | 2025-09-21 11:55:01 | success 
-     9     | Generate Response Time Series 4      | 2025-09-21 11:55:01 | failure 
-     10    | Generate Excitation Time Series 5    | 2025-09-21 11:55:01 | success 
-     11    | Generate Response Time Series 5      | 2025-09-21 11:55:01 | failure 
-     12    | Generate Excitation Time Series 6    | 2025-09-21 11:55:01 | success 
-     13    | Generate Response Time Series 6      | 2025-09-21 11:55:01 | success 
+     1     | Create the Symbolic Expression       | 2025-09-21 20:18:10 | success 
+     2     | Generate Excitation Time Series 1    | 2025-09-21 20:18:10 | success 
+     3     | Generate Response Time Series 1      | 2025-09-21 20:18:10 | failure 
+     4     | Generate Excitation Time Series 2    | 2025-09-21 20:18:10 | success 
+     5     | Generate Response Time Series 2      | 2025-09-21 20:18:10 | failure 
+     6     | Generate Excitation Time Series 3    | 2025-09-21 20:18:10 | success 
+     7     | Generate Response Time Series 3      | 2025-09-21 20:18:10 | failure 
+     8     | Generate Excitation Time Series 4    | 2025-09-21 20:18:10 | success 
+     9     | Generate Response Time Series 4      | 2025-09-21 20:18:10 | failure 
+     10    | Generate Excitation Time Series 5    | 2025-09-21 20:18:10 | success 
+     11    | Generate Response Time Series 5      | 2025-09-21 20:18:10 | failure 
+     12    | Generate Excitation Time Series 6    | 2025-09-21 20:18:10 | success 
+     13    | Generate Response Time Series 6      | 2025-09-21 20:18:10 | success 
     -------------------------------------------------------------------------------
 
     The Generated Symbolic Expression: 
@@ -252,7 +251,7 @@ For these two reasons, we provide a status monitoring module for the data genera
     (-34.1 add (-0.646 mul x_1))
     
     Running Time: 
-    0.25835
+    0.25803
 
 
 
@@ -261,7 +260,7 @@ For these two reasons, we provide a status monitoring module for the data genera
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.585 seconds)
+   **Total running time of the script:** (0 minutes 0.576 seconds)
 
 
 .. _sphx_glr_download_auto_examples_12-logging.py:
@@ -281,6 +280,9 @@ For these two reasons, we provide a status monitoring module for the data genera
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 12-logging.zip <12-logging.zip>`
+
+
+.. include:: 12-logging.recommendations
 
 
 .. only:: html

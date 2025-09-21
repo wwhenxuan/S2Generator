@@ -72,11 +72,14 @@ sphinx_gallery_conf = {
     "doc_module": ("S2Generator",),
     "within_subsection_order": "FileNameSortKey",
     "plot_gallery": True,
-    "run_stale_examples": True,
+    "run_stale_examples": False,
+    "remove_config_comments": True,
     "min_reported_time": 0.5,
     "run_stale_examples": True,
     "show_memory": False,
     "filename_pattern": ".*",
+    "expected_failing_examples": [],
+    "recommender": {"enable": True, "n_examples": 5, "min_df": 3, "max_df": 0.9},
 }
 
 mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
@@ -85,6 +88,11 @@ mathjax3_config = {
         "processEscapes": True,
     }
 }
+myst_enable_extensions = [
+    "amsmath",      # 支持 LaTeX 的 amsmath 环境，如 \begin{align}
+    "dollarmath",   # 启用 $...$ 和 $$...$$ 语法
+]
+
 
 duration_show_files = True
 

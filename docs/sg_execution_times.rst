@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:07.843** total execution time for 11 files **from all galleries**:
+**00:07.612** total execution time for 11 files **from all galleries**:
 
 .. container::
 
@@ -33,35 +33,35 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_1-basic_demo.py` (``..\examples\_py\1-basic_demo.py``)
-     - 00:01.731
+     - 00:01.737
      - 0.0
    * - :ref:`sphx_glr_auto_examples_8-intrinsic_mode_function.py` (``..\examples\_py\8-intrinsic_mode_function.py``)
-     - 00:01.668
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_3-excitation.py` (``..\examples\_py\3-excitation.py``)
-     - 00:01.020
+     - 00:01.475
      - 0.0
    * - :ref:`sphx_glr_auto_examples_17-time_complexity_analysis.py` (``..\examples\_py\17-time_complexity_analysis.py``)
-     - 00:00.938
+     - 00:00.980
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_3-excitation.py` (``..\examples\_py\3-excitation.py``)
+     - 00:00.955
      - 0.0
    * - :ref:`sphx_glr_auto_examples_7-kernel_synth.py` (``..\examples\_py\7-kernel_synth.py``)
-     - 00:00.746
+     - 00:00.680
      - 0.0
    * - :ref:`sphx_glr_auto_examples_12-logging.py` (``..\examples\_py\12-logging.py``)
-     - 00:00.585
+     - 00:00.576
      - 0.0
    * - :ref:`sphx_glr_auto_examples_14-stl_decomposition.py` (``..\examples\_py\14-stl_decomposition.py``)
-     - 00:00.469
+     - 00:00.451
      - 0.0
    * - :ref:`sphx_glr_auto_examples_4-mixed_distribution.py` (``..\examples\_py\4-mixed_distribution.py``)
-     - 00:00.315
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_5-arma.py` (``..\examples\_py\5-arma.py``)
-     - 00:00.187
+     - 00:00.344
      - 0.0
    * - :ref:`sphx_glr_auto_examples_6-forecast_pfn.py` (``..\examples\_py\6-forecast_pfn.py``)
-     - 00:00.185
+     - 00:00.213
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_5-arma.py` (``..\examples\_py\5-arma.py``)
+     - 00:00.200
      - 0.0
    * - :ref:`sphx_glr_auto_examples_9-save_and_load_s2data.py` (``..\examples\_py\9-save_and_load_s2data.py``)
-     - 00:00.000
+     - 00:00.001
      - 0.0

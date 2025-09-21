@@ -29,6 +29,7 @@ Below we will give a specific code example for excitation generation.
 import numpy as np
 from matplotlib import pyplot as plt
 from S2Generator.excitation import MixedDistribution
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
 # Create the instance for Mixed Distribution
 mixed_distribution = MixedDistribution(

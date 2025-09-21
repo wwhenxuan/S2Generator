@@ -18,16 +18,16 @@ The Specific Execution Process of S2Generator:
 -------------------------------------------------------------------------------
  Index | Target                               | Time                | Results
 -------+--------------------------------------+---------------------+----------
- 1     | Create the Symbolic Expression       | 2025-09-21 11:55:01 | success 
- 2     | Generate Excitation Time Series 1    | 2025-09-21 11:55:01 | success 
- 3     | Generate Response Time Series 1      | 2025-09-21 11:55:01 | success 
+ 1     | Create the Symbolic Expression       | 2025-09-21 20:18:10 | success 
+ 2     | Generate Excitation Time Series 1    | 2025-09-21 20:18:10 | success 
+ 3     | Generate Response Time Series 1      | 2025-09-21 20:18:10 | success 
 -------------------------------------------------------------------------------
 
 The Generated Symbolic Expression: 
 (0.846 add ((0.265 mul sqrt((45.7 add (38.8 mul rand)))) add (62.8 mul sqrt((((-2.6 mul x_0) sub (90.4 mul tan((0.382 add (9.34 mul 1))))) add (-0.016 mul ((6.56 add (0.244 mul x_0)))**2))))))
 
 Running Time: 
-0.00311
+0.00275
 Generation Config of The S2Generator:
   Time Series Length:  256                   Max Trials:          64                  
   Input Dimension:     4                     Output Dimension:    4                   
@@ -39,19 +39,19 @@ The Specific Execution Process of S2Generator:
 -------------------------------------------------------------------------------
  Index | Target                               | Time                | Results
 -------+--------------------------------------+---------------------+----------
- 1     | Create the Symbolic Expression       | 2025-09-21 11:55:01 | success 
- 2     | Generate Excitation Time Series 1    | 2025-09-21 11:55:01 | success 
- 3     | Generate Response Time Series 1      | 2025-09-21 11:55:01 | failure 
- 4     | Generate Excitation Time Series 2    | 2025-09-21 11:55:01 | success 
- 5     | Generate Response Time Series 2      | 2025-09-21 11:55:01 | failure 
- 6     | Generate Excitation Time Series 3    | 2025-09-21 11:55:01 | success 
- 7     | Generate Response Time Series 3      | 2025-09-21 11:55:01 | failure 
- 8     | Generate Excitation Time Series 4    | 2025-09-21 11:55:01 | success 
- 9     | Generate Response Time Series 4      | 2025-09-21 11:55:01 | failure 
- 10    | Generate Excitation Time Series 5    | 2025-09-21 11:55:01 | success 
- 11    | Generate Response Time Series 5      | 2025-09-21 11:55:01 | failure 
- 12    | Generate Excitation Time Series 6    | 2025-09-21 11:55:01 | success 
- 13    | Generate Response Time Series 6      | 2025-09-21 11:55:01 | success 
+ 1     | Create the Symbolic Expression       | 2025-09-21 20:18:10 | success 
+ 2     | Generate Excitation Time Series 1    | 2025-09-21 20:18:10 | success 
+ 3     | Generate Response Time Series 1      | 2025-09-21 20:18:10 | failure 
+ 4     | Generate Excitation Time Series 2    | 2025-09-21 20:18:10 | success 
+ 5     | Generate Response Time Series 2      | 2025-09-21 20:18:10 | failure 
+ 6     | Generate Excitation Time Series 3    | 2025-09-21 20:18:10 | success 
+ 7     | Generate Response Time Series 3      | 2025-09-21 20:18:10 | failure 
+ 8     | Generate Excitation Time Series 4    | 2025-09-21 20:18:10 | success 
+ 9     | Generate Response Time Series 4      | 2025-09-21 20:18:10 | failure 
+ 10    | Generate Excitation Time Series 5    | 2025-09-21 20:18:10 | success 
+ 11    | Generate Response Time Series 5      | 2025-09-21 20:18:10 | failure 
+ 12    | Generate Excitation Time Series 6    | 2025-09-21 20:18:10 | success 
+ 13    | Generate Response Time Series 6      | 2025-09-21 20:18:10 | success 
 -------------------------------------------------------------------------------
 
 The Generated Symbolic Expression: 
@@ -61,4 +61,4 @@ The Generated Symbolic Expression:
 (-34.1 add (-0.646 mul x_1))
 
 Running Time: 
-0.25835
+0.25803

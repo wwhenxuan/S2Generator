@@ -161,7 +161,7 @@ We can also generate autoregression moving average model sampling time series da
 
 To make it easier to use, we have provided an interface for generating specific parameters. Simply input the specified order to generate the model parameters. This makes it easier for users to generate ARMA models of a specified order.
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-105
+.. GENERATED FROM PYTHON SOURCE LINES 81-104
 
 .. code-block:: Python
 
@@ -191,7 +191,6 @@ To make it easier to use, we have provided an interface for generating specific 
 
 
 
-
 .. image-sg:: /auto_examples/images/sphx_glr_5-arma_003.png
    :alt: 5 arma
    :srcset: /auto_examples/images/sphx_glr_5-arma_003.png
@@ -205,7 +204,7 @@ To make it easier to use, we have provided an interface for generating specific 
     AR params: [0.43037873 0.20552675 0.09665074]
     MA params: [-0.1526904   0.29178823  0.0888687 ]
 
-    [<matplotlib.lines.Line2D object at 0x00000293625682D0>]
+    [<matplotlib.lines.Line2D object at 0x0000023B4A809AE0>]
 
 
 
@@ -227,6 +226,9 @@ To make it easier to use, we have provided an interface for generating specific 
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 5-arma.zip <5-arma.zip>`
+
+
+.. include:: 5-arma.recommendations
 
 
 .. only:: html

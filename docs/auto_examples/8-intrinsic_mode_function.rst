@@ -143,10 +143,10 @@ For a time series of length :math:`n``, its energy :math:`E` can be represented 
 
 .. code-block:: Python
 
-    '''
+    """
     .. math:
        E = \\frac{1}{n} \left \| y(t) \\right \| ^ 2 = \\frac{1}{n} \sum_{i} ^ {n} y(i) ^ 2.
-    '''
+    """
 
 
 
@@ -223,9 +223,9 @@ We can see that several major frequency components are sub-signals that make up 
 
     # $$
     # We can use an adaptive signal decomposition algorithm to observe the different intrinsic mode functions that make up the excitations of this time series data.
-    # 
+    #
     # We can directly import the `variational mode decomposition (VMD) <https://github.com/wwhenxuan/PySDKit/blob/main/pysdkit/_vmd/vmd_c.py>`_ algorithm, the most commonly used in adaptive mode decomposition, from PySDKit and use the `plot_IMFs <https://github.com/wwhenxuan/PySDKit/blob/main/pysdkit/plot/_plot_imfs.py) method to visualize the decomposed sub-signals>`_ .
-    # 
+    #
     # Here, we use the first signal as an example. Because the amplitude spectrum is symmetrical, we can clearly see that the signal has three main frequency components, with the remaining minor fluctuations being amplitude.
     # For this reason, we set the number of modes to be decomposed to 4.
 
@@ -241,7 +241,7 @@ We can see that several major frequency components are sub-signals that make up 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-155
+.. GENERATED FROM PYTHON SOURCE LINES 142-154
 
 .. code-block:: Python
 
@@ -260,7 +260,6 @@ We can see that several major frequency components are sub-signals that make up 
 
 
 
-
 .. image-sg:: /auto_examples/images/sphx_glr_8-intrinsic_mode_function_004.png
    :alt: 8 intrinsic mode function
    :srcset: /auto_examples/images/sphx_glr_8-intrinsic_mode_function_004.png
@@ -273,7 +272,7 @@ We can see that several major frequency components are sub-signals that make up 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.668 seconds)
+   **Total running time of the script:** (0 minutes 1.475 seconds)
 
 
 .. _sphx_glr_download_auto_examples_8-intrinsic_mode_function.py:
@@ -293,6 +292,9 @@ We can see that several major frequency components are sub-signals that make up 
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 8-intrinsic_mode_function.zip <8-intrinsic_mode_function.zip>`
+
+
+.. include:: 8-intrinsic_mode_function.recommendations
 
 
 .. only:: html

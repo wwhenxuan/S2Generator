@@ -167,6 +167,9 @@ From the results in the figure, it is obvious that the STL algorithm can decompo
       :download:`Download zipped: 14-stl_decomposition.zip <14-stl_decomposition.zip>`
 
 
+.. include:: 14-stl_decomposition.recommendations
+
+
 .. only:: html
 
  .. rst-class:: sphx-glr-signature

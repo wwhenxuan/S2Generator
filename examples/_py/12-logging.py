@@ -20,7 +20,7 @@ import numpy as np
 
 # Importing data generators, parameter controllers and visualization functions
 from S2Generator import Generator, SeriesParams, SymbolParams, plot_series
-
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
 # %%
 

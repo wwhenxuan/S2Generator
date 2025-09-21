@@ -1,0 +1,121 @@
+
+
+.. rubric:: Related examples
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This module will detail the generation and manipulation of our excitation time series data. The diversity of our S^2 data generation mechanisms is primarily due to two factors: (1) the diversity of generated symbolic expressions (complex systems) f(\cdot); and (2) the diversity of generated excitation time series data X.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_3-excitation_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_3-excitation.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">The Generation for Excitation Time Series</div>
+    </div>
+
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_3-excitation.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example we will go into detail and show how to generate motivating time series data from a mixture distribution.   This method came from the SNIP in the domain of Symbolic Regression. It has subsequently further extended in SymTime to make it applicable to time series data.   In this method, we will first randomly generate the number of mixed distributions k \in [k_{min}, k_{max}]. For each mixed distribution we then determine its specific type, and choose whether to use the normal distribution \mathcal{N}(\mu, \sigma^2) or the uniform distribution \mathcal{U}(\mathrm{a}, \mathrm{b}) according to the specified probability p_{\mathrm{select}}. Normally, the default value is p_{\mathrm{select}} = 0.5.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_4-mixed_distribution_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_4-mixed_distribution.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Excitation Generation via Mixed Distribution</div>
+    </div>
+
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_4-mixed_distribution.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example, we demonstrate how to generate incentive signals based on the method of time series combination proposed in ForecastPFN. The paper primarily trained a zero-shot time series prediction model using a prior feature fitting network approach on a large amount of synthetic data.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_6-forecast_pfn_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_6-forecast_pfn.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Excitation Generation via ForecastPFN</div>
+    </div>
+
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_6-forecast_pfn.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this section, we provide a detailed analysis and proof of the time complexity of the S^2 data generation mechanism. Our theoretical analysis shows that the time complexity of data generation is proportional to the length L of the time series. We will then verify the specific time required for data generation using multiple sets of different lengths to validate our theoretical analysis.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_17-time_complexity_analysis_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_17-time_complexity_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Time Complexity Analysis for The S^2 Data Generation</div>
+    </div>
+
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_17-time_complexity_analysis.py`
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="To better observe the cyclical and trend characteristics of generated time series data, we have built-in time series decomposition algorithms. This example focuses on a seasonal and trend decomposition algorithm: Seasonal-Trend decomposition using LOESS. This method allows us to better observe the important components of the time series while filtering out noise.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_14-stl_decomposition_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_14-stl_decomposition.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">The Seasonal-Trend decomposition using LOESS</div>
+    </div>
+
+
+.. only:: not html
+
+ * :ref:`sphx_glr_auto_examples_14-stl_decomposition.py`
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+

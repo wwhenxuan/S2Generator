@@ -50,15 +50,15 @@ The different kernel expressions and hyperparameter settings involved in the dat
 +--------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
 | Linear             | :math:`\mathcal{K}_{\mathrm{Lin}}(x, x') = \sigma ^ 2 + x \cdot x'`                                                                                 | :math:`\sigma \in \{ 0, 1, 10 \}`                                                                              |
 +--------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
-| RBF                | :math:`\mathcal{K}_{\mathrm{RBF}}(x, x') = \mathrm{exp} \left ( - \frac{\left \| x - x' \right \| ^ 2}{2 l ^ 2} \right )`                           | :math:`l \in {0.1, 1, 10}`                                                                                     |                                                   
+| RBF                | :math:`\mathcal{K}_{\mathrm{RBF}}(x, x') = \mathrm{exp} \left ( - \frac{\left \| x - x' \right \| ^ 2}{2 l ^ 2} \right )`                           | :math:`l \in {0.1, 1, 10}`                                                                                     |
 +--------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
-| Rational Quadratic | :math:`\mathcal{K}_{\mathrm{RQ}}(x, x') = \left ( 1 + \frac{\left \| x - x' \right \| ^ 2}{2 \alpha} \right )`                                      | :math:`\alpha \in \{ 0.1, 1, 10 \}`                                                                            |                                                     
+| Rational Quadratic | :math:`\mathcal{K}_{\mathrm{RQ}}(x, x') = \left ( 1 + \frac{\left \| x - x' \right \| ^ 2}{2 \alpha} \right )`                                      | :math:`\alpha \in \{ 0.1, 1, 10 \}`                                                                            |
 +--------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
 | Periodic           | :math:`\mathcal{K}_{\mathrm{Per}}(x, x') = \mathrm{exp} \left ( - 2 \sin ^ 2 \left ( \pi \frac{\left \| x - x' \right \|}{p} \right ) \right )`     | :math:`p \in \left \{ 24, 48, 96, 168, 336, 672, 7, 14, 30, 60, 365, 730, 4, 26, 52, 6, 12, 40, 10 \right \}`  |
 +--------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+
 
 In S2Generator, we further integrated and encapsulated this data generation algorithm, primarily transforming it from a process-oriented generation approach to an object-oriented one, which facilitates parameter control.
- 
+
 When we create a data generation object instance, we can adjust the parameters, mainly adjusting the minimum and maximum number of specific kernels to use, and whether to use the kernel method mentioned in the above table.
 
 .. GENERATED FROM PYTHON SOURCE LINES 48-72
@@ -127,7 +127,7 @@ When we create a data generation object instance, we can adjust the parameters, 
  .. code-block:: none
 
 
-    [<matplotlib.lines.Line2D object at 0x0000029362504050>]
+    [<matplotlib.lines.Line2D object at 0x0000023B4CDA2EF0>]
 
 
 
@@ -228,7 +228,7 @@ We can adjust and set the specific type of algorithm core to use by passing in a
 
 We further use single-type kernel objects for data generation and visualization analysis.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-144
+.. GENERATED FROM PYTHON SOURCE LINES 125-143
 
 .. code-block:: Python
 
@@ -253,7 +253,6 @@ We further use single-type kernel objects for data generation and visualization 
 
 
 
-
 .. image-sg:: /auto_examples/images/sphx_glr_7-kernel_synth_002.png
    :alt: exp_sine_squared, dot_product, rbf, rational_quadratic, white_kernel, constant_kernel
    :srcset: /auto_examples/images/sphx_glr_7-kernel_synth_002.png
@@ -266,7 +265,7 @@ We further use single-type kernel objects for data generation and visualization 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.746 seconds)
+   **Total running time of the script:** (0 minutes 0.680 seconds)
 
 
 .. _sphx_glr_download_auto_examples_7-kernel_synth.py:
@@ -286,6 +285,9 @@ We further use single-type kernel objects for data generation and visualization 
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 7-kernel_synth.zip <7-kernel_synth.zip>`
+
+
+.. include:: 7-kernel_synth.recommendations
 
 
 .. only:: html

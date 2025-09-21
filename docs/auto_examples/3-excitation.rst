@@ -209,7 +209,7 @@ Using the default parameters will meet most basic data generation requirements.
 
 Next we will further demonstrate and analyze this process:
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-143
+.. GENERATED FROM PYTHON SOURCE LINES 115-142
 
 .. code-block:: Python
 
@@ -243,7 +243,6 @@ Next we will further demonstrate and analyze this process:
 
 
 
-
 .. image-sg:: /auto_examples/images/sphx_glr_3-excitation_003.png
    :alt: 3 excitation
    :srcset: /auto_examples/images/sphx_glr_3-excitation_003.png
@@ -266,7 +265,7 @@ Next we will further demonstrate and analyze this process:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.020 seconds)
+   **Total running time of the script:** (0 minutes 0.955 seconds)
 
 
 .. _sphx_glr_download_auto_examples_3-excitation.py:
@@ -286,6 +285,9 @@ Next we will further demonstrate and analyze this process:
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 3-excitation.zip <3-excitation.zip>`
+
+
+.. include:: 3-excitation.recommendations
 
 
 .. only:: html
