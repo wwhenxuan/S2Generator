@@ -3,6 +3,7 @@
 Created on 2025/01/23 17:37:24
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
+@url: https://github.com/wwhenxuan/S2Generator
 """
 import numpy as np
 from numpy import ndarray
