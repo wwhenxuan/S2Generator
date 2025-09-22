@@ -55,6 +55,7 @@ import numpy as np
 from tqdm import tqdm
 
 from S2Generator import Generator, SymbolParams
+
 # sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
 # %%

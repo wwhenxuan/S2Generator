@@ -15,7 +15,7 @@ import time
 from os import path
 
 from colorama import Fore, Style
-from typing import Optional, List, Tuple
+from typing import Optional, Union, List, Tuple
 
 from S2Generator import SeriesParams, SymbolParams, Node, NodeList
 from S2Generator.utils import get_time_now
@@ -289,7 +289,7 @@ class PrintStatus(object):
 
         return status
 
-    def show_end(self, symbol: Node | NodeList | str) -> None:
+    def show_end(self, symbol: Union[Node, NodeList, str]) -> None:
         """
         Print the end information of the table during the execution of the algorithm.
 

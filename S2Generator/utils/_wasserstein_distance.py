@@ -13,7 +13,7 @@ import numpy as np
 from numpy import signedinteger
 import matplotlib.pyplot as plt
 
-from typing import Tuple, List, Optional, Any
+from typing import Optional, Union, Tuple, List, Any
 
 
 def check_inputs(data: np.ndarray) -> bool:
@@ -38,7 +38,7 @@ def check_inputs(data: np.ndarray) -> bool:
 
 def dataset_max_min_normalization(
     data: np.ndarray, epsilon: Optional[float] = 1e-5
-) -> np.ndarray | None:
+) -> Union[np.ndarray, None]:
     """
     Apply the max-min normalization operation to multivariate time series datasets
     with the shape of [n_samples, n_length] in NumPy ndarray.
@@ -87,7 +87,7 @@ def wasserstein_distance(
     mean_weight: Optional[float] = 0.5,
     covar_weight: Optional[float] = 0.5,
     return_all: Optional[bool] = False,
-) -> Tuple[Any, signedinteger[Any], Any] | None | float:
+) -> Union[Tuple[Any, signedinteger[Any], Any], None, float]:
     """
     The Wasserstein distance is used to measure the similarity between two datasets.
     "Measuring Time-Series Dataset Similarity using Wasserstein Distance."

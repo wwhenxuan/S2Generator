@@ -296,7 +296,7 @@ class MixedDistribution(BaseExcitation):
 
     def generate_once(
         self, rng: np.random.RandomState, n_inputs_points: int = 512
-    ) -> np.ndarray | None:
+    ) -> Union[np.ndarray, None]:
         """
         Generate stimulus time series data for a single channel through a mixture distribution.
 

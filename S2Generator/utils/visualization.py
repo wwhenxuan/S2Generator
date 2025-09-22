@@ -8,7 +8,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.transforms import Bbox
 
-from typing import Optional, Dict, Any, Tuple, List
+from typing import Optional, Union, Dict, Any, Tuple, List
 
 from S2Generator import Node, NodeList
 from S2Generator.utils.print_symbol import symbol_to_markdown
@@ -65,7 +65,7 @@ def plot_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
 
 
 def which_edges_out(
-    artist: plt.Text | Any, *, padding: Optional[int] = 0
+    artist: Union[plt.Text, Any], *, padding: Optional[int] = 0
 ) -> Dict[str, bool]:
     """
     Determine which edges of the canvas the artist is outside.
@@ -101,7 +101,7 @@ def which_edges_out(
 
 
 def create_symbol_figure(
-    symbol: str | List[str], width: float, height: float, dpi: Optional[int] = 300
+    symbol: Union[str, List[str]], width: float, height: float, dpi: Optional[int] = 300
 ) -> Tuple[plt.Figure, plt.Axes, List[plt.Text]]:
     """
     Create a specific Figure object for visualization.
@@ -156,12 +156,12 @@ def create_symbol_figure(
 
 
 def plot_symbol(
-    symbol: str | Node | NodeList,
+    symbol: Union[str, Node, NodeList],
     width: Optional[int] = 20,
     height: Optional[int] = None,
     dpi: Optional[int] = 160,
     return_all: Optional[str] = False,
-) -> plt.Figure | Tuple[plt.Figure, plt.Axes, List[plt.Text]]:
+) -> Union[plt.Figure, Tuple[plt.Figure, plt.Axes, List[plt.Text]]]:
     """
     This function visualizes symbolic data.
     Since the input symbolic expression data varies, you may need to adjust the width multiple times in actual use.

@@ -18,7 +18,7 @@ from sklearn.gaussian_process.kernels import (
     RationalQuadratic,
     WhiteKernel,
 )
-from typing import List, Optional, Any, Callable
+from typing import Union, Optional, Any, Callable, List
 
 from S2Generator.excitation.base_excitation import BaseExcitation
 
@@ -347,7 +347,7 @@ class KernelSynth(BaseExcitation):
 
     def generate_kernel_synth(
         self, rng: np.random.RandomState, length: Optional[int] = 256
-    ) -> np.ndarray[Any, np.dtype[Any] | Any] | None:
+    ) -> Union[np.ndarray[Any, Union[np.dtype[Any], Any]], None]:
         """
         Generate a synthetic time series from KernelSynth.
 

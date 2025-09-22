@@ -89,8 +89,8 @@ mathjax3_config = {
     }
 }
 myst_enable_extensions = [
-    "amsmath",      # 支持 LaTeX 的 amsmath 环境，如 \begin{align}
-    "dollarmath",   # 启用 $...$ 和 $$...$$ 语法
+    "amsmath",  # 支持 LaTeX 的 amsmath 环境，如 \begin{align}
+    "dollarmath",  # 启用 $...$ 和 $$...$$ 语法
 ]
 
 

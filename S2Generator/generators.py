@@ -538,7 +538,9 @@ class Generator(object):
         else:
             return tree, input_dimension, output_dimension
 
-    def add_unaries(self, rng: RandomState, tree: Node, nb_unaries: int) -> Node | None:
+    def add_unaries(
+        self, rng: RandomState, tree: Node, nb_unaries: int
+    ) -> Union[Node, None]:
         """Insert unary operators into a binary tree composed of binary operators and leaf nodes to increase diversity"""
         prefix = self._add_unaries(
             rng, tree
@@ -810,7 +812,7 @@ class Generator(object):
         output_max_scale: Optional[float] = 16.0,
         offset: Optional[Tuple[float, float]] = None,
         save_path: Optional[str] = None,
-    ) -> Tuple[None, None, None] | Tuple[NodeList, ndarray, ndarray]:
+    ) -> Union[Tuple[None, None, None], Tuple[NodeList, ndarray, ndarray]]:
         """
         Generate the symbolic expression (complex system) and the excitation time series.
 
@@ -963,7 +965,7 @@ class Generator(object):
         output_max_scale: Optional[float] = 16.0,
         offset: Optional[Tuple[float, float]] = None,
         save_path: Optional[str] = None,
-    ) -> Tuple[None, None, None] | Tuple[NodeList, ndarray, ndarray]:
+    ) -> Union[Tuple[None, None, None], Tuple[NodeList, ndarray, ndarray]]:
         """
         Generate the symbolic expression (complex system) and the excitation time series.
 

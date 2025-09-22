@@ -10,12 +10,12 @@ Time series data serves as the external manifestation of complex dynamical syste
 """
 
 
-
 # %%
 
 import numpy as np
 import sys
 import os
+
 # sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
 sys.path.append(os.path.abspath(".."))

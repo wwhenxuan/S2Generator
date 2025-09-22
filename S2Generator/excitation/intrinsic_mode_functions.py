@@ -15,7 +15,7 @@ from pysdkit.data import (
 )
 from pysdkit.utils import max_min_normalization
 
-from typing import Optional, Dict, List, Tuple, Callable
+from typing import Optional, Union, Dict, List, Tuple, Callable
 from S2Generator.excitation.base_excitation import BaseExcitation
 
 # A dictionary of all available Eigenmodel functions
@@ -87,7 +87,7 @@ def _check_probability_list(prob_list: List[float]) -> Dict[str, float]:
     }
 
 
-def _get_energy(signal: np.ndarray) -> float:
+def _get_energy(signal: np.ndarray) -> Union[float, np.ndarray]:
     """
     Calculates the energy of a signal using mean absolute amplitude.
 

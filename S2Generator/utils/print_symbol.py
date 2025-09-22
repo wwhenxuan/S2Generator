@@ -6,7 +6,7 @@ Created on 2025/08/25 00:14:51
 """
 import re
 
-from typing import List, Callable
+from typing import Union, Callable, List
 from S2Generator.base import Node, NodeList
 
 # Create the chain of replacements data type
@@ -327,7 +327,7 @@ def string_to_markdown(string: str) -> str:
     return string
 
 
-def symbol_to_markdown(symbol: str | Node | NodeList) -> List[str]:
+def symbol_to_markdown(symbol: Union[str, Node, NodeList]) -> List[str]:
     """
     Convert a string to a markdown formatted string.
 

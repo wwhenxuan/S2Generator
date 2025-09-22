@@ -65,9 +65,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="将文件夹中的所有IPython Notebook文件转换为Python脚本"
     )
-    parser.add_argument(
-        "folder", nargs="?", default=".", help="要处理的文件夹路径（默认为当前目录）"
-    )
+    parser.add_argument("folder", nargs="?", default=".", help="要处理的文件夹路径（默认为当前目录）")
     parser.add_argument("-o", "--output", help="输出文件夹路径（默认为同一文件夹）")
 
     args = parser.parse_args()

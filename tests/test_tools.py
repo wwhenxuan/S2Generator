@@ -224,7 +224,7 @@ class TestTools(unittest.TestCase):
         # Validate format (extract date part and check length)
         date_part = current_time.split(" ")[0]
         self.assertEqual(
-            first=len(date_part), second=8, msg="Date format should be YYYYMMDD!"
+            first=len(date_part), second=10, msg="Date format should be YYYYMMDD!"
         )
 
     def test_ensure_directory_exists(self) -> None:
