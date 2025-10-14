@@ -32,3 +32,5 @@ venv/
 /docs/auto_examples/*.zip
 /docs/auto_examples/*.json
 /docs/auto_examples/*.md5
+
+/docs/_build/
