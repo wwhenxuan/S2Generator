@@ -1,4 +1,4 @@
-<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/background.png?raw=true">
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/docs/source/_static/background.png?raw=true">
 
 ---
 
@@ -63,7 +63,7 @@ fig = plot_series(inputs, outputs)
 
 > (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))
 
-<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID1_OD1.jpg?raw=true">
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/docs/source/_static/ID1_OD1.jpg?raw=true">
 
 The input and output dimensions of the multivariate time series and the length of the sampling sequence can be adjusted in the `run` method.
 
@@ -81,9 +81,9 @@ fig = plot_series(inputs, outputs)
 >
 > Two symbolic expressions are connected by " | ".
 
-<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/ID2_OD2.jpg?raw=true">
+<img width="100%" align="middle" src="https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/docs/source/_static/ID2_OD2.jpg?raw=true">
 
-## 🧮 Algorithm <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/images/trees.png?raw=true">
+## 🧮 Algorithm <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/docs/source/_static/trees.png?raw=true">
 
 The advantage of $S^2$ data lies in its diversity and unrestricted generation capacity. 
 On the one hand, we can build a complex system with diversity based on binary trees (right); 
