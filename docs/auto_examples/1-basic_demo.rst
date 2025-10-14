@@ -25,7 +25,7 @@ Time series data serves as the external manifestation of complex dynamical syste
 
 **Note: Because the values of the stimulus time series can inflate or fall outside the domain of complex systems, the following examples may not work if your Python version and library version are inconsistent with ours. In this case, please adjust the random seed value in the random number generator.**
 
-.. GENERATED FROM PYTHON SOURCE LINES 13-26
+.. GENERATED FROM PYTHON SOURCE LINES 14-27
 
 .. code-block:: Python
 
@@ -33,6 +33,7 @@ Time series data serves as the external manifestation of complex dynamical syste
     import numpy as np
     import sys
     import os
+
 
     sys.path.append(os.path.abspath(".."))
 
@@ -45,14 +46,13 @@ Time series data serves as the external manifestation of complex dynamical syste
 
 
 
-
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
 
     Hello, S2Generator!
     ==============================
-    Version: 0.0.2
+    Version: 0.0.3
     This is a Python package for generating time series data with symbolic representations.
     For more information, please visit: https://github.com/wwhenxuan/S2Generator
 
@@ -67,7 +67,7 @@ Time series data serves as the external manifestation of complex dynamical syste
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-35
+.. GENERATED FROM PYTHON SOURCE LINES 29-37
 
 .. code-block:: Python
 
@@ -86,7 +86,7 @@ Time series data serves as the external manifestation of complex dynamical syste
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-44
+.. GENERATED FROM PYTHON SOURCE LINES 38-46
 
 The core of the :math:`S^2` data generation mechanism is to randomly construct a large number of symbolic expressions (complex systems) :math:`f(\cdot)` and stimulus time series :math:`X`, and obtain the response of the complex system by inputting the stimulus into the complex system:
 
@@ -97,7 +97,7 @@ where, the sampling multivariate time series :math:`X = \left [ x_1, x_2, \cdots
 
 After constructing the input parameters, we can complete this process end-to-end by creating a data generation object and executing the `run` method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-62
+.. GENERATED FROM PYTHON SOURCE LINES 46-64
 
 .. code-block:: Python
 
@@ -137,7 +137,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-76
+.. GENERATED FROM PYTHON SOURCE LINES 65-78
 
 .. code-block:: Python
 
@@ -172,7 +172,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-90
+.. GENERATED FROM PYTHON SOURCE LINES 79-92
 
 .. code-block:: Python
 
@@ -207,7 +207,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-95
+.. GENERATED FROM PYTHON SOURCE LINES 93-97
 
 .. code-block:: Python
 
@@ -225,7 +225,11 @@ After constructing the input parameters, we can complete this process end-to-end
 
 .. rst-class:: sphx-glr-timing
 
+<<<<<<< HEAD
    **Total running time of the script:** (0 minutes 1.854 seconds)
+=======
+   **Total running time of the script:** (0 minutes 1.720 seconds)
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 
 .. _sphx_glr_download_auto_examples_1-basic_demo.py:
@@ -245,6 +249,9 @@ After constructing the input parameters, we can complete this process end-to-end
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 1-basic_demo.zip <1-basic_demo.zip>`
+
+
+.. include:: 1-basic_demo.recommendations
 
 
 .. only:: html

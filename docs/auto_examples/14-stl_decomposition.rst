@@ -78,7 +78,7 @@ where, :math:`y_i` is the value of the observed time series. :math:`s_i`, :math:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-63
+.. GENERATED FROM PYTHON SOURCE LINES 52-64
 
 .. code-block:: Python
 
@@ -107,11 +107,11 @@ where, :math:`y_i` is the value of the observed time series. :math:`s_i`, :math:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-65
+.. GENERATED FROM PYTHON SOURCE LINES 65-66
 
 Visualize the time series and the decomposition results
 
-.. GENERATED FROM PYTHON SOURCE LINES 65-81
+.. GENERATED FROM PYTHON SOURCE LINES 66-82
 
 .. code-block:: Python
 
@@ -143,7 +143,7 @@ Visualize the time series and the decomposition results
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-83
+.. GENERATED FROM PYTHON SOURCE LINES 83-84
 
 From the results in the figure, it is obvious that the STL algorithm can decompose a one-dimensional time series into different trends, cycles and irregular residual components.
 
@@ -165,6 +165,9 @@ From the results in the figure, it is obvious that the STL algorithm can decompo
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 14-stl_decomposition.zip <14-stl_decomposition.zip>`
+
+
+.. include:: 14-stl_decomposition.recommendations
 
 
 .. only:: html

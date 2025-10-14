@@ -8,7 +8,11 @@ Participate in Our Project
 You can participate in the development of S2Generator in the following ways.
 
 Using S2Generator
+<<<<<<< HEAD
 ++++++++++++
+=======
+++++++++++++++++++++
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 Although numerous large-scale time series pre-training datasets are available for foundational model pre-training, 
 the field of time series still faces challenges of data scarcity and imbalanced distribution when compared to images in computer vision or large language models in natural language processing.
@@ -24,7 +28,11 @@ It is our sincere hope that S2Generator can contribute to the pre-training of fo
 
 
 Bug Discovery
+<<<<<<< HEAD
 ++++++++++++
+=======
+++++++++++++++++++++
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
  
 If you discover any bug while using S2Generator, we welcome you to push an issue in the `issues <https://github.com/wwhenxuan/S2Generator/issues>`_ section on Github, and we'll address it promptly.
 Or, you can submit your changes directly to the master branch, and we'll review and merge your code.
@@ -39,7 +47,11 @@ Ackownledge
    :target: https://raw.githubusercontent.com/wwhenxuan/S2Generator/master/images/correspondencce.jpg?raw=true
 
 `whenxuan: <https://wwhenxuan.github.io/>`_
+<<<<<<< HEAD
 ++++++++++++
+=======
+++++++++++++++++++++++++++++++++++++++++++++++++
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 The success of this project would not have been possible without the support and contributions of many individuals.
 

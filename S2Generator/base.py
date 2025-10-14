@@ -376,9 +376,9 @@ class NodeList(object):
         if xs.ndim > 1:
             # For multivariate case, keep other dimensions constant
             x_uniform_input = np.tile(np.mean(xs, axis=0), (n_integration_points, 1))
-            x_uniform_input[:, 0] = (
-                x_uniform  # Replace first dimension with uniform grid
-            )
+            x_uniform_input[
+                :, 0
+            ] = x_uniform  # Replace first dimension with uniform grid
         else:
             x_uniform_input = x_uniform.reshape(-1, 1)  # Ensure 2D array for val method
 

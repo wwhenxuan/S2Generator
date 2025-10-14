@@ -50,7 +50,7 @@ class Excitation(object):
         input_dimension: Optional[int] = 1,
         normalization: Optional[str] = None,
         return_choice: Optional[bool] = None,
-    ) -> np.ndarray | List[str]:
+    ) -> Union[np.ndarray, List[str]]:
         """Call the `generate` method to stimulate time series generation"""
         return self.generate(
             rng=rng,

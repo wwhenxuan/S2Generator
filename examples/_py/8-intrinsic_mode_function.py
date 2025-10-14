@@ -44,6 +44,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from S2Generator.excitation import IntrinsicModeFunction
 
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
+
 # Create the instance for IntrinsicModeFunction
 imfs = IntrinsicModeFunction(
     min_base_imfs=2,  # From the perspective of Fourier expansion, sine and cosine signals are the most basic signals

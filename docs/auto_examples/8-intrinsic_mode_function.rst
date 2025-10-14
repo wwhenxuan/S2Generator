@@ -53,7 +53,7 @@ We first determine the number of signals to use and then generate the correspond
 
 where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized by :math:`\sum_{k} w_k = 1`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 42-74
+.. GENERATED FROM PYTHON SOURCE LINES 42-75
 
 .. code-block:: Python
 
@@ -61,6 +61,7 @@ where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized
     import numpy as np
     from matplotlib import pyplot as plt
     from S2Generator.excitation import IntrinsicModeFunction
+
 
     # Create the instance for IntrinsicModeFunction
     imfs = IntrinsicModeFunction(
@@ -102,7 +103,7 @@ where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-84
+.. GENERATED FROM PYTHON SOURCE LINES 77-86
 
 .. code-block:: Python
 
@@ -134,12 +135,12 @@ where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-87
+.. GENERATED FROM PYTHON SOURCE LINES 87-89
 
 To prevent numerical explosion in the generated excitation time series data, we can randomly scale the intrinsic mode function (IMF) within a specified range by calculating its "energy" during the data generation process.
 For a time series of length :math:`n``, its energy :math:`E` can be represented by its second norm:
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-92
+.. GENERATED FROM PYTHON SOURCE LINES 89-94
 
 .. code-block:: Python
 
@@ -161,7 +162,7 @@ For a time series of length :math:`n``, its energy :math:`E` can be represented 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-114
+.. GENERATED FROM PYTHON SOURCE LINES 95-116
 
 .. code-block:: Python
 
@@ -198,13 +199,13 @@ For a time series of length :math:`n``, its energy :math:`E` can be represented 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-118
+.. GENERATED FROM PYTHON SOURCE LINES 117-120
 
 We can further examine the fundamental forms of these sub-signals in the frequency domain.
 We can simply examine the real part of the Fast Fourier Transform (FFT) result.
 We can see that several major frequency components are sub-signals that make up the excitation time series, namely, the intrinsic mode functions (IMFs).
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-141
+.. GENERATED FROM PYTHON SOURCE LINES 122-143
 
 .. code-block:: Python
 
@@ -241,7 +242,11 @@ We can see that several major frequency components are sub-signals that make up 
 
 
 
+<<<<<<< HEAD
 .. GENERATED FROM PYTHON SOURCE LINES 142-154
+=======
+.. GENERATED FROM PYTHON SOURCE LINES 144-156
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
@@ -272,7 +277,11 @@ We can see that several major frequency components are sub-signals that make up 
 
 .. rst-class:: sphx-glr-timing
 
+<<<<<<< HEAD
    **Total running time of the script:** (0 minutes 1.432 seconds)
+=======
+   **Total running time of the script:** (0 minutes 1.433 seconds)
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 
 .. _sphx_glr_download_auto_examples_8-intrinsic_mode_function.py:
@@ -292,6 +301,9 @@ We can see that several major frequency components are sub-signals that make up 
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 8-intrinsic_mode_function.zip <8-intrinsic_mode_function.zip>`
+
+
+.. include:: 8-intrinsic_mode_function.recommendations
 
 
 .. only:: html

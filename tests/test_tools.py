@@ -50,10 +50,10 @@ class TestTools(unittest.TestCase):
     nan_series[-1, -1] = np.nan
 
     # Define file paths for testing
-    npy_path = "./data/data.npy"
-    npz_path = "./data/data.npz"
-    s2_npy_path = "./data/s2data.npy"
-    s2_npz_path = "./data/s2data.npz"
+    npy_path = "./tests/data/data.npy"
+    npz_path = "./tests/data/data.npz"
+    s2_npy_path = "./tests/data/s2data.npy"
+    s2_npz_path = "./tests/data/s2data.npz"
 
     # Create sample data for file operation tests
     data = {"symbol": "hello", "excitation": 256, "response": 256}
@@ -224,7 +224,7 @@ class TestTools(unittest.TestCase):
         # Validate format (extract date part and check length)
         date_part = current_time.split(" ")[0]
         self.assertEqual(
-            first=len(date_part), second=8, msg="Date format should be YYYYMMDD!"
+            first=len(date_part), second=10, msg="Date format should be YYYYMMDD!"
         )
 
     def test_ensure_directory_exists(self) -> None:

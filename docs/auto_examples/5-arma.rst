@@ -42,13 +42,14 @@ Considering that the autoregressive process can easily lead to excessive accumul
 
 Below, we will further demonstrate how to use this model to generate excitation time series data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-51
+.. GENERATED FROM PYTHON SOURCE LINES 30-52
 
 .. code-block:: Python
 
     import numpy as np
     from matplotlib import pyplot as plt
     from S2Generator.excitation import AutoregressiveMovingAverage
+
 
     # Create the instance for Autoregressive Moving Average
     arma = AutoregressiveMovingAverage(
@@ -80,11 +81,11 @@ Below, we will further demonstrate how to use this model to generate excitation 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-53
+.. GENERATED FROM PYTHON SOURCE LINES 54-55
 
 Then, we visualize the generated time series data. We can also check the order and params of AR($p$) and MA($q$) models.
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-63
+.. GENERATED FROM PYTHON SOURCE LINES 55-65
 
 .. code-block:: Python
 
@@ -117,11 +118,11 @@ Then, we visualize the generated time series data. We can also check the order a
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-65
+.. GENERATED FROM PYTHON SOURCE LINES 66-67
 
 We can also generate autoregression moving average model sampling time series data of multiple dimensions (multivariate) at once:
 
-.. GENERATED FROM PYTHON SOURCE LINES 65-79
+.. GENERATED FROM PYTHON SOURCE LINES 67-81
 
 .. code-block:: Python
 
@@ -157,11 +158,15 @@ We can also generate autoregression moving average model sampling time series da
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-81
+.. GENERATED FROM PYTHON SOURCE LINES 82-83
 
 To make it easier to use, we have provided an interface for generating specific parameters. Simply input the specified order to generate the model parameters. This makes it easier for users to generate ARMA models of a specified order.
 
+<<<<<<< HEAD
 .. GENERATED FROM PYTHON SOURCE LINES 81-104
+=======
+.. GENERATED FROM PYTHON SOURCE LINES 83-106
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
@@ -204,7 +209,11 @@ To make it easier to use, we have provided an interface for generating specific 
     AR params: [0.43037873 0.20552675 0.09665074]
     MA params: [-0.1526904   0.29178823  0.0888687 ]
 
+<<<<<<< HEAD
     [<matplotlib.lines.Line2D object at 0x0000024CC244BC50>]
+=======
+    [<matplotlib.lines.Line2D object at 0x0000022D51E77C50>]
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 
 
@@ -226,6 +235,9 @@ To make it easier to use, we have provided an interface for generating specific 
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 5-arma.zip <5-arma.zip>`
+
+
+.. include:: 5-arma.recommendations
 
 
 .. only:: html

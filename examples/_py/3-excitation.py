@@ -22,6 +22,8 @@ We incorporate five different excitation time series generation mechanisms into 
 import numpy as np
 import matplotlib.pyplot as plt
 
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
+
 from S2Generator import Excitation, SeriesParams
 from S2Generator.excitation import (
     MixedDistribution,

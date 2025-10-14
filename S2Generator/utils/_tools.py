@@ -253,7 +253,7 @@ def is_all_zeros(arr: np.ndarray) -> Union[bool, bool_, None, np.ndarray]:
     return np.all(arr == 0)
 
 
-def z_score_normalization(x: np.ndarray) -> np.ndarray | None:
+def z_score_normalization(x: np.ndarray) -> Union[np.ndarray, None]:
     """
     Perform Z-score normalization on the input time series.
 
@@ -276,7 +276,7 @@ def z_score_normalization(x: np.ndarray) -> np.ndarray | None:
         )
 
 
-def max_min_normalization(x: np.ndarray) -> np.ndarray | None:
+def max_min_normalization(x: np.ndarray) -> Union[np.ndarray, None]:
     """
     Perform min-max normalization on the input time series.
 

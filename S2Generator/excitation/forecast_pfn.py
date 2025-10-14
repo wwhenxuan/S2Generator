@@ -168,7 +168,7 @@ def get_random_walk_series(
     return np.array(random_walk)
 
 
-def sample_scale(rng: np.random.RandomState = None) -> np.ndarray | float:
+def sample_scale(rng: np.random.RandomState = None) -> Union[np.ndarray, float]:
     """
     Function to sample scale such that it follows 60-30-10 distribution
     i.e. 60% of the times it is very low, 30% of the times it is moderate and
@@ -257,7 +257,7 @@ def get_freq_component(
     dates_feature: pd.Index,
     n_harmonics: Union[int, float],
     n_total: Union[int, float],
-) -> np.ndarray | Any:
+) -> Union[np.ndarray, Any]:
     """
     Method to get systematic movement of values across time
     :param dates_feature: the component of date to be used for generating
@@ -355,7 +355,7 @@ def make_series(
     start: pd.Timestamp,
     options: dict,
     random_walk: bool,
-) -> Dict[str, pd.Series | np.ndarray | pd.DataFrame | DatetimeIndex]:
+) -> Dict[str, Union[pd.Series, np.ndarray, pd.DataFrame, DatetimeIndex]]:
     """
     make series of the following form
     series(t) = trend(t) * seasonal(t)
@@ -749,7 +749,7 @@ class ForecastPFN(BaseExcitation):
         start: pd.Timestamp = None,
         options: Optional[dict] = None,
         random_walk: bool = False,  # TODO: 是否可以添加为类属性
-    ) -> Dict[str, pd.Series | np.ndarray | pd.DataFrame | DatetimeIndex]:
+    ) -> Dict[str, Union[pd.Series, np.ndarray, pd.DataFrame, DatetimeIndex]]:
         """
         Function to construct synthetic series configs and generate synthetic series.
 

@@ -82,7 +82,7 @@ fig = plot_series(inputs, outputs)
 
 ## 🧮 Algorithm 
 
-The advantage of :math:`S^2` data lies in its diversity and unrestricted generation capacity. <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/images/trees.png?raw=true">
+The advantage of $S^2$ data lies in its diversity and unrestricted generation capacity. <img width="25%" align="right" src="https://github.com/wwhenxuan/S2Generator/blob/main/images/trees.png?raw=true">
 
 On the one hand, we can build a complex system with diversity based on binary trees (right); 
 
@@ -100,16 +100,16 @@ For detailed on the data generation process, please refer to our [paper](https:/
 (Citation)=
 ## 🎖️ Citation <a id="Citation"></a>
 
-If you find this :math:`S^2` data generation method helpful, please cite the following paper:
+If you find this $S^2$ data generation method helpful, please cite the following paper:
 
 ~~~latex
-@misc{wang2025mitigatingdatascarcitytime,
-      title={Mitigating Data Scarcity in Time Series Analysis: A Foundation Model with Series-Symbol Data Generation}, 
-      author={Wenxuan Wang and Kai Wu and Yujian Betterest Li and Dan Wang and Xiaoyu Zhang and Jing Liu},
+@misc{wang2025syntheticseriessymboldatageneration,
+      title={Synthetic Series-Symbol Data Generation for Time Series Foundation Models}, 
+      author={Wenxuan Wang and Kai Wu and Yujian Betterest Li and Dan Wang and Xiaoyu Zhang},
       year={2025},
-      eprint={2502.15466},
+      eprint={2510.08445},
       archivePrefix={arXiv},
       primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2502.15466}, 
+      url={https://arxiv.org/abs/2510.08445}, 
 }
 ~~~

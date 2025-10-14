@@ -32,3 +32,8 @@ venv/
 /docs/auto_examples/*.zip
 /docs/auto_examples/*.json
 /docs/auto_examples/*.md5
+<<<<<<< HEAD
+=======
+
+/docs/_build/
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743

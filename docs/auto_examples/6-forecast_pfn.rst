@@ -74,7 +74,7 @@ We set each :math:`m_{\nu} \in \left \{ \mathrm{week}, \mathrm{month}, \mathrm{y
  - Weekly: :math:`m_{\mathrm{week}} \sim \mathcal{U}([0, 3])`, :math:`m_{\mathrm{month}} \sim \mathcal{U}([0, 1])`, :math:`p_{\mathrm{week}} = 2`, :math:`p_{\mathrm{week}} = 52`.
  - Monthly: :math:`m_{\mathrm{year}} \sim \sim \mathcal{U}([0, 5])`, :math:`p_{\mathrm{year}} = 12`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-86
+.. GENERATED FROM PYTHON SOURCE LINES 63-87
 
 .. code-block:: Python
 
@@ -83,6 +83,7 @@ We set each :math:`m_{\nu} \in \left \{ \mathrm{week}, \mathrm{month}, \mathrm{y
     import numpy as np
     from matplotlib import pyplot as plt
     from S2Generator.excitation import ForecastPFN
+
 
     # Create the instance for ForecastPFN
     forecast_pfn = ForecastPFN(
@@ -114,11 +115,11 @@ We set each :math:`m_{\nu} \in \left \{ \mathrm{week}, \mathrm{month}, \mathrm{y
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-88
+.. GENERATED FROM PYTHON SOURCE LINES 89-90
 
 We recorded the specific parameters generated during the data generation process and encapsulated them into specific local class attributes. We can further examine the scale, offset, and noise components after invoking the `generate` method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-102
+.. GENERATED FROM PYTHON SOURCE LINES 92-104
 
 .. code-block:: Python
 
@@ -154,11 +155,11 @@ We recorded the specific parameters generated during the data generation process
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-104
+.. GENERATED FROM PYTHON SOURCE LINES 105-106
 
 We also provide an interface that can directly observe all parameter components within it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-120
+.. GENERATED FROM PYTHON SOURCE LINES 108-122
 
 .. code-block:: Python
 
@@ -193,11 +194,11 @@ We also provide an interface that can directly observe all parameter components 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-122
+.. GENERATED FROM PYTHON SOURCE LINES 123-124
 
 Further breakdown allows us to observe the specific magnitudes of each frequency component.
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-131
+.. GENERATED FROM PYTHON SOURCE LINES 126-133
 
 .. code-block:: Python
 
@@ -224,11 +225,15 @@ Further breakdown allows us to observe the specific magnitudes of each frequency
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-133
+.. GENERATED FROM PYTHON SOURCE LINES 134-135
 
 We can also generate multi-channel time series data by specifying the number of generated channel dimensions using the `generate` method.
 
+<<<<<<< HEAD
 .. GENERATED FROM PYTHON SOURCE LINES 135-149
+=======
+.. GENERATED FROM PYTHON SOURCE LINES 137-151
+>>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
@@ -282,6 +287,9 @@ We can also generate multi-channel time series data by specifying the number of 
     .. container:: sphx-glr-download sphx-glr-download-zip
 
       :download:`Download zipped: 6-forecast_pfn.zip <6-forecast_pfn.zip>`
+
+
+.. include:: 6-forecast_pfn.recommendations
 
 
 .. only:: html
