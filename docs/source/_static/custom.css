@@ -148,3 +148,11 @@ html[data-theme=dark] img:not(.only-dark):not(.dark-light) {
   background-color: #29313d; /* Dark surface for transparent images */
   border-radius: 3px; /* Slightly rounded corners */
 }
+
+/* 只把 .my-big-title 里的 card 标题放大 */
+.my-big-title .sd-card-title {
+    font-size: 1.6rem !important;   /* 想多大调多大 */
+    font-weight: 800;
+}
+
+.black-link { color: #000 !important; text-decoration: none; }
