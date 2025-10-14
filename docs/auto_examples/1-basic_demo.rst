@@ -25,7 +25,7 @@ Time series data serves as the external manifestation of complex dynamical syste
 
 **Note: Because the values of the stimulus time series can inflate or fall outside the domain of complex systems, the following examples may not work if your Python version and library version are inconsistent with ours. In this case, please adjust the random seed value in the random number generator.**
 
-.. GENERATED FROM PYTHON SOURCE LINES 15-27
+.. GENERATED FROM PYTHON SOURCE LINES 14-27
 
 .. code-block:: Python
 
@@ -33,6 +33,7 @@ Time series data serves as the external manifestation of complex dynamical syste
     import numpy as np
     import sys
     import os
+
 
     sys.path.append(os.path.abspath(".."))
 
@@ -51,7 +52,7 @@ Time series data serves as the external manifestation of complex dynamical syste
 
     Hello, S2Generator!
     ==============================
-    Version: 0.0.2
+    Version: 0.0.3
     This is a Python package for generating time series data with symbolic representations.
     For more information, please visit: https://github.com/wwhenxuan/S2Generator
 
@@ -224,7 +225,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.737 seconds)
+   **Total running time of the script:** (0 minutes 1.720 seconds)
 
 
 .. _sphx_glr_download_auto_examples_1-basic_demo.py:

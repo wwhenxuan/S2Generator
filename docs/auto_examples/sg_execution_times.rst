@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:07.612** total execution time for 11 files **from auto_examples**:
+**00:07.232** total execution time for 11 files **from auto_examples**:
 
 .. container::
 
@@ -33,35 +33,35 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_1-basic_demo.py` (``1-basic_demo.py``)
-     - 00:01.737
+     - 00:01.720
      - 0.0
    * - :ref:`sphx_glr_auto_examples_8-intrinsic_mode_function.py` (``8-intrinsic_mode_function.py``)
-     - 00:01.475
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_17-time_complexity_analysis.py` (``17-time_complexity_analysis.py``)
-     - 00:00.980
+     - 00:01.433
      - 0.0
    * - :ref:`sphx_glr_auto_examples_3-excitation.py` (``3-excitation.py``)
-     - 00:00.955
+     - 00:00.890
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_17-time_complexity_analysis.py` (``17-time_complexity_analysis.py``)
+     - 00:00.883
      - 0.0
    * - :ref:`sphx_glr_auto_examples_7-kernel_synth.py` (``7-kernel_synth.py``)
-     - 00:00.680
+     - 00:00.675
      - 0.0
    * - :ref:`sphx_glr_auto_examples_12-logging.py` (``12-logging.py``)
-     - 00:00.576
+     - 00:00.513
      - 0.0
    * - :ref:`sphx_glr_auto_examples_14-stl_decomposition.py` (``14-stl_decomposition.py``)
-     - 00:00.451
+     - 00:00.436
      - 0.0
    * - :ref:`sphx_glr_auto_examples_4-mixed_distribution.py` (``4-mixed_distribution.py``)
-     - 00:00.344
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_6-forecast_pfn.py` (``6-forecast_pfn.py``)
-     - 00:00.213
+     - 00:00.315
      - 0.0
    * - :ref:`sphx_glr_auto_examples_5-arma.py` (``5-arma.py``)
-     - 00:00.200
+     - 00:00.187
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_6-forecast_pfn.py` (``6-forecast_pfn.py``)
+     - 00:00.178
      - 0.0
    * - :ref:`sphx_glr_auto_examples_9-save_and_load_s2data.py` (``9-save_and_load_s2data.py``)
-     - 00:00.001
+     - 00:00.000
      - 0.0

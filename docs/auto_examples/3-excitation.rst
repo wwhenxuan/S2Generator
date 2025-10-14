@@ -32,13 +32,14 @@ We incorporate five different excitation time series generation mechanisms into 
 - `KernelSynth <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/kernel_synth.py>`_ : This method comes from `Chronos <https://arxiv.org/abs/2403.07815>`_ and generates excitation signals by constructing different periods and trends in the form of a combination of multiple different linear and nonlinear kernels.
 - `IntrinsicModeFunction <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/intrinsic_mode_functions.py>`_ : This method is based on the idea of signal decomposition in `PySDKit <https://github.com/wwhenxuan/PySDKit>`_ and constructs the excitation signal by combining the eigenmode function with different signal and noise sequences.
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-39
+.. GENERATED FROM PYTHON SOURCE LINES 21-40
 
 .. code-block:: Python
 
 
     import numpy as np
     import matplotlib.pyplot as plt
+
 
     from S2Generator import Excitation, SeriesParams
     from S2Generator.excitation import (
@@ -67,11 +68,11 @@ We incorporate five different excitation time series generation mechanisms into 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-41
+.. GENERATED FROM PYTHON SOURCE LINES 42-43
 
 We can generate stimulus time series data using the ``__call__`` method or the reserved ``generate`` method. The prerequisite is to pass in a random number generator with a specified random seed, and specify the length and dimension of the sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 43-56
+.. GENERATED FROM PYTHON SOURCE LINES 45-58
 
 .. code-block:: Python
 
@@ -103,7 +104,7 @@ We can generate stimulus time series data using the ``__call__`` method or the r
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-69
+.. GENERATED FROM PYTHON SOURCE LINES 59-71
 
 .. code-block:: Python
 
@@ -131,11 +132,11 @@ We can generate stimulus time series data using the ``__call__`` method or the r
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-71
+.. GENERATED FROM PYTHON SOURCE LINES 72-73
 
 During data generation, we randomly select one of five methods for each channel's time series based on a specified probability. Users can specify the probability of the selected method for generating the stimulus time series data using the ``SeriesParams`` parameter.
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-90
+.. GENERATED FROM PYTHON SOURCE LINES 75-92
 
 .. code-block:: Python
 
@@ -169,7 +170,7 @@ During data generation, we randomly select one of five methods for each channel'
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-107
+.. GENERATED FROM PYTHON SOURCE LINES 93-109
 
 .. code-block:: Python
 
@@ -201,7 +202,7 @@ During data generation, we randomly select one of five methods for each channel'
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-113
+.. GENERATED FROM PYTHON SOURCE LINES 110-115
 
 For each specific method for generating time series data, you can also pass in specific parameters for control and instantiation.
 
@@ -209,7 +210,7 @@ Using the default parameters will meet most basic data generation requirements.
 
 Next we will further demonstrate and analyze this process:
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-142
+.. GENERATED FROM PYTHON SOURCE LINES 117-144
 
 .. code-block:: Python
 
@@ -265,7 +266,7 @@ Next we will further demonstrate and analyze this process:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.955 seconds)
+   **Total running time of the script:** (0 minutes 0.890 seconds)
 
 
 .. _sphx_glr_download_auto_examples_3-excitation.py:

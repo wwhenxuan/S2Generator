@@ -61,7 +61,7 @@ In S2Generator, we further integrated and encapsulated this data generation algo
 
 When we create a data generation object instance, we can adjust the parameters, mainly adjusting the minimum and maximum number of specific kernels to use, and whether to use the kernel method mentioned in the above table.
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-72
+.. GENERATED FROM PYTHON SOURCE LINES 48-73
 
 .. code-block:: Python
 
@@ -69,6 +69,7 @@ When we create a data generation object instance, we can adjust the parameters, 
     import numpy as np
     from matplotlib import pyplot as plt
     from S2Generator.excitation import KernelSynth
+
 
     # Create the instance for ForecastPFN
     kernel_synth = KernelSynth(
@@ -102,7 +103,7 @@ When we create a data generation object instance, we can adjust the parameters, 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-80
+.. GENERATED FROM PYTHON SOURCE LINES 75-82
 
 .. code-block:: Python
 
@@ -127,15 +128,15 @@ When we create a data generation object instance, we can adjust the parameters, 
  .. code-block:: none
 
 
-    [<matplotlib.lines.Line2D object at 0x0000023B4CDA2EF0>]
+    [<matplotlib.lines.Line2D object at 0x0000022D4F5BED50>]
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-82
+.. GENERATED FROM PYTHON SOURCE LINES 83-84
 
 We can use the class attributes to see how many kernel methods are available.
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-88
+.. GENERATED FROM PYTHON SOURCE LINES 86-90
 
 .. code-block:: Python
 
@@ -157,11 +158,11 @@ We can use the class attributes to see how many kernel methods are available.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-90
+.. GENERATED FROM PYTHON SOURCE LINES 91-92
 
 We can adjust and set the specific type of algorithm core to use by passing in a bool value when creating the algorithm object.
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-121
+.. GENERATED FROM PYTHON SOURCE LINES 94-123
 
 .. code-block:: Python
 
@@ -224,11 +225,11 @@ We can adjust and set the specific type of algorithm core to use by passing in a
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-123
+.. GENERATED FROM PYTHON SOURCE LINES 124-125
 
 We further use single-type kernel objects for data generation and visualization analysis.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-143
+.. GENERATED FROM PYTHON SOURCE LINES 127-145
 
 .. code-block:: Python
 
@@ -265,7 +266,7 @@ We further use single-type kernel objects for data generation and visualization 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.680 seconds)
+   **Total running time of the script:** (0 minutes 0.675 seconds)
 
 
 .. _sphx_glr_download_auto_examples_7-kernel_synth.py:
