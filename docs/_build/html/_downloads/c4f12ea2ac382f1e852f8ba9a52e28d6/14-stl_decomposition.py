@@ -34,6 +34,7 @@ where, :math:`y_i` is the value of the observed time series. :math:`s_i`, :math:
 import numpy as np
 import matplotlib.pyplot as plt
 
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 from S2Generator import Excitation
 
 # Building a general interface to stimulate time series data generation

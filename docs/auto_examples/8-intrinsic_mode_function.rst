@@ -242,11 +242,7 @@ We can see that several major frequency components are sub-signals that make up 
 
 
 
-<<<<<<< HEAD
-.. GENERATED FROM PYTHON SOURCE LINES 142-154
-=======
 .. GENERATED FROM PYTHON SOURCE LINES 144-156
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
@@ -277,11 +273,7 @@ We can see that several major frequency components are sub-signals that make up 
 
 .. rst-class:: sphx-glr-timing
 
-<<<<<<< HEAD
-   **Total running time of the script:** (0 minutes 1.432 seconds)
-=======
-   **Total running time of the script:** (0 minutes 1.433 seconds)
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+   **Total running time of the script:** (0 minutes 1.453 seconds)
 
 
 .. _sphx_glr_download_auto_examples_8-intrinsic_mode_function.py:

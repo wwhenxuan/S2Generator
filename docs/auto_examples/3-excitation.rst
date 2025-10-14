@@ -210,11 +210,7 @@ Using the default parameters will meet most basic data generation requirements.
 
 Next we will further demonstrate and analyze this process:
 
-<<<<<<< HEAD
-.. GENERATED FROM PYTHON SOURCE LINES 115-142
-=======
 .. GENERATED FROM PYTHON SOURCE LINES 117-144
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
@@ -270,11 +266,7 @@ Next we will further demonstrate and analyze this process:
 
 .. rst-class:: sphx-glr-timing
 
-<<<<<<< HEAD
-   **Total running time of the script:** (0 minutes 0.904 seconds)
-=======
-   **Total running time of the script:** (0 minutes 0.890 seconds)
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+   **Total running time of the script:** (0 minutes 0.961 seconds)
 
 
 .. _sphx_glr_download_auto_examples_3-excitation.py:

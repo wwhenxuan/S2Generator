@@ -102,30 +102,18 @@ For these two reasons, we provide a status monitoring module for the data genera
     -------------------------------------------------------------------------------
      Index | Target                               | Time                | Results
     -------+--------------------------------------+---------------------+----------
-<<<<<<< HEAD
-     1     | Create the Symbolic Expression       | 2025-09-21 18:31:00 | success 
-     2     | Generate Excitation Time Series 1    | 2025-09-21 18:31:00 | success 
-     3     | Generate Response Time Series 1      | 2025-09-21 18:31:00 | failure 
-     4     | Generate Excitation Time Series 2    | 2025-09-21 18:31:00 | success 
-     5     | Generate Response Time Series 2      | 2025-09-21 18:31:00 | success 
-=======
-     1     | Create the Symbolic Expression       | 2025-10-14 18:25:47 | success 
-     2     | Generate Excitation Time Series 1    | 2025-10-14 18:25:47 | success 
-     3     | Generate Response Time Series 1      | 2025-10-14 18:25:47 | failure 
-     4     | Generate Excitation Time Series 2    | 2025-10-14 18:25:47 | success 
-     5     | Generate Response Time Series 2      | 2025-10-14 18:25:47 | success 
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+     1     | Create the Symbolic Expression       | 2025-10-14 19:27:22 | success 
+     2     | Generate Excitation Time Series 1    | 2025-10-14 19:27:22 | success 
+     3     | Generate Response Time Series 1      | 2025-10-14 19:27:22 | failure 
+     4     | Generate Excitation Time Series 2    | 2025-10-14 19:27:22 | success 
+     5     | Generate Response Time Series 2      | 2025-10-14 19:27:22 | success 
     -------------------------------------------------------------------------------
 
     The Generated Symbolic Expression: 
     (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))
     
     Running Time: 
-<<<<<<< HEAD
-    0.0392
-=======
-    0.0391
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+    0.03708
 
 
 
@@ -181,36 +169,22 @@ For these two reasons, we provide a status monitoring module for the data genera
     -------------------------------------------------------------------------------
      Index | Target                               | Time                | Results
     -------+--------------------------------------+---------------------+----------
-<<<<<<< HEAD
-     1     | Create the Symbolic Expression       | 2025-09-21 18:31:00 | success 
-     2     | Generate Excitation Time Series 1    | 2025-09-21 18:31:00 | success 
-     3     | Generate Response Time Series 1      | 2025-09-21 18:31:00 | success 
-=======
-     1     | Create the Symbolic Expression       | 2025-10-14 18:25:47 | success 
-     2     | Generate Excitation Time Series 1    | 2025-10-14 18:25:47 | success 
-     3     | Generate Response Time Series 1      | 2025-10-14 18:25:47 | success 
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+     1     | Create the Symbolic Expression       | 2025-10-14 19:27:22 | success 
+     2     | Generate Excitation Time Series 1    | 2025-10-14 19:27:22 | success 
+     3     | Generate Response Time Series 1      | 2025-10-14 19:27:22 | success 
     -------------------------------------------------------------------------------
 
     The Generated Symbolic Expression: 
     (0.846 add ((0.265 mul sqrt((45.7 add (38.8 mul rand)))) add (62.8 mul sqrt((((-2.6 mul x_0) sub (90.4 mul tan((0.382 add (9.34 mul 1))))) add (-0.016 mul ((6.56 add (0.244 mul x_0)))**2))))))
     
     Running Time: 
-<<<<<<< HEAD
-    0.00272
-=======
-    0.00245
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+    0.00247
 
 
 
 
 
-<<<<<<< HEAD
-.. GENERATED FROM PYTHON SOURCE LINES 57-65
-=======
 .. GENERATED FROM PYTHON SOURCE LINES 58-66
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
@@ -255,35 +229,19 @@ For these two reasons, we provide a status monitoring module for the data genera
     -------------------------------------------------------------------------------
      Index | Target                               | Time                | Results
     -------+--------------------------------------+---------------------+----------
-<<<<<<< HEAD
-     1     | Create the Symbolic Expression       | 2025-09-21 18:31:00 | success 
-     2     | Generate Excitation Time Series 1    | 2025-09-21 18:31:00 | success 
-     3     | Generate Response Time Series 1      | 2025-09-21 18:31:00 | failure 
-     4     | Generate Excitation Time Series 2    | 2025-09-21 18:31:00 | success 
-     5     | Generate Response Time Series 2      | 2025-09-21 18:31:00 | failure 
-     6     | Generate Excitation Time Series 3    | 2025-09-21 18:31:00 | success 
-     7     | Generate Response Time Series 3      | 2025-09-21 18:31:00 | failure 
-     8     | Generate Excitation Time Series 4    | 2025-09-21 18:31:00 | success 
-     9     | Generate Response Time Series 4      | 2025-09-21 18:31:00 | failure 
-     10    | Generate Excitation Time Series 5    | 2025-09-21 18:31:00 | success 
-     11    | Generate Response Time Series 5      | 2025-09-21 18:31:00 | failure 
-     12    | Generate Excitation Time Series 6    | 2025-09-21 18:31:00 | success 
-     13    | Generate Response Time Series 6      | 2025-09-21 18:31:00 | success 
-=======
-     1     | Create the Symbolic Expression       | 2025-10-14 18:25:47 | success 
-     2     | Generate Excitation Time Series 1    | 2025-10-14 18:25:47 | success 
-     3     | Generate Response Time Series 1      | 2025-10-14 18:25:47 | failure 
-     4     | Generate Excitation Time Series 2    | 2025-10-14 18:25:47 | success 
-     5     | Generate Response Time Series 2      | 2025-10-14 18:25:47 | failure 
-     6     | Generate Excitation Time Series 3    | 2025-10-14 18:25:47 | success 
-     7     | Generate Response Time Series 3      | 2025-10-14 18:25:47 | failure 
-     8     | Generate Excitation Time Series 4    | 2025-10-14 18:25:47 | success 
-     9     | Generate Response Time Series 4      | 2025-10-14 18:25:47 | failure 
-     10    | Generate Excitation Time Series 5    | 2025-10-14 18:25:47 | success 
-     11    | Generate Response Time Series 5      | 2025-10-14 18:25:47 | failure 
-     12    | Generate Excitation Time Series 6    | 2025-10-14 18:25:47 | success 
-     13    | Generate Response Time Series 6      | 2025-10-14 18:25:47 | success 
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+     1     | Create the Symbolic Expression       | 2025-10-14 19:27:22 | success 
+     2     | Generate Excitation Time Series 1    | 2025-10-14 19:27:22 | success 
+     3     | Generate Response Time Series 1      | 2025-10-14 19:27:22 | failure 
+     4     | Generate Excitation Time Series 2    | 2025-10-14 19:27:22 | success 
+     5     | Generate Response Time Series 2      | 2025-10-14 19:27:22 | failure 
+     6     | Generate Excitation Time Series 3    | 2025-10-14 19:27:22 | success 
+     7     | Generate Response Time Series 3      | 2025-10-14 19:27:22 | failure 
+     8     | Generate Excitation Time Series 4    | 2025-10-14 19:27:22 | success 
+     9     | Generate Response Time Series 4      | 2025-10-14 19:27:22 | failure 
+     10    | Generate Excitation Time Series 5    | 2025-10-14 19:27:22 | success 
+     11    | Generate Response Time Series 5      | 2025-10-14 19:27:22 | failure 
+     12    | Generate Excitation Time Series 6    | 2025-10-14 19:27:23 | success 
+     13    | Generate Response Time Series 6      | 2025-10-14 19:27:23 | success 
     -------------------------------------------------------------------------------
 
     The Generated Symbolic Expression: 
@@ -293,11 +251,7 @@ For these two reasons, we provide a status monitoring module for the data genera
     (-34.1 add (-0.646 mul x_1))
     
     Running Time: 
-<<<<<<< HEAD
-    0.23443
-=======
-    0.23495
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+    0.24138
 
 
 
@@ -306,11 +260,7 @@ For these two reasons, we provide a status monitoring module for the data genera
 
 .. rst-class:: sphx-glr-timing
 
-<<<<<<< HEAD
-   **Total running time of the script:** (0 minutes 0.532 seconds)
-=======
-   **Total running time of the script:** (0 minutes 0.513 seconds)
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+   **Total running time of the script:** (0 minutes 0.504 seconds)
 
 
 .. _sphx_glr_download_auto_examples_12-logging.py:

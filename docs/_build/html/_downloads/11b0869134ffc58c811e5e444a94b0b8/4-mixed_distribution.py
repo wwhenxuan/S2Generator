@@ -30,6 +30,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from S2Generator.excitation import MixedDistribution
 
+# sphinx_gallery_thumbnail_path = 'source/_static/background.png'
+
 # Create the instance for Mixed Distribution
 mixed_distribution = MixedDistribution(
     min_centroids=1,  # The min number of D

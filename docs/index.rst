@@ -23,20 +23,37 @@ Welcome to S2Generator's documentation!
 .. centered:: |pypi_badge| |license_badge| |python_badge| |downloads_badge| |codestyle_badge|
 
 .. figure:: https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/background.png?raw=true
-    :width: 75%
+    :width: 100%
     :align: center
 
 
 Papers
 ------
 
-.. card:: Mitigating Data Scarcity in Time Series Analysis: A Foundation Model with Series-Symbol Data Generation
-    :link: https://arxiv.org/abs/2502.15466
-    :link-type: url
-    :width: 100%
-    :shadow: md
+.. card:: 
+   :link: https://arxiv.org/abs/2510.08445
+   :link-type: url
+   :width: 100%
+   :shadow: md
 
-    Wenxuan Wang and Kai Wu and Yujian Betterest Li and Dan Wang and Xiaoyu Zhang and Jing Liu
+   .. raw:: html
+
+      <div style="text-align:center; font-size:1.5rem; font-weight:bold; line-height:1.3;">
+      Synthetic Series-Symbol Data Generation<br/>
+      for Time Series Foundation Models
+      </div>
+
+      <div style="text-align:center;">
+         <div style="color:red; font-weight:bold;">
+            NeurIPS 2025 accepted! CCF A
+         </div>
+         Wenxuan Wang, Kai Wu, Yujian Betterest Li, Dan Wang, Xiaoyu Zhang
+      </div>
+
+   .. image:: https://raw.githubusercontent.com/wwhenxuan/SymTime/main/configs/images/S2Generator_SymTime.png?raw=true
+      :alt: The cover of the paper
+      :align: center
+      :width: 100%
 
 
 

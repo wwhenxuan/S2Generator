@@ -225,11 +225,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 .. rst-class:: sphx-glr-timing
 
-<<<<<<< HEAD
-   **Total running time of the script:** (0 minutes 1.854 seconds)
-=======
-   **Total running time of the script:** (0 minutes 1.720 seconds)
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+   **Total running time of the script:** (0 minutes 1.654 seconds)
 
 
 .. _sphx_glr_download_auto_examples_1-basic_demo.py:

@@ -128,11 +128,7 @@ When we create a data generation object instance, we can adjust the parameters, 
  .. code-block:: none
 
 
-<<<<<<< HEAD
-    [<matplotlib.lines.Line2D object at 0x0000024CC355EFD0>]
-=======
-    [<matplotlib.lines.Line2D object at 0x0000022D4F5BED50>]
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+    [<matplotlib.lines.Line2D object at 0x000001EB650AED50>]
 
 
 
@@ -233,11 +229,7 @@ We can adjust and set the specific type of algorithm core to use by passing in a
 
 We further use single-type kernel objects for data generation and visualization analysis.
 
-<<<<<<< HEAD
-.. GENERATED FROM PYTHON SOURCE LINES 125-143
-=======
 .. GENERATED FROM PYTHON SOURCE LINES 127-145
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
@@ -274,11 +266,7 @@ We further use single-type kernel objects for data generation and visualization 
 
 .. rst-class:: sphx-glr-timing
 
-<<<<<<< HEAD
-   **Total running time of the script:** (0 minutes 0.756 seconds)
-=======
-   **Total running time of the script:** (0 minutes 0.675 seconds)
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+   **Total running time of the script:** (0 minutes 0.601 seconds)
 
 
 .. _sphx_glr_download_auto_examples_7-kernel_synth.py:

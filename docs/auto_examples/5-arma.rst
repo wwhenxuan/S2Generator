@@ -162,11 +162,7 @@ We can also generate autoregression moving average model sampling time series da
 
 To make it easier to use, we have provided an interface for generating specific parameters. Simply input the specified order to generate the model parameters. This makes it easier for users to generate ARMA models of a specified order.
 
-<<<<<<< HEAD
-.. GENERATED FROM PYTHON SOURCE LINES 81-104
-=======
 .. GENERATED FROM PYTHON SOURCE LINES 83-106
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
@@ -209,11 +205,7 @@ To make it easier to use, we have provided an interface for generating specific 
     AR params: [0.43037873 0.20552675 0.09665074]
     MA params: [-0.1526904   0.29178823  0.0888687 ]
 
-<<<<<<< HEAD
-    [<matplotlib.lines.Line2D object at 0x0000024CC244BC50>]
-=======
-    [<matplotlib.lines.Line2D object at 0x0000022D51E77C50>]
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
+    [<matplotlib.lines.Line2D object at 0x000001EB65154410>]
 
 
 

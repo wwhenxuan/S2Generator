@@ -229,11 +229,7 @@ Further breakdown allows us to observe the specific magnitudes of each frequency
 
 We can also generate multi-channel time series data by specifying the number of generated channel dimensions using the `generate` method.
 
-<<<<<<< HEAD
-.. GENERATED FROM PYTHON SOURCE LINES 135-149
-=======
 .. GENERATED FROM PYTHON SOURCE LINES 137-151
->>>>>>> 20e5889126f4c8b69bdb82431abdaf554fb8a743
 
 .. code-block:: Python
 
