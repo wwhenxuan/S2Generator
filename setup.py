@@ -11,7 +11,13 @@ setuptools.setup(
     url="https://github.com/wwhenxuan/S2Generator",
     author="whenxuan, johnfan12, changewam",
     author_email="wwhenxuan@gmail.com",
-    keywords=["Time Series", "Data Generation"],
+    keywords=[
+        "Time Series",
+        "Data Generation",
+        "Foundation Datasets",
+        "Symbolic Representations",
+        "Dual-Modality",
+    ],
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[
