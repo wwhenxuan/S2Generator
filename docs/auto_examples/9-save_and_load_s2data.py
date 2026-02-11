@@ -12,7 +12,7 @@ How to Save and Load :math:`S^2` data
 # %%
 
 # Importing data generators, parameter controllers and visualization functions
-from S2Generator import Generator, SeriesParams, SymbolParams, plot_series
+from s2generator import Generator, SeriesParams, SymbolParams, plot_series
 
 # sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 

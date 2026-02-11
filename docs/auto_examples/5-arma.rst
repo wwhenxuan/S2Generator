@@ -42,14 +42,15 @@ Considering that the autoregressive process can easily lead to excessive accumul
 
 Below, we will further demonstrate how to use this model to generate excitation time series data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-52
+.. GENERATED FROM PYTHON SOURCE LINES 30-53
 
 .. code-block:: Python
 
     import numpy as np
     from matplotlib import pyplot as plt
-    from S2Generator.excitation import AutoregressiveMovingAverage
 
+
+    from s2generator.excitation import AutoregressiveMovingAverage
 
     # Create the instance for Autoregressive Moving Average
     arma = AutoregressiveMovingAverage(
@@ -81,11 +82,11 @@ Below, we will further demonstrate how to use this model to generate excitation 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-55
+.. GENERATED FROM PYTHON SOURCE LINES 55-56
 
 Then, we visualize the generated time series data. We can also check the order and params of AR($p$) and MA($q$) models.
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-65
+.. GENERATED FROM PYTHON SOURCE LINES 56-66
 
 .. code-block:: Python
 
@@ -118,11 +119,11 @@ Then, we visualize the generated time series data. We can also check the order a
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-67
+.. GENERATED FROM PYTHON SOURCE LINES 67-68
 
 We can also generate autoregression moving average model sampling time series data of multiple dimensions (multivariate) at once:
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-81
+.. GENERATED FROM PYTHON SOURCE LINES 68-82
 
 .. code-block:: Python
 
@@ -158,11 +159,11 @@ We can also generate autoregression moving average model sampling time series da
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-83
+.. GENERATED FROM PYTHON SOURCE LINES 83-84
 
 To make it easier to use, we have provided an interface for generating specific parameters. Simply input the specified order to generate the model parameters. This makes it easier for users to generate ARMA models of a specified order.
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-106
+.. GENERATED FROM PYTHON SOURCE LINES 84-106
 
 .. code-block:: Python
 
@@ -191,7 +192,6 @@ To make it easier to use, we have provided an interface for generating specific 
     ax.plot(time_series, color="royalblue")
 
 
-
 .. image-sg:: /auto_examples/images/sphx_glr_5-arma_003.png
    :alt: 5 arma
    :srcset: /auto_examples/images/sphx_glr_5-arma_003.png
@@ -205,7 +205,7 @@ To make it easier to use, we have provided an interface for generating specific 
     AR params: [0.43037873 0.20552675 0.09665074]
     MA params: [-0.1526904   0.29178823  0.0888687 ]
 
-    [<matplotlib.lines.Line2D object at 0x000001EB65154410>]
+    [<matplotlib.lines.Line2D object at 0x00000294DF8E96D0>]
 
 
 

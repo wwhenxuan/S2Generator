@@ -315,7 +315,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         )
         self.assertEqual(len(dict_result), 2)  # Should use dict length, not list
 
-    @patch("S2Generator.excitation.intrinsic_mode_functions.add_noise")
+    @patch("s2generator.excitation.intrinsic_mode_functions.add_noise")
     def test_add_noise(self, mock_add_noise):
         """Test _add_noise method"""
         mock_add_noise.return_value = np.array([0.1, 0.2, 0.3])
@@ -492,7 +492,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
 
     def test_inheritance(self):
         """Test inheritance from BaseExcitation"""
-        from S2Generator.excitation.base_excitation import BaseExcitation
+        from s2generator.excitation.base_excitation import BaseExcitation
 
         imf = IntrinsicModeFunction()
         self.assertIsInstance(imf, BaseExcitation)

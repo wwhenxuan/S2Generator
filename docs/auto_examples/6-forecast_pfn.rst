@@ -82,7 +82,7 @@ We set each :math:`m_{\nu} \in \left \{ \mathrm{week}, \mathrm{month}, \mathrm{y
 
     import numpy as np
     from matplotlib import pyplot as plt
-    from S2Generator.excitation import ForecastPFN
+    from s2generator.excitation import ForecastPFN
 
 
     # Create the instance for ForecastPFN
@@ -229,7 +229,7 @@ Further breakdown allows us to observe the specific magnitudes of each frequency
 
 We can also generate multi-channel time series data by specifying the number of generated channel dimensions using the `generate` method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-151
+.. GENERATED FROM PYTHON SOURCE LINES 137-150
 
 .. code-block:: Python
 
@@ -247,7 +247,6 @@ We can also generate multi-channel time series data by specifying the number of 
     fig, ax = plt.subplots(4, 1, figsize=(12, 6), dpi=120, sharex=True)
     for i in range(4):
         ax[i].plot(time_series[:, i], color="royalblue")
-
 
 
 .. image-sg:: /auto_examples/images/sphx_glr_6-forecast_pfn_002.png

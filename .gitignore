@@ -10,6 +10,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+auto_examples/
 
 # IDE config
 .idea/
@@ -27,8 +28,8 @@ venv/
 
 # ignore the doc examples files
 /docs/auto_examples/images
-# /docs/auto_examples/*.ipynb
-# /docs/auto_examples/*.py
+/docs/auto_examples/*.ipynb
+/docs/auto_examples/*.py
 /docs/auto_examples/*.zip
 /docs/auto_examples/*.json
 /docs/auto_examples/*.md5

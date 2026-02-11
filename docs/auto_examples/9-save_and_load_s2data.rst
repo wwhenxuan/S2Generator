@@ -37,10 +37,10 @@ How to Save and Load :math:`S^2` data
 
 
     # Importing data generators, parameter controllers and visualization functions
-    from S2Generator import Generator, SeriesParams, SymbolParams, plot_series
+    from s2generator import Generator, SeriesParams, SymbolParams, plot_series
 
 
-
+    # %%
 
 .. _sphx_glr_download_auto_examples_9-save_and_load_s2data.py:
 

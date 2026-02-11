@@ -26,9 +26,14 @@ Below we will give a specific code example for excitation generation.
 """
 # %%
 
+import sys
+import os
+
+sys.path.append(os.path.abspath(".."))
+
 import numpy as np
 from matplotlib import pyplot as plt
-from S2Generator.excitation import MixedDistribution
+from s2generator.excitation import MixedDistribution
 
 # sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 

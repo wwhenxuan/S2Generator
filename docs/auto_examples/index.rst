@@ -33,57 +33,6 @@ This gallery contains examples demonstrating the usage of S2Generator for signal
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="The core of the S^2 data generation mechanism is to randomly construct a large number of symbolic expressions (complex systems) f(\cdot) and stimulus time series X, and obtain the response of the complex system by inputting the stimulus into the complex system:">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_12-logging_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_12-logging.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">The logging for S^2 Generator</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="To better observe the cyclical and trend characteristics of generated time series data, we have built-in time series decomposition algorithms. This example focuses on a seasonal and trend decomposition algorithm: Seasonal-Trend decomposition using LOESS. This method allows us to better observe the important components of the time series while filtering out noise.">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_14-stl_decomposition_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_14-stl_decomposition.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">The Seasonal-Trend decomposition using LOESS</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="In this section, we provide a detailed analysis and proof of the time complexity of the S^2 data generation mechanism. Our theoretical analysis shows that the time complexity of data generation is proportional to the length L of the time series. We will then verify the specific time required for data generation using multiple sets of different lengths to validate our theoretical analysis.">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_17-time_complexity_analysis_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_17-time_complexity_analysis.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Time Complexity Analysis for The S^2 Data Generation</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This module will detail the generation and manipulation of our excitation time series data. The diversity of our S^2 data generation mechanisms is primarily due to two factors: (1) the diversity of generated symbolic expressions (complex systems) f(\cdot); and (2) the diversity of generated excitation time series data X.">
 
 .. only:: html
@@ -212,9 +161,6 @@ This gallery contains examples demonstrating the usage of S2Generator for signal
    :hidden:
 
    /auto_examples/1-basic_demo
-   /auto_examples/12-logging
-   /auto_examples/14-stl_decomposition
-   /auto_examples/17-time_complexity_analysis
    /auto_examples/3-excitation
    /auto_examples/4-mixed_distribution
    /auto_examples/5-arma

@@ -38,7 +38,7 @@ Time series data serves as the external manifestation of complex dynamical syste
     sys.path.append(os.path.abspath(".."))
 
     # Importing data generators, parameter controllers and visualization functions
-    from S2Generator import Generator, SeriesParams, SymbolParams, plot_series, print_hello
+    from s2generator import Generator, SeriesParams, SymbolParams, plot_series, print_hello
 
     print_hello()
 
@@ -215,7 +215,7 @@ After constructing the input parameters, we can complete this process end-to-end
     # Save the plotting time series
     fig.savefig("../images/ID3_OD3.jpg", dpi=300, bbox_inches="tight")
 
-
+    # %%
 
 
 
@@ -225,7 +225,7 @@ After constructing the input parameters, we can complete this process end-to-end
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.654 seconds)
+   **Total running time of the script:** (0 minutes 1.646 seconds)
 
 
 .. _sphx_glr_download_auto_examples_1-basic_demo.py:

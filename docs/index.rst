@@ -22,7 +22,7 @@ Welcome to S2Generator's documentation!
 
 .. centered:: |pypi_badge| |license_badge| |python_badge| |downloads_badge| |codestyle_badge|
 
-.. figure:: https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/images/background.png?raw=true
+.. figure:: https://raw.githubusercontent.com/wwhenxuan/S2Generator/main/docs/source/_static/background.png?raw=true
     :width: 100%
     :align: center
 

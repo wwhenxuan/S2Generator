@@ -42,7 +42,7 @@ where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized
 
 import numpy as np
 from matplotlib import pyplot as plt
-from S2Generator.excitation import IntrinsicModeFunction
+from s2generator.excitation import IntrinsicModeFunction
 
 # sphinx_gallery_thumbnail_path = 'source/_static/background.png'
 
@@ -120,7 +120,7 @@ for i in range(2):
 
 # %%
 
-from S2Generator.utils import fft, fftshift
+from s2generator.utils import fft, fftshift
 
 # Implementing Fast Fourier Transform
 freq = fftshift(fft(time_series))
