@@ -38,7 +38,7 @@ from numpy import fft as np_fft
 
 from typing import Optional, Dict, Union, Tuple
 
-from S2Generator import Node, NodeList
+from s2generator import Node, NodeList
 
 
 def get_time_now():

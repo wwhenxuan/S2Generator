@@ -20,7 +20,7 @@ from sklearn.gaussian_process.kernels import (
 )
 from typing import Union, Optional, Any, Callable, List
 
-from S2Generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.base_excitation import BaseExcitation
 
 
 def get_exp_sine_squared(length: Optional[int] = 256) -> List[Kernel]:

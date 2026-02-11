@@ -65,8 +65,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Convert all IPython Notebook files in a folder to Python scripts"
     )
-    parser.add_argument("folder", nargs="?", default=".", help="Path of the folder to process (default is current directory)")
-    parser.add_argument("-o", "--output", help="Output folder path (default is the same folder)")
+    parser.add_argument(
+        "folder",
+        nargs="?",
+        default=".",
+        help="Path of the folder to process (default is current directory)",
+    )
+    parser.add_argument(
+        "-o", "--output", help="Output folder path (default is the same folder)"
+    )
 
     args = parser.parse_args()
 

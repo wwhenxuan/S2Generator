@@ -6,7 +6,7 @@ Created on 2025/08/13 21:48:34
 """
 import numpy as np
 from typing import Optional, Dict
-from S2Generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.base_excitation import BaseExcitation
 
 
 def arma_series(

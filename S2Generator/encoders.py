@@ -8,8 +8,8 @@ Created on 2025/01/23 17:37:24
 import numpy as np
 from numpy import ndarray
 
-from S2Generator.base import Node, NodeList
-from S2Generator.params import SymbolParams
+from s2generator.base import Node, NodeList
+from s2generator.params import SymbolParams
 
 from typing import Union, List, Dict, Tuple
 

@@ -16,7 +16,7 @@ from pysdkit.data import (
 from pysdkit.utils import max_min_normalization
 
 from typing import Optional, Union, Dict, List, Tuple, Callable
-from S2Generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.base_excitation import BaseExcitation
 
 # A dictionary of all available Eigenmodel functions
 ALL_IMF_DICT = {

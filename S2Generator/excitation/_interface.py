@@ -12,15 +12,15 @@ import numpy as np
 
 from typing import Optional, Union, List, Dict, Any, Tuple
 
-from S2Generator.params import SeriesParams
-from S2Generator.excitation import (
+from s2generator.params import SeriesParams
+from s2generator.excitation import (
     MixedDistribution,
     AutoregressiveMovingAverage,
     ForecastPFN,
     KernelSynth,
     IntrinsicModeFunction,
 )
-from S2Generator.utils import z_score_normalization, max_min_normalization
+from s2generator.utils import z_score_normalization, max_min_normalization
 
 
 class Excitation(object):
