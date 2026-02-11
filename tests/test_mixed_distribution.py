@@ -10,8 +10,8 @@ import numpy as np
 from unittest.mock import patch, MagicMock
 from scipy.stats import special_ortho_group
 
-from S2Generator.excitation.mixed_distribution import MixedDistribution
-from S2Generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.mixed_distribution import MixedDistribution
+from s2generator.excitation.base_excitation import BaseExcitation
 
 
 class TestMixedDistributionInitialization(unittest.TestCase):

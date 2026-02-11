@@ -197,7 +197,7 @@ if __name__ == "__main__":
     import numpy as np
 
     # Importing data generators, parameter controllers and visualization functions
-    from S2Generator import Generator, Params, plot_series
+    from s2generator import Generator, Params, plot_series
 
     params = Params()  # Adjust the parameters here
     generator = Generator(params)  # Create an instance

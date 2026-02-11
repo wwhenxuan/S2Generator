@@ -8,7 +8,7 @@ Created on 2025/08/22 18:00:34
 import unittest
 import numpy as np
 
-from S2Generator import SeriesParams
+from s2generator import SeriesParams
 
 
 class TestSeriesParams(unittest.TestCase):

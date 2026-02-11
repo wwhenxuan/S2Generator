@@ -7,7 +7,7 @@ Created on 2025/08/13 23:47:51
 import unittest
 import numpy as np
 
-from S2Generator.excitation import AutoregressiveMovingAverage
+from s2generator.excitation import AutoregressiveMovingAverage
 
 
 class TestARMA(unittest.TestCase):

@@ -8,8 +8,8 @@ Created on 2025/08/22 21:45:16
 import unittest
 import numpy as np
 
-from S2Generator import SymbolParams
-from S2Generator.params.symbol_params import check_inputs_probability
+from s2generator import SymbolParams
+from s2generator.params.symbol_params import check_inputs_probability
 
 
 class TestSymbolParams(unittest.TestCase):

@@ -18,7 +18,7 @@ from sklearn.gaussian_process.kernels import (
     Kernel,
 )
 
-from S2Generator.excitation.kernel_synth import (
+from s2generator.excitation.kernel_synth import (
     KernelSynth,
     get_exp_sine_squared,
     get_dot_product,
@@ -30,7 +30,7 @@ from S2Generator.excitation.kernel_synth import (
     sample_from_gp_prior,
     sample_from_gp_prior_efficient,
 )
-from S2Generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.base_excitation import BaseExcitation
 
 
 class TestKernelGenerationFunctions(unittest.TestCase):

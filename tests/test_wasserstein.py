@@ -12,12 +12,12 @@ for assessing similarity between multivariate time series datasets.
 import unittest
 import numpy as np
 
-from S2Generator.utils import (
+from s2generator.utils import (
     wasserstein_distance,
     wasserstein_distance_matrix,
     plot_wasserstein_heatmap,
 )
-from S2Generator.utils._wasserstein_distance import (
+from s2generator.utils._wasserstein_distance import (
     dataset_max_min_normalization,
     time_series_to_distribution,
     check_inputs,

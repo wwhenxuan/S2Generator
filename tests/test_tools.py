@@ -10,7 +10,7 @@ from os import path
 
 import numpy as np
 
-from S2Generator.utils._tools import (
+from s2generator.utils._tools import (
     get_time_now,
     ensure_directory_exists,
     save_s2data,
