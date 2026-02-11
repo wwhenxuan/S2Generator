@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 from unittest.mock import patch, MagicMock
 
-from S2Generator.excitation.intrinsic_mode_functions import (
+from s2generator.excitation.intrinsic_mode_functions import (
     IntrinsicModeFunction,
     ALL_IMF_DICT,
     _check_probability_dict,

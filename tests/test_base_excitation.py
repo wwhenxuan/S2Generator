@@ -7,7 +7,7 @@ Created on 2025/08/25
 import unittest
 import numpy as np
 
-from S2Generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.base_excitation import BaseExcitation
 
 
 class ConcreteExcitation(BaseExcitation):

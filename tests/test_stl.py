@@ -7,7 +7,7 @@ Created on 2025/09/03 20:52:53
 """
 import unittest
 import numpy as np
-from S2Generator.utils import STL, STLResult
+from s2generator.utils import STL, STLResult
 from pysdkit.data import generate_time_series
 
 

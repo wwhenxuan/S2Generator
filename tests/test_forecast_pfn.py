@@ -10,7 +10,7 @@ import pandas as pd
 from datetime import date, datetime
 from unittest.mock import patch
 
-from S2Generator.excitation.forecast_pfn import (
+from s2generator.excitation.forecast_pfn import (
     ForecastPFN,
     ComponentScale,
     ComponentNoise,
