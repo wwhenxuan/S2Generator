@@ -10,8 +10,8 @@ from matplotlib.transforms import Bbox
 
 from typing import Optional, Union, Dict, Any, Tuple, List
 
-from S2Generator import Node, NodeList
-from S2Generator.utils.print_symbol import symbol_to_markdown
+from s2generator import Node, NodeList
+from s2generator.utils.print_symbol import symbol_to_markdown
 
 
 def plot_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:

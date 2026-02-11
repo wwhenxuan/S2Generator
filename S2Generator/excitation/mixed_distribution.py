@@ -2,7 +2,7 @@
 """
 This module generates excitation time series data from a mixture of multiple Gaussian or uniform distributions.
 This module was subsequently integrated into the Excitation module as an interface.
-In [`examples`](https://github.com/wwhenxuan/S2Generator/blob/main/examples/4-mixed_distribution.ipynb),
+In [`examples`](https://github.com/wwhenxuan/s2generator/blob/main/examples/4-mixed_distribution.ipynb),
 we provide examples demonstrating the module's usage.
 
 Created on 2025/08/14 11:01:12
@@ -15,7 +15,7 @@ from scipy.stats import special_ortho_group
 from pysdkit.utils import max_min_normalization
 
 from typing import Optional, Union, Dict, Tuple, List
-from S2Generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.base_excitation import BaseExcitation
 
 
 class MixedDistribution(BaseExcitation):

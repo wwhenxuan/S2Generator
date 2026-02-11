@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.linalg import lstsq
 
-from S2Generator.utils import (
+from s2generator.utils import (
     simple_moving_average,
     weighted_moving_average,
     gaussian_smoothing,

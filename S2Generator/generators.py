@@ -16,8 +16,8 @@ from collections import defaultdict
 
 from typing import Optional, Union, Tuple, List
 
-from S2Generator.params import SeriesParams, SymbolParams
-from S2Generator.base import (
+from s2generator.params import SeriesParams, SymbolParams
+from s2generator.base import (
     Node,
     NodeList,
     operators_real,
@@ -25,9 +25,9 @@ from S2Generator.base import (
     all_operators,
     SPECIAL_WORDS,
 )
-from S2Generator.encoders import GeneralEncoder
-from S2Generator.excitation import Excitation
-from S2Generator.utils import (
+from s2generator.encoders import GeneralEncoder
+from s2generator.excitation import Excitation
+from s2generator.utils import (
     z_score_normalization,
     max_min_normalization,
     PrintStatus,

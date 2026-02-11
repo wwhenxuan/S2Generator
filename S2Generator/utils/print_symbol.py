@@ -7,7 +7,7 @@ Created on 2025/08/25 00:14:51
 import re
 
 from typing import Union, Callable, List
-from S2Generator.base import Node, NodeList
+from s2generator.base import Node, NodeList
 
 # Create the chain of replacements data type
 ReplaceFn = Callable[[str], str]

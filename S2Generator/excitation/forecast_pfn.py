@@ -9,7 +9,7 @@ from scipy.stats import beta
 from dataclasses import dataclass
 from typing import Optional, Union, Dict, Tuple, List, Any
 
-from S2Generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.base_excitation import BaseExcitation
 
 
 @dataclass

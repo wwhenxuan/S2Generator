@@ -17,8 +17,8 @@ from os import path
 from colorama import Fore, Style
 from typing import Optional, Union, List, Tuple
 
-from S2Generator import SeriesParams, SymbolParams, Node, NodeList
-from S2Generator.utils import get_time_now
+from s2generator import SeriesParams, SymbolParams, Node, NodeList
+from s2generator.utils import get_time_now
 
 
 class PrintStatus(object):

@@ -13,7 +13,7 @@ from numpy import ndarray
 import scipy.special
 from typing import Optional, Union, List
 from scipy.integrate import cumulative_trapezoid
-from S2Generator.params import SymbolParams
+from s2generator.params import SymbolParams
 from scipy.ndimage import gaussian_filter1d  # 用于平滑微分
 
 operators_real = {
