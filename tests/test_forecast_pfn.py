@@ -578,7 +578,7 @@ class TestForecastPFN(unittest.TestCase):
 
     def test_inheritance(self):
         """Test inheritance from BaseExcitation"""
-        from S2Generator.excitation.base_excitation import BaseExcitation
+        from s2generator.excitation.base_excitation import BaseExcitation
 
         fpfn = ForecastPFN()
         self.assertIsInstance(fpfn, BaseExcitation)
