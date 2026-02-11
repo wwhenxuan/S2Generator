@@ -68,7 +68,7 @@ When we create a data generation object instance, we can adjust the parameters, 
 
     import numpy as np
     from matplotlib import pyplot as plt
-    from S2Generator.excitation import KernelSynth
+    from s2generator.excitation import KernelSynth
 
 
     # Create the instance for ForecastPFN
@@ -128,7 +128,7 @@ When we create a data generation object instance, we can adjust the parameters, 
  .. code-block:: none
 
 
-    [<matplotlib.lines.Line2D object at 0x000001EB650AED50>]
+    [<matplotlib.lines.Line2D object at 0x00000294D9D7A850>]
 
 
 
@@ -229,7 +229,7 @@ We can adjust and set the specific type of algorithm core to use by passing in a
 
 We further use single-type kernel objects for data generation and visualization analysis.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-145
+.. GENERATED FROM PYTHON SOURCE LINES 127-144
 
 .. code-block:: Python
 
@@ -253,7 +253,6 @@ We further use single-type kernel objects for data generation and visualization 
             ax[i, j].set_title(kernel_list[i * 2 + j])
 
 
-
 .. image-sg:: /auto_examples/images/sphx_glr_7-kernel_synth_002.png
    :alt: exp_sine_squared, dot_product, rbf, rational_quadratic, white_kernel, constant_kernel
    :srcset: /auto_examples/images/sphx_glr_7-kernel_synth_002.png
@@ -266,7 +265,7 @@ We further use single-type kernel objects for data generation and visualization 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.601 seconds)
+   **Total running time of the script:** (0 minutes 0.612 seconds)
 
 
 .. _sphx_glr_download_auto_examples_7-kernel_synth.py:

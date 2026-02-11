@@ -24,13 +24,13 @@ The Generation for Excitation Time Series
 This module will detail the generation and manipulation of our excitation time series data.
 The diversity of our :math:`S^2` data generation mechanisms is primarily due to two factors: (1) the diversity of generated symbolic expressions (complex systems) :math:`f(\cdot)`; and (2) the diversity of generated excitation time series data :math:`X`.
 
-We incorporate five different excitation time series generation mechanisms into the `Excitation <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/_interface.py>`_ object, including:
+We incorporate five different excitation time series generation mechanisms into the `Excitation <https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/excitation/_interface.py>`_ object, including:
 
-- `MixedDistribution <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/mixed_distribution.py>`_ : Mainly from the field of symbolic regression `SNIP <https://arxiv.org/abs/2310.02227>`_ , this method is obtained by sampling from a mixture of Gaussian and uniform distributions.
-- `AutoregressiveMovingAverage <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/autoregressive_moving_average.py>`_ : This method comes from the field of time series analysis of `SymTime <#>`_ , which constructs a stationary time series as the excitation signal by building a random parameterized ARMA model.
-- `ForecastPFN <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/forecast_pfn.py>`_ : This method is derived from `ForecastPFN <https://arxiv.org/abs/2311.01933>`_ , which is used to train zero-shot forecasting models on synthetic time series data. It considers time series data as a composition of trends and cycles based on the decomposition idea.
-- `KernelSynth <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/kernel_synth.py>`_ : This method comes from `Chronos <https://arxiv.org/abs/2403.07815>`_ and generates excitation signals by constructing different periods and trends in the form of a combination of multiple different linear and nonlinear kernels.
-- `IntrinsicModeFunction <https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/excitation/intrinsic_mode_functions.py>`_ : This method is based on the idea of signal decomposition in `PySDKit <https://github.com/wwhenxuan/PySDKit>`_ and constructs the excitation signal by combining the eigenmode function with different signal and noise sequences.
+- `MixedDistribution <https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/excitation/mixed_distribution.py>`_ : Mainly from the field of symbolic regression `SNIP <https://arxiv.org/abs/2310.02227>`_ , this method is obtained by sampling from a mixture of Gaussian and uniform distributions.
+- `AutoregressiveMovingAverage <https://github.com/wwhenxuan/s2generator/blob/main/s2generator/excitation/autoregressive_moving_average.py>`_ : This method comes from the field of time series analysis of `SymTime <#>`_ , which constructs a stationary time series as the excitation signal by building a random parameterized ARMA model.
+- `ForecastPFN <https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/excitation/forecast_pfn.py>`_ : This method is derived from `ForecastPFN <https://arxiv.org/abs/2311.01933>`_ , which is used to train zero-shot forecasting models on synthetic time series data. It considers time series data as a composition of trends and cycles based on the decomposition idea.
+- `KernelSynth <https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/excitation/kernel_synth.py>`_ : This method comes from `Chronos <https://arxiv.org/abs/2403.07815>`_ and generates excitation signals by constructing different periods and trends in the form of a combination of multiple different linear and nonlinear kernels.
+- `IntrinsicModeFunction <https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/excitation/intrinsic_mode_functions.py>`_ : This method is based on the idea of signal decomposition in `PySDKit <https://github.com/wwhenxuan/PySDKit>`_ and constructs the excitation signal by combining the eigenmode function with different signal and noise sequences.
 
 .. GENERATED FROM PYTHON SOURCE LINES 21-40
 
@@ -41,8 +41,8 @@ We incorporate five different excitation time series generation mechanisms into 
     import matplotlib.pyplot as plt
 
 
-    from S2Generator import Excitation, SeriesParams
-    from S2Generator.excitation import (
+    from s2generator import Excitation, SeriesParams
+    from s2generator.excitation import (
         MixedDistribution,
         AutoregressiveMovingAverage,
         ForecastPFN,
@@ -210,7 +210,7 @@ Using the default parameters will meet most basic data generation requirements.
 
 Next we will further demonstrate and analyze this process:
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-144
+.. GENERATED FROM PYTHON SOURCE LINES 117-143
 
 .. code-block:: Python
 
@@ -243,7 +243,6 @@ Next we will further demonstrate and analyze this process:
         ax[idx].set_ylabel(str(generator))
 
 
-
 .. image-sg:: /auto_examples/images/sphx_glr_3-excitation_003.png
    :alt: 3 excitation
    :srcset: /auto_examples/images/sphx_glr_3-excitation_003.png
@@ -266,7 +265,7 @@ Next we will further demonstrate and analyze this process:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.961 seconds)
+   **Total running time of the script:** (0 minutes 0.855 seconds)
 
 
 .. _sphx_glr_download_auto_examples_3-excitation.py:

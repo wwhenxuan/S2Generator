@@ -60,7 +60,7 @@ where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized
 
     import numpy as np
     from matplotlib import pyplot as plt
-    from S2Generator.excitation import IntrinsicModeFunction
+    from s2generator.excitation import IntrinsicModeFunction
 
 
     # Create the instance for IntrinsicModeFunction
@@ -210,7 +210,7 @@ We can see that several major frequency components are sub-signals that make up 
 .. code-block:: Python
 
 
-    from S2Generator.utils import fft, fftshift
+    from s2generator.utils import fft, fftshift
 
     # Implementing Fast Fourier Transform
     freq = fftshift(fft(time_series))
@@ -242,7 +242,7 @@ We can see that several major frequency components are sub-signals that make up 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-156
+.. GENERATED FROM PYTHON SOURCE LINES 144-155
 
 .. code-block:: Python
 
@@ -260,7 +260,6 @@ We can see that several major frequency components are sub-signals that make up 
     fig = plot_IMFs(signal=time_series[:, 0], IMFs=imfs_results)
 
 
-
 .. image-sg:: /auto_examples/images/sphx_glr_8-intrinsic_mode_function_004.png
    :alt: 8 intrinsic mode function
    :srcset: /auto_examples/images/sphx_glr_8-intrinsic_mode_function_004.png
@@ -273,7 +272,7 @@ We can see that several major frequency components are sub-signals that make up 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.453 seconds)
+   **Total running time of the script:** (0 minutes 1.407 seconds)
 
 
 .. _sphx_glr_download_auto_examples_8-intrinsic_mode_function.py:

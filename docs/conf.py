@@ -40,7 +40,7 @@ extensions = [
 
 apidoc_modules = [
     {
-        "path": "../S2Generator",
+        "path": "../s2generator",
         "destination": "source/API",
         "exclude_patterns": ["**/test*"],
         "max_depth": 4,
@@ -69,7 +69,7 @@ suppress_warnings = []
 sphinx_gallery_conf = {
     "examples_dirs": "../examples/_py",
     "gallery_dirs": "auto_examples",
-    "doc_module": ("S2Generator",),
+    "doc_module": ("s2generator",),
     "within_subsection_order": "FileNameSortKey",
     "plot_gallery": True,
     "run_stale_examples": False,
