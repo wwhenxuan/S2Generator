@@ -29,9 +29,10 @@ Below, we will further demonstrate how to use this model to generate excitation 
 # %%
 import numpy as np
 from matplotlib import pyplot as plt
-from S2Generator.excitation import AutoregressiveMovingAverage
 
 # sphinx_gallery_thumbnail_path = 'source/_static/background.png'
+
+from s2generator.excitation import AutoregressiveMovingAverage
 
 # Create the instance for Autoregressive Moving Average
 arma = AutoregressiveMovingAverage(

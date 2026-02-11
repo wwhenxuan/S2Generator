@@ -21,7 +21,7 @@ import os
 sys.path.append(os.path.abspath(".."))
 
 # Importing data generators, parameter controllers and visualization functions
-from S2Generator import Generator, SeriesParams, SymbolParams, plot_series, print_hello
+from s2generator import Generator, SeriesParams, SymbolParams, plot_series, print_hello
 
 print_hello()
 

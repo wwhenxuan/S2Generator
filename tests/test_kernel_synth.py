@@ -442,7 +442,7 @@ class TestKernelSynthGeneration(unittest.TestCase):
 
         # Mock the sample_from_gp_prior to raise LinAlgError first time
         with patch(
-            "S2Generator.excitation.kernel_synth.sample_from_gp_prior"
+            "s2generator.excitation.kernel_synth.sample_from_gp_prior"
         ) as mock_sample:
             mock_sample.side_effect = [
                 np.linalg.LinAlgError("Singular matrix"),
