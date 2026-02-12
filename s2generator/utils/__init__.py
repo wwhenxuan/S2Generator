@@ -61,6 +61,9 @@ from ._tools import save_s2data, load_s2data
 # The Fast Fourier Transform
 from ._tools import fft, fftshift, ifft, ifftshift
 
+# The generate the time series data through the ARMA model
+from ._tools import generate_arma_time_series, generate_nonstationary_sine
+
 # Print the Generation Status
 from ._print_status import PrintStatus
 
