@@ -27,6 +27,8 @@ __all__ = [
     "ifft",
     "fftshift",
     "ifftshift",
+    "generate_arma_samples",
+    "generate_nonstationary_sine",
 ]
 
 import os

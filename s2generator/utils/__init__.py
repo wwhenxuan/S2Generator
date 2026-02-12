@@ -18,6 +18,8 @@ __all__ = [
     "get_time_now",
     "save_s2data",
     "load_s2data",
+    "generate_arma_samples",
+    "generate_nonstationary_sine",
     "fft",
     "fftshift",
     "ifft",
@@ -62,7 +64,7 @@ from ._tools import save_s2data, load_s2data
 from ._tools import fft, fftshift, ifft, ifftshift
 
 # The generate the time series data through the ARMA model
-from ._tools import generate_arma_time_series, generate_nonstationary_sine
+from ._tools import generate_arma_samples, generate_nonstationary_sine
 
 # Print the Generation Status
 from ._print_status import PrintStatus
