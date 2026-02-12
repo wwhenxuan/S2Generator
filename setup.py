@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="S2Generator",
     packages=setuptools.find_packages(),
-    version="0.0.3",
+    version="0.0.4",
     description="A series-symbol (S2) dual-modality data generation mechanism, enabling the unrestricted creation of high-quality time series data paired with corresponding symbolic representations.",  # 包的简短描述
     url="https://github.com/wwhenxuan/S2Generator",
     author="whenxuan, johnfan12, changewam",
@@ -36,7 +36,9 @@ setuptools.setup(
         "scipy>=1.14.1",
         "matplotlib>=3.9.2",
         "scikit-learn>=1.2.2",
+        "statsmodels>=0.14.5",
         "colorama>=0.4.6",
+        "pandas>=2.3.1",
         "pysdkit>=0.4.21",
     ],
 )
