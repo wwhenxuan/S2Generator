@@ -18,8 +18,23 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-class ARIMAGenerator(object):
-    """Generate time series data using ARIMA model."""
+class ARIMASimulate(object):
+    """
+    Simulate time series data using ARIMA model.
+
+    任何的平稳信号都可以看作是由白噪声去激励一个线性系统获得的响应。
+    通过差分操作我们可以使非平稳时间序列变为平稳时间序列。
+    基于上述两个观点，我们可以使用ARIMA模型来生成非平稳的时间序列数据。
+    相比于以往的数据生成方式，我们可以通过ARIMA模型来进一步的拟合真是的时间序列数据的统计特性，从而生成更加真实的时间序列数据。
+
+    TODO: 这里的注释和原理有待进一步的补充
+    ARIMA模型是一种广泛应用于时间序列分析和预测的统计模型。 它结合了自回归(AR)和移动平均(MA)两种模型的特点，并通过差分操作使非平稳时间序列变为平稳序列。
+    ARIMA模型由三个主要参数组成：(p, d, q)，其中p表示自回归项的阶数，d表示差分次数，q表示移动平均项的阶数。
+    具体来说，ARIMA模型可以表示为：
+    .. math::
+       (1 - \sum_{i=1}^{p} \phi_i L^i)(1 - L)^d y_t = (1 + \sum_{j=1}^{q} \theta_j L^j) \epsilon_t,
+    其中，:math:`L`是滞后算子，:math:`\phi_i`是自回归系数，:math:`\theta_j`是移动平均系数，:math:`\epsilon_t`是白噪声误差项。
+    """
 
     def __init__(
         self,
@@ -66,32 +81,33 @@ class ARIMAGenerator(object):
 
         :return: None.
         """
-        # 首先对时间序列进行差分使其平稳
-        stationary_series, self.d_order = self.diff_stationary(
-            time_series=pd.Series(time_series)
-        )
+        # Check the input time series data
+        time_series = self.check_inputs(time_series=time_series)
+
+        # First, difference the time series to make it stationary
+        stationary_series, self.d_order = self.diff_stationary(time_series=time_series)
 
         if select_order:
-            # 使用AIC和BIC准则选择最优的(p,q)组合
+            # Use the AIC and BIC criteria to select the optimal (p,q) combination.
             self.p_order, self.q_order = self.select_arma_order(
                 stationary_series=stationary_series
             )
         else:
             self.p_order, self.q_order = self.max_p, self.max_q
 
-        # 拟合ARIMA模型
+        # Fit the ARIMA model
         self.model = ARIMA(
             time_series, order=(self.p_order, self.d_order, self.q_order)
         ).fit()
 
-        # 获取模型拟合的残差结果
+        # Get the residuals from the fitted model
         self.residuals = self.model.resid
 
-        # 进行残差诊断
+        # Perform residual diagnosis
         mean_p_value, is_white = self.residual_diagnosis(signif=self.signif)
         if not is_white and self.not_white_alarm:
             print(
-                f"警告: 模型残差可能不是白噪声 (平均p值={mean_p_value:.4f} < 显著性水平={self.signif})，请重新评估模型的阶数或参数。"
+                f"Warning: Model residuals may not be white noise (mean p-value={mean_p_value:.4f} < significance level={self.signif}), please re-evaluate the model order or parameters."
             )
 
     def transform(
@@ -105,11 +121,11 @@ class ARIMAGenerator(object):
 
         :return: Transformed time series data.
         """
-        # 判断模型是否已经拟合
+        # Check if the model has been fitted
         if not hasattr(self, "model"):
             raise ValueError("The model must be fitted before calling transform.")
 
-        # 生成新的时间序列数据
+        # Generate new time series data
         generated_series = self.model.simulate(
             nsimulations=seq_len,
             repetitions=num_samples,
@@ -120,38 +136,65 @@ class ARIMAGenerator(object):
 
         return generated_series.values
 
-    def check_inputs(self, time_series: Union[pd.Series, np.ndarray]) -> None:
-        """检查输入的时间序列数据是否合法"""
+    def check_inputs(self, time_series: Union[pd.Series, np.ndarray]) -> pd.Series:
+        """
+        Check if the input time series data is valid.
+
+        :param time_series: The input time series data to check.
+
+        :return: Validated time series data as a pandas Series.
+        """
+
+        # Check if the input is a pandas Series or numpy ndarray
         if not isinstance(time_series, (pd.Series, np.ndarray)):
             raise ValueError(
                 "Input time series must be a pandas Series or numpy ndarray."
             )
+
+        # Check the shape of the input time series
+        if len(time_series.shape) > 2:
+            raise ValueError(
+                "Input time series must be 1-dimensional with [seq_len, ] or 2-dimensional with [num_samples, seq_len]."
+            )
+
+        # Two-dimensional data needs to be flattened into one-dimensional data for use.
+        elif len(time_series.shape) == 2:
+            time_series = time_series.flatten()
+
+        # Check if the length of the time series is sufficient
         if len(time_series) < 10:
             raise ValueError("Input time series must have at least 10 data points.")
 
+        return pd.Series(time_series)
+
     def select_arma_order(
         self, stationary_series: Union[pd.Series, np.ndarray]
-    ) -> Tuple[int, int, int]:
-        """对平稳序列选择ARMA(p,q)阶数（即ARIMA的p,q）"""
+    ) -> Tuple[int, int]:
+        """
+        Select ARMA(p,q) order for a stationary series (i.e., ARIMA's p,q).
 
-        # 使用AIC和BIC准则选择最优的(p,q)组合
+        :param stationary_series: The input stationary time series inputs data.
 
-        # 对AIC和BIC进行初始化
+        :return: A tuple containing the selected (p, q) order.
+        """
+
+        # Use AIC and BIC criteria to select the optimal (p,q) combination
+
+        # Initialize AIC and BIC
         best_aic = np.inf
         best_bic = np.inf
         best_order_aic = (0, 0)
         best_order_bic = (0, 0)
 
-        # 遍历所有可能的(p,q)组合
+        # Iterate over all possible (p,q) combinations
         for p in range(self.max_p + 1):
             for q in range(self.max_q + 1):
                 if p == 0 and q == 0:
-                    # 跳过(p,q)=(0,0)的情况
+                    # Skip the (p,q)=(0,0) case
                     continue
                 try:
-                    print(f"尝试ARIMA({p},{0},{q})")
-                    # 开始拟合ARMA模型
-                    # FIXME: 这里是否可以选择使用EACF方法来选择最优的(p,q)组合？
+                    # Fit ARMA model
+                    # FIXME: Consider using the EACF method to select the optimal (p,q) combination?
                     model = ARIMA(stationary_series, order=(p, 0, q))
                     results = model.fit()
                     if results.aic < best_aic:
@@ -163,8 +206,6 @@ class ARIMAGenerator(object):
                 except:
                     continue
 
-        print(f"基于AIC最优(p,q): {best_order_aic} (AIC={best_aic:.2f})")
-        print(f"基于BIC最优(p,q): {best_order_bic} (BIC={best_bic:.2f})")
         return best_order_bic
 
     def diff_stationary(
