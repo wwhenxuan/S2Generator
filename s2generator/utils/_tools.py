@@ -532,7 +532,10 @@ def eacf_rlike(
 
 
 def plot_shapiro_wilk(
-    residuals: np.ndarray, bins: int = 13, dpi: int = 500, figsize: Tuple[int, int] = (12, 5)
+    residuals: np.ndarray,
+    bins: int = 13,
+    dpi: int = 500,
+    figsize: Tuple[int, int] = (12, 5),
 ) -> Tuple[plt.Figure, float, float]:
     """
     Plot the Shapiro-Wilk test for normality of the residuals.
