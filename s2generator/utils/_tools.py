@@ -532,7 +532,7 @@ def eacf_rlike(
 
 
 def plot_shapiro_wilk(
-    residuals: np.ndarray, bins: int = 13, dpi: int = 500
+    residuals: np.ndarray, bins: int = 13, dpi: int = 500, figsize: Tuple[int, int] = (12, 5)
 ) -> Tuple[plt.Figure, float, float]:
     """
     Plot the Shapiro-Wilk test for normality of the residuals.
@@ -542,7 +542,7 @@ def plot_shapiro_wilk(
     :param residuals: Residuals from the fitted ARIMA model.
     :param bins: Number of bins for the histogram of residuals.
     :param dpi: Dots per inch (resolution) for the generated plot.
-
+    :param figsize: Figure size for the generated plot.
     :return: A tuple containing the matplotlib Figure object, the Shapiro-Wilk statistic, and the p-value.
     """
     # Ensure the model has been fitted and the residuals have been calculated.
@@ -563,7 +563,7 @@ def plot_shapiro_wilk(
     stat, p_value = shapiro(residuals)
 
     # Create visualization figure
-    fig, ax = plt.subplots(1, 2, figsize=(12.1, 5), dpi=dpi)
+    fig, ax = plt.subplots(1, 2, figsize=figsize, dpi=dpi)
     fig.subplots_adjust(wspace=0.16)
 
     # Plot histogram of the fitted residuals
