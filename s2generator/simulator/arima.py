@@ -378,18 +378,22 @@ class ARIMASimulator(object):
         max_ma: int = 6,
     ) -> Tuple[np.ndarray, float, pd.DataFrame]:
         """
-        计算给定时间序列的扩展自相关函数 (EACF) 矩阵。
-        EACF 矩阵用于识别时间序列的 ARMA 模型的适当阶数 (p, q)。
-        矩阵的行表示 AR 阶数 (p)，列表示 MA 阶数 (q)。
-        矩阵中的每个元素表示在给定 (p, q) 组合下，残差序列的自相关系数是否显著。
-        该方法还返回 EACF 矩阵的摘要信息，包括可能的 (p, q) 组合。
+        Calculate the Extended Autocorrelation Function (EACF) matrix for a given time series.
 
-        :param time_series: 输入的时间序列数据。
-        :param symbolize: 是否将 EACF 矩阵符号化为 "x"（显著）和 "o"（不显著）。
-        :param max_ar: EACF 矩阵中要计算的最大 AR 阶数 (p)。
-        :param max_ma: EACF 矩阵中要计算的最大 MA 阶数 (q)。
+        The EACF matrix is ​​used to identify the appropriate order (p, q) of the ARMA model for the time series.
 
-        :return: 包含 EACF 矩阵、摘要信息和可能的 (p, q) 组合的元组。
+        The rows of the matrix represent the AR order (p), and the columns represent the MA order (q).
+
+        Each element in the matrix indicates whether the autocorrelation coefficient of the residual series is significant for a given combination of (p, q).
+
+        This method also returns summary information about the EACF matrix, including possible combinations of (p, q).
+
+        :param time_series: The input time series data.
+        :param symbolize: Whether to symbolize the EACF matrix as "x" (significant) and "o" (not significant).
+        :param max_ar: Maximum AR order (p) to compute in the EACF matrix.
+        :param max_ma: Maximum MA order (q) to compute in the EACF matrix.
+
+        :return: A tuple containing the EACF matrix, summary information, and possible (p, q) combinations.
         """
         # Calculate the EACF matrix
         eacf_matrix, threshold, eacf_df = eacf_rlike(
