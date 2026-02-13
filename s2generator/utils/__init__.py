@@ -21,6 +21,7 @@ __all__ = [
     "generate_arma_samples",
     "generate_nonstationary_sine",
     "eacf_rlike",
+    "plot_shapiro_wilk",
     "fft",
     "fftshift",
     "ifft",
@@ -69,6 +70,9 @@ from ._tools import generate_arma_samples, generate_nonstationary_sine
 
 # The EACF function to determine the order of ARMA model
 from ._tools import eacf_rlike
+
+# The Shapiro-Wilk test for normality of the residuals
+from ._tools import plot_shapiro_wilk
 
 # Print the Generation Status
 from ._print_status import PrintStatus
