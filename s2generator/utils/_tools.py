@@ -471,14 +471,14 @@ def generate_nonstationary_sine(
 
 
 def eacf_rlike(
-    time_series: Union[np.ndarray, list, pd.Series], max_p: int = 5, max_q: int = 5
+    time_series: Union[np.ndarray, list, pd.Series], max_ar: int = 5, max_ma: int = 5
 ) -> Tuple[np.ndarray, float, pd.DataFrame]:
     """
     This code replicates the calculation of the EACF function in the TSA library of R to identify the order of the ARMA(p, q) model.
 
     :param time_series: Input time series data, which can be a NumPy array, list, or Pandas Series.
-    :param max_p: The highest AR order.
-    :param max_q: The highest MA order.
+    :param max_ar: The highest AR order.
+    :param max_ma: The highest MA order.
 
     :return: An EACF matrix, where rows represent AR order p and columns represent MA order q.
     """
@@ -491,10 +491,10 @@ def eacf_rlike(
     n = len(series_centered)
     threshold = 1.96 / np.sqrt(n)  # R default 95% confidence threshold
 
-    # Step 2: Initialize EACF matrix (rows=p(0~max_p), columns=q(1~max_q))
-    eacf_matrix = np.zeros((max_p + 1, max_q))
+    # Step 2: Initialize EACF matrix (rows=p(0~max_ar), columns=q(1~max_ma))
+    eacf_matrix = np.zeros((max_ar + 1, max_ma))
 
-    for p in range(max_p + 1):  # Iterate over each AR order p
+    for p in range(max_ar + 1):  # Iterate over each AR order p
         # Step 3: Fit AR(p) and calculate residuals
         if p == 0:
             # For p=0, no AR model is fitted, so residuals are just the mean-centered series (aligning with R's approach)
@@ -512,20 +512,20 @@ def eacf_rlike(
         # R's ACF (Acceptable Functionality) is biased by default, corresponding to `adjusted=False` in statsmodels.
         acf_vals = acf(
             residuals,
-            nlags=max_q,
+            nlags=max_ma,
             fft=False,
             adjusted=False,  # Key: Align with R's biased ACF
             alpha=None,
         )
 
-        # Step 5: Fill the EACF matrix (the lag1~lag_max_q of the ACF correspond to q=1~max_q).
-        eacf_matrix[p, :] = acf_vals[1 : (max_q + 1)]  # Skip lag0 (always 1)
+        # Step 5: Fill the EACF matrix (the lag1~lag_max_q of the ACF correspond to q=1~max_ma).
+        eacf_matrix[p, :] = acf_vals[1 : (max_ma + 1)]  # Skip lag0 (always 1)
 
     # Formatted output (for easy comparison of R results)
     eacf_df = pd.DataFrame(
         eacf_matrix,
-        index=[f"p={p}" for p in range(max_p + 1)],
-        columns=[f"q={q}" for q in range(1, max_q + 1)],
+        index=[f"p={p}" for p in range(max_ar + 1)],
+        columns=[f"q={q}" for q in range(1, max_ma + 1)],
     )
 
     return eacf_matrix, threshold, eacf_df
