@@ -18,7 +18,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-class ARIMASimulate(object):
+class ARIMASimulator(object):
     """
     Simulate time series data using ARIMA model.
 
@@ -276,7 +276,7 @@ class ARIMASimulate(object):
         return lb_p_values.mean(), all(lb_p_values > signif)
 
     def plot_shapiro_wilk(
-        self, bins: int = 13, dpi: int = 500, save_path: str = None
+        self, bins: int = 13, dpi: int = 500
     ) -> Tuple[plt.Figure, float, float]:
         """
         Plot the Shapiro-Wilk test for normality of the residuals.
@@ -300,7 +300,7 @@ class ARIMASimulate(object):
         stat, p_value = shapiro(self.residuals)
 
         # 创建可视化的图形
-        fig, ax = plt.subplots(1, 2, figsize=(12.1, 5))
+        fig, ax = plt.subplots(1, 2, figsize=(12.1, 5), dpi=dpi)
         fig.subplots_adjust(wspace=0.16)
 
         # 绘制拟合残差的直方图
