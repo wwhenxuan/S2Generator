@@ -15,7 +15,8 @@ from statsmodels.stats.diagnostic import acorr_ljungbox
 from statsmodels.tsa.api import acf, pacf
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-from s2generator.utils._tools import eacf_rlike, plot_shapiro_wilk
+from s2generator.utils._tools import eacf_rlike
+from s2generator.utils.visualization import plot_shapiro_wilk
 
 import warnings
 
@@ -169,6 +170,30 @@ class ARIMASimulator(object):
             if self.revin
             else generated_series.values.T
         )
+        
+    @property
+    def param_names(self) -> List[str]:
+        """Return the names of the parameters in the fitted ARIMA model."""
+        if not hasattr(self, "model"):
+            raise ValueError("The model must be fitted before calling param_names.")
+
+        return self.model.param_names
+    
+    @property
+    def params(self) -> Union[np.ndarray, pd.Series]:
+        """Return the parameter values of the fitted ARIMA model."""
+        if not hasattr(self, "model"):
+            raise ValueError("The model must be fitted before calling params.")
+
+        return self.model.params
+    
+    @property
+    def param_items(self) -> List[Tuple[str, float]]:
+        """Return a list of (parameter name, parameter value) tuples for the fitted ARIMA model."""
+        if not hasattr(self, "model"):
+            raise ValueError("The model must be fitted before calling param_items.")
+
+        return list(zip(self.param_names, self.params))
 
     def check_inputs(self, time_series: Union[pd.Series, np.ndarray]) -> pd.Series:
         """
