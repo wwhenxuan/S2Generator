@@ -33,7 +33,7 @@ class ARIMASimulator(object):
     Based on these two points, we can use the ARIMA model to generate non-stationary time series data.
     Compared to previous data generation methods, we can further fit the statistical characteristics of real time series data through the ARIMA model, thereby generating more realistic time series data.
 
-    Since this generation method involves the fitting and training of the ARIMA model, linear operations may trigger exceptions such as LinAlgError, resulting in generation failure.
+    Since this generation method involves the fitting and training of the ARIMA model, linear operations may trigger exceptions such as `LinAlgError`, resulting in generation failure.
     This issue is generally related to the input time series data and the order of the ARIMA model. We have investigated the common input data problems as follows:
 
     1. The data is completely constant (variance = 0);
