@@ -30,7 +30,7 @@ We have highly encapsulated the algorithm and uploaded the code to PyPI. Users c
 pip install s2generator
 ~~~
 
-We only used [`NumPy`](https://numpy.org/), [`Scipy`](https://scipy.org/) and [`matplotlib`](https://matplotlib.org/) when developing the project.
+We used [`NumPy`](https://numpy.org/), [`Pandas`](https://pandas.pydata.org/), and [`Scipy`](https://scipy.org/) to build the data science environment, [`Matplotlib`](https://matplotlib.org/) for data visualization, and [`Statsmodels`](https://www.statsmodels.org/stable/index.html) for time series analysis and statistical processing.
 
 ## ✨ Usage
 
