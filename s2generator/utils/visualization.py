@@ -4,11 +4,22 @@ Created on 2025/01/25 00:02:43
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
 """
+
+__all__ = [
+    "plot_series",
+    "plot_symbol",
+    "plot_shapiro_wilk",
+    "plot_simulator_statistics",
+]
+
+from typing import Optional, Union, Dict, Any, Tuple, List
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.transforms import Bbox
 
-from typing import Optional, Union, Dict, Any, Tuple, List
+from scipy import signal
+from statsmodels.tsa.stattools import acf
 
 from s2generator import Node, NodeList
 from s2generator.utils.print_symbol import symbol_to_markdown
@@ -191,6 +202,160 @@ def plot_symbol(
     if return_all is True:
         return fig, ax, text
     return fig
+
+
+def plot_shapiro_wilk(
+    residuals: np.ndarray,
+    bins: int = 13,
+    dpi: int = 500,
+    figsize: Tuple[int, int] = (12, 5),
+) -> Tuple[plt.Figure, float, float]:
+    """
+    Plot the Shapiro-Wilk test for normality of the residuals.
+    This method generates a Q-Q plot to visually assess whether the residuals
+    of the fitted ARIMA model follow a normal distribution.
+
+    :param residuals: Residuals from the fitted ARIMA model.
+    :param bins: Number of bins for the histogram of residuals.
+    :param dpi: Dots per inch (resolution) for the generated plot.
+    :param figsize: Figure size for the generated plot.
+    :return: A tuple containing the matplotlib Figure object, the Shapiro-Wilk statistic, and the p-value.
+    """
+    # Ensure the model has been fitted and the residuals have been calculated.
+    if residuals is None:
+        raise ValueError("Residuals must be provided before calling plot_shapiro_wilk.")
+
+    # Convert residuals to a numpy array for consistency
+    residuals = np.asarray(residuals)
+
+    # Import necessary libraries
+    from statsmodels.graphics.gofplots import qqplot
+    from scipy.stats import shapiro
+
+    # import seaborn as sns
+    # sns.set_theme(style="ticks")
+
+    # Perform Shapiro-Wilk normality test
+    stat, p_value = shapiro(residuals)
+
+    # Create visualization figure
+    fig, ax = plt.subplots(1, 2, figsize=figsize, dpi=dpi)
+    fig.subplots_adjust(wspace=0.16)
+
+    # Plot histogram of the fitted residuals
+    ax[0].hist(residuals, bins=bins, alpha=1, color="w", edgecolor="k", lw=1.2)
+
+    # Plot Q-Q plot for normality test
+    qqplot(
+        residuals,
+        line="s",
+        ax=ax[1],
+        markerfacecolor="white",
+        markeredgecolor="k",
+        markersize=7.5,
+    )
+    for line in ax[1].get_lines():
+        if line.get_linestyle() == "-":
+            line.set_color("#DC143C")
+            line.set_linewidth(2.1)
+
+    # Set titles and labels
+    ax[0].grid(which="major", color="gray", linestyle="--", lw=0.5, alpha=0.8)
+    ax[1].grid(which="major", color="gray", linestyle="--", lw=0.5, alpha=0.8)
+    ax[0].set_xlabel("Standard Residual", fontsize=12.5)
+    ax[0].set_ylabel("Frequency", fontsize=12.5)
+    ax[1].set_xlabel("Theoretical Quantiles", fontsize=12.5)
+    ax[1].set_ylabel("Sample Quantiles", fontsize=12.5)
+
+    # Annotate the plots with statistics
+    mean = np.round(np.mean(residuals), 4)
+    std = np.round(np.std(residuals), 4)
+    stat = np.round(stat, 4)
+    p_value = np.round(p_value, 4)
+
+    # Set the text annotations for the mean and std on the histogram
+    ax[0].text(
+        0.05,
+        0.95,
+        f"$\mu$ = {mean}\n$\sigma$ = {std}",
+        transform=ax[0].transAxes,
+        verticalalignment="top",
+        horizontalalignment="left",
+        fontsize=13.5,
+        color="k",
+    )
+
+    # Set the text annotations for the Shapiro-Wilk test on the Q-Q plot
+    ax[1].text(
+        0.05,
+        0.95,
+        f"$W$ = {stat}\n$p$ = {p_value}",
+        transform=ax[1].transAxes,
+        verticalalignment="top",
+        horizontalalignment="left",
+        fontsize=13.5,
+        color="k",
+    )
+
+    return fig, stat, p_value
+
+
+def plot_simulator_statistics(
+    original_series: np.ndarray,
+    generated_series: np.ndarray,
+    nlags: int = 50,
+    nperseg: int = 128,
+) -> None:
+    """
+    比较原始序列和生成序列的统计特性
+    """
+    # 确保输入的数据是一维的ndarray
+    original_series = np.asarray(original_series).flatten()
+    generated_series = np.asarray(generated_series).flatten()
+
+    # 计算自相关函数
+    acf_original = acf(original_series, nlags=nlags, fft=True)
+    acf_generated = acf(generated_series, nlags=nlags, fft=True)
+
+    # 计算功率谱密度
+    f_original, Pxx_original = signal.welch(original_series, fs=1.0, nperseg=nperseg)
+    f_generated, Pxx_generated = signal.welch(generated_series, fs=1.0, nperseg=nperseg)
+
+    # 绘图对比
+    fig, axes = plt.subplots(3, 2, figsize=(12, 10))
+
+    # 原始序列和生成序列
+    axes[0, 0].plot(original_series, label="Original", alpha=0.7)
+    axes[0, 0].plot(generated_series, label="Generated", alpha=0.7)
+    axes[0, 0].set_title("Time Series Comparison")
+    axes[0, 0].legend()
+    axes[0, 0].grid(True)
+    
+    # 原始序列与生成序列的直方图对比
+    axes[0, 1].hist(original_series, bins=30, alpha=0.5, label="Original", color="blue")
+    axes[0, 1].hist(generated_series, bins=30, alpha=0.5, label="Generated", color="orange")
+    axes[0, 1].set_title("Histogram Comparison")
+    axes[0, 1].legend()
+    axes[0, 1].grid(True)
+
+    # 自相关函数对比
+    axes[1, 0].plot(acf_original, label="Original", marker="o", markersize=3)
+    axes[1, 0].plot(acf_generated, label="Generated", marker="x", markersize=3)
+    axes[1, 0].set_title("Autocorrelation Function")
+    axes[1, 0].legend()
+    axes[1, 0].grid(True)
+
+    # 功率谱密度对比
+    axes[1, 1].semilogy(f_original, Pxx_original, label="Original")
+    axes[1, 1].semilogy(f_generated, Pxx_generated, label="Generated")
+    axes[1, 1].set_title("Power Spectral Density")
+    axes[1, 1].set_xlabel("Frequency")
+    axes[1, 1].set_ylabel("PSD")
+    axes[1, 1].legend()
+    axes[1, 1].grid(True)
+    
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":

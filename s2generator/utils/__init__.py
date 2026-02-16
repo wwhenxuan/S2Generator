@@ -21,7 +21,6 @@ __all__ = [
     "generate_arma_samples",
     "generate_nonstationary_sine",
     "eacf_rlike",
-    "plot_shapiro_wilk",
     "fft",
     "fftshift",
     "ifft",
@@ -39,13 +38,11 @@ __all__ = [
     "exponential_smoothing",
     "smooth_show_info",
     "MovingDecomp",
+    "plot_series",
+    "plot_symbol",
+    "plot_shapiro_wilk",
+    "plot_simulator_statistics",
 ]
-
-# # Visualization the time series data in S2
-# from .visualization import plot_series
-#
-# # Visualization the Symbol data in S2
-# from .visualization import plot_symbol
 
 # Transform the symbol from string to latex
 from .print_symbol import symbol_to_markdown
@@ -70,9 +67,6 @@ from ._tools import generate_arma_samples, generate_nonstationary_sine
 
 # The EACF function to determine the order of ARMA model
 from ._tools import eacf_rlike
-
-# The Shapiro-Wilk test for normality of the residuals
-from ._tools import plot_shapiro_wilk
 
 # Print the Generation Status
 from ._print_status import PrintStatus
@@ -101,3 +95,11 @@ from ._decomposition import MovingDecomp
 
 # The Seasonal-Trend decomposition using LOESS (STL)
 from ._decomposition import STL, STLResult
+
+# The Shapiro-Wilk test for normality of the residuals
+from .visualization import (
+    plot_series,
+    plot_symbol,
+    plot_shapiro_wilk,
+    plot_simulator_statistics,
+)
