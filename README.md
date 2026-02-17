@@ -24,8 +24,7 @@ This method allows for the unrestricted creation of high-quality time series dat
 
 ## 🚀 Installation <a id="Installation"></a>
 
-We have highly encapsulated the algorithm and uploaded the code to PyPI. Users can download the code through `pip`.
-
+We have highly encapsulated the algorithm and uploaded the code to PyPI:
 ~~~
 pip install s2generator
 ~~~
