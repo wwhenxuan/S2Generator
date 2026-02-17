@@ -15,7 +15,8 @@ from statsmodels.stats.diagnostic import acorr_ljungbox
 from statsmodels.tsa.api import acf, pacf
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-from s2generator.utils._tools import eacf_rlike, plot_shapiro_wilk
+from s2generator.utils._tools import eacf_rlike
+from s2generator.utils.visualization import plot_shapiro_wilk
 
 import warnings
 
@@ -32,6 +33,17 @@ class ARIMASimulator(object):
 
     Based on these two points, we can use the ARIMA model to generate non-stationary time series data.
     Compared to previous data generation methods, we can further fit the statistical characteristics of real time series data through the ARIMA model, thereby generating more realistic time series data.
+
+    Since this generation method involves the fitting and training of the ARIMA model, linear operations may trigger exceptions such as `LinAlgError`, resulting in generation failure.
+    This issue is generally related to the input time series data and the order of the ARIMA model. We have investigated the common input data problems as follows:
+
+    1. The data is completely constant (variance = 0);
+    2. The length of the input time series is too short;
+    3. There are obvious extreme values or outliers in the input sequence after standardization;
+    4. An excessively high order setting (p,q) leads to matrix dimension mismatch or singularity.
+
+    In addition, the `ARIMA` implementation in `statsmodels` has limited ability to handle certain ill-conditioned matrices (e.g., nearly singular matrices).
+    Even if the data appears normal, LU decomposition may still fail due to floating-point precision issues.
     """
 
     def __init__(
@@ -41,10 +53,17 @@ class ARIMASimulator(object):
         max_q: int = 5,
         signif: float = 0.05,
         not_white_alarm: bool = True,
+        revin: bool = True,
         random_state: Optional[int] = 42,
     ) -> None:
         """
-        :param order: A tuple specifying the (p, d, q) order of the ARIMA model.
+        :param max_p: Maximum AR order (p) to consider when fitting the ARIMA model.
+        :param max_d: Maximum differencing order (d) to consider when fitting the ARIMA model.
+        :param max_q: Maximum MA order (q) to consider when fitting the ARIMA model.
+        :param signif: Significance level for the ADF test to determine stationarity.
+        :param not_white_alarm: Whether to issue a warning when the residuals of the fitted model are not white noise.
+        :param revin: Should reversible normalization be performed on time series data?
+        :param random_state: Random state for reproducibility when generating new time series data.
         """
         self.max_p = max_p
         self.max_d = max_d
@@ -55,6 +74,12 @@ class ARIMASimulator(object):
 
         # Whether to issue a warning when residuals are not white noise
         self.not_white_alarm = not_white_alarm
+
+        # Should reversible normalization be performed on time series data?
+        # If True, the generated time series data will be normalized to have zero mean and unit variance,
+        # and the original mean and variance will be recorded for potential inverse transformation.
+        self.revin = revin
+        self.mean, self.std = None, None
 
         # Record the parameters of the model fit
         self.d_order = None
@@ -82,6 +107,13 @@ class ARIMASimulator(object):
         # Check the input time series data
         time_series = self.check_inputs(time_series=time_series)
 
+        # Optionally reverse the time series data to generate data in reverse order
+        if self.revin:
+            self.mean, self.std = time_series.mean(), time_series.std()
+            time_series = (
+                time_series - self.mean
+            ) / self.std  # Normalize the time series data
+
         # First, difference the time series to make it stationary
         stationary_series, self.d_order = self.diff_stationary(time_series=time_series)
 
@@ -103,8 +135,9 @@ class ARIMASimulator(object):
 
         # Perform residual diagnosis
         mean_p_value, is_white = self.residual_diagnosis(signif=self.signif)
+
         if not is_white and self.not_white_alarm:
-            print(
+            raise ValueError(
                 f"Warning: Model residuals may not be white noise (mean p-value={mean_p_value:.4f} < significance level={self.signif}), please re-evaluate the model order or parameters."
             )
 
@@ -132,7 +165,35 @@ class ARIMASimulator(object):
             ),
         )
 
-        return generated_series.values.T
+        return (
+            generated_series.values.T * self.std + self.mean
+            if self.revin
+            else generated_series.values.T
+        )
+
+    @property
+    def param_names(self) -> List[str]:
+        """Return the names of the parameters in the fitted ARIMA model."""
+        if not hasattr(self, "model"):
+            raise ValueError("The model must be fitted before calling param_names.")
+
+        return self.model.param_names
+
+    @property
+    def params(self) -> Union[np.ndarray, pd.Series]:
+        """Return the parameter values of the fitted ARIMA model."""
+        if not hasattr(self, "model"):
+            raise ValueError("The model must be fitted before calling params.")
+
+        return self.model.params
+
+    @property
+    def param_items(self) -> List[Tuple[str, float]]:
+        """Return a list of (parameter name, parameter value) tuples for the fitted ARIMA model."""
+        if not hasattr(self, "model"):
+            raise ValueError("The model must be fitted before calling param_items.")
+
+        return list(zip(self.param_names, self.params))
 
     def check_inputs(self, time_series: Union[pd.Series, np.ndarray]) -> pd.Series:
         """
@@ -163,6 +224,19 @@ class ARIMASimulator(object):
         if len(time_series) < 10:
             raise ValueError("Input time series must have at least 10 data points.")
 
+        # Check if the time series contains NaN values
+        if pd.isnull(time_series).any():
+            raise ValueError("Input time series must not contain NaN values.")
+
+        # std = np.std(time_series)
+        std = np.std(time_series)
+        if (
+            std < 1e-8
+        ):  # A very small threshold to check if the variance is effectively zero
+            raise ValueError(
+                "The time series variance is 0 (all values ​​are the same), making it impossible to fit the ARIMA model."
+            )
+
         return pd.Series(time_series)
 
     def select_arma_order(
@@ -192,7 +266,6 @@ class ARIMASimulator(object):
                     continue
                 try:
                     # Fit ARMA model
-                    # FIXME: Consider using the EACF method to select the optimal (p,q) combination?
                     model = ARIMA(stationary_series, order=(p, 0, q))
                     results = model.fit()
                     if results.aic < best_aic:
