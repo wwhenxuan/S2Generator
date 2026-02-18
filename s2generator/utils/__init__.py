@@ -21,6 +21,7 @@ __all__ = [
     "generate_arma_samples",
     "generate_nonstationary_sine",
     "eacf_rlike",
+    "yule_walker",
     "fft",
     "fftshift",
     "ifft",
@@ -67,6 +68,9 @@ from ._tools import generate_arma_samples, generate_nonstationary_sine
 
 # The EACF function to determine the order of ARMA model
 from ._tools import eacf_rlike
+
+# The Yule-Walker method to estimate the parameters of AR model
+from ._tools import yule_walker
 
 # Print the Generation Status
 from ._print_status import PrintStatus

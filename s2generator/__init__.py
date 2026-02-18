@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 __all__ = [
     "Node",
@@ -16,6 +16,7 @@ __all__ = [
     "print_ascii",
     "print_hello",
     "excitation",
+    "simulator",
     "utils",
     "params",
 ]
@@ -34,6 +35,9 @@ from .encoders import GeneralEncoder, FloatSequences, Equation
 
 # Generic interface for generating stimulus time series data
 from .excitation import Excitation
+
+# # The simulators for generating time series data
+# from .simulator import ARIMASimulator, WienerFilterSimulator
 
 # Visualize the generated S2 object
 from .utils.visualization import plot_series
