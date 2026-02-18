@@ -1,4 +1,12 @@
-from typing import Optional, Union, Tuple
+# -*- coding: utf-8 -*-
+"""
+Created on 2026/02/18 14:28:15
+@author: Whenxuan Wang
+@email: wwhenxuan@gmail.com
+@url: https://github.com/wwhenxuan/S2Generator
+"""
+
+from typing import Optional
 
 import numpy as np
 from scipy import signal
