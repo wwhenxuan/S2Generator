@@ -7,63 +7,7 @@ from scipy.linalg import toeplitz
 from statsmodels.tsa.stattools import acf
 
 from s2generator.utils import  plot_simulator_statistics
-from datasets import Dataset
 
-
-def yule_walker(A: np.ndarray) -> Tuple[np.ndarray, Union[float, np.ndarray]]:
-    """
-    Solving the Yule-Walker equations yields the parameters of the AR model.
-    
-    The Yule-Walker equations can be expressed in matrix form as::
-
-    r(0)*1 + r(1)*a[1] + r(2)*a[2] + ... + r(n)*a[n]       = σ²
-    r(1)*1 + r(0)*a[1] + r(1)*a[2] + ... + r(n-1)*a[n]     = 0
-    r(2)*1 + r(1)*a[1] + r(0)*a[2] + ... + r(n-2)*a[n]     = 0
-    ...
-    r(n-1)*1 + r(n-2)*a[1] + r(n-3)*a[2] + ... + r(1)*a[n] = 0
-    r(n)*1 + r(n-1)*a[1] + r(n-2)*a[2] + ... + r(0)*a[n]   = 0
-    
-    Where r(k) is the value of the autocorrelation function at lag k, 
-    a[i] are the coefficients of the AR model, and σ² is the variance of the noise.
-
-    This equation can be derived based on the orthogonality principle, 
-    representing the relationship between the parameters of the AR model and the autocorrelation function of the sequence.
-    
-    :param A: The matrix representing the Yule-Walker equations, where the first row corresponds to the equation for σ² and the subsequent rows correspond to the equations for a1~an.
-    
-    :return: A tuple containing the vector of AR coefficients (a1~an) and the variance of the noise (σ²).
-    """
-    # Check if A is a ndarray and has the correct shape
-    if not isinstance(A, np.ndarray):
-        raise ValueError("Input A must be a numpy array.")
-    if A.shape[0] < 2 or A.shape[1] < 2:
-        raise ValueError("Input A must have at least 2 rows and 2 columns to solve for a1~an and σ².")
-    
-    # Check if the matrix A is square
-    if A.shape[0] != A.shape[1]:
-        raise ValueError("Input A must be a square matrix.")
-    
-    # Solve for the coefficients using the equations from the second line onwards.
-    B = A[1:, 1:]  # Extracting the coefficient matrix
-    c = -A[1:, 0]  # Extract the constant term and take its negative.
-    
-    try:
-        # Solve for a1~an
-        a = np.linalg.solve(B, c)
-        
-    except np.linalg.LinAlgError as e:
-        print(f"Solution failed: {e}")
-        print("Reason: Matrix B is not invertible, and therefore cannot uniquely determine a1~an.")
-        
-        # If B is not invertible, we can use least squares to find an approximate solution.
-        a = np.linalg.lstsq(B, c, rcond=None)[0]
-    
-    
-    # Solve for σ² using the first line of the equations
-    x = np.hstack([1, a]) # Construct the x vector
-    sigma_sq = np.dot(A[0], x)
-    
-    return x, sigma_sq
 
 
 class WienerFilterSimulator(object):
@@ -147,7 +91,15 @@ class WienerFilterSimulator(object):
         
 
     def fit(self, time_series: np.ndarray) -> None:
-        """拟合Wiener滤波器，计算滤波器系数"""
+        """
+        Fit a Wiener filter and calculate the filter coefficients.
+        
+        The specific parameters will be obtained using the Yule-Walker method.
+        
+        :param time_series: The input time series to fit the Wiener filter, with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        
+        :return: None
+        """
 
         # 检查输入时间序列的格式和长度
         time_series = self.check_inputs(time_series)
@@ -224,8 +176,16 @@ class WienerFilterSimulator(object):
         return simulated_series[self.filter_order:]
 
     def acf(self, time_series: np.ndarray, lag_max: Optional[int] = None, fft: Optional[bool] = True) -> np.ndarray:
-        # 使用FFT来加速计算
-        return acf(time_series, nlags=self.lag_max if lag_max is None else lag_max, fft=fft)
+        """
+        Calculate the autocorrelation function (ACF) of the input time series.
+        
+        :param time_series: The input time series for which to calculate the ACF, with shape 1D [seq_len, ].
+        :param lag_max: The maximum lag for which to calculate the ACF. If None, it defaults to self.lag_max (which is filter_order * 2).
+        :param fft: Whether to use FFT to speed up the ACF calculation. Default is True.
+        
+        :return: The autocorrelation function values for lags from 0 to lag_max, with shape 1D [lag_max + 1, ].
+        """
+        return acf(time_series, nlags=self.lag_max if lag_max is None else lag_max, fft=fft)  # Use FFT to speed up the calculation
 
     def check_inputs(self, time_series: np.ndarray) -> np.ndarray:
         if not isinstance(time_series, np.ndarray):
@@ -257,10 +217,11 @@ class WienerFilterSimulator(object):
 
 
 if __name__ == "__main__":
+    from datasets import Dataset
+    
     ds = Dataset.load_from_disk(r"data\train\spectrum\Madrid")
     ds.set_format(type="numpy")
     target = ds[0]["target"]
-
 
     simulator = WienerFilterSimulator(filter_order=6, revin=True, random_state=42)
     simulator.fit(target)
