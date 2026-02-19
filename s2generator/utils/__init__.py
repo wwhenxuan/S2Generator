@@ -39,6 +39,7 @@ __all__ = [
     "exponential_smoothing",
     "smooth_show_info",
     "MovingDecomp",
+    "plot_time_series",
     "plot_series",
     "plot_symbol",
     "plot_shapiro_wilk",
@@ -102,6 +103,7 @@ from ._decomposition import STL, STLResult
 
 # The Shapiro-Wilk test for normality of the residuals
 from .visualization import (
+    plot_time_series,
     plot_series,
     plot_symbol,
     plot_shapiro_wilk,
