@@ -26,14 +26,16 @@ from s2generator import Node, NodeList
 from s2generator.utils.print_symbol import symbol_to_markdown
 
 
-def plot_time_series(time_series: np.ndarray, figsize: Tuple[int, int] = (12, 3), dpi: int = 256) -> plt.Figure:
+def plot_time_series(
+    time_series: np.ndarray, figsize: Tuple[int, int] = (12, 3), dpi: int = 256
+) -> plt.Figure:
     """
     Visualize a single time series.
 
     :param time_series: The time series data to be visualized.
     :param figsize: The size of the figure for the generated plot.
     :param dpi: Dots per inch (resolution) for the generated plot.
-    
+
     :return: A matplotlib Figure object containing the time series plot.
     """
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
