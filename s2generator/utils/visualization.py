@@ -6,6 +6,7 @@ Created on 2025/01/25 00:02:43
 """
 
 __all__ = [
+    "plot_time_series",
     "plot_series",
     "plot_symbol",
     "plot_shapiro_wilk",
@@ -23,6 +24,26 @@ from statsmodels.tsa.stattools import acf
 
 from s2generator import Node, NodeList
 from s2generator.utils.print_symbol import symbol_to_markdown
+
+
+def plot_time_series(time_series: np.ndarray, figsize: Tuple[int, int] = (12, 3), dpi: int = 256) -> plt.Figure:
+    """
+    Visualize a single time series.
+
+    :param time_series: The time series data to be visualized.
+    :param figsize: The size of the figure for the generated plot.
+    :param dpi: Dots per inch (resolution) for the generated plot.
+    
+    :return: A matplotlib Figure object containing the time series plot.
+    """
+    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+    ax.plot(time_series, color="royalblue")
+    ax.set_title("Time Series Visualization", fontweight="bold", fontsize=13)
+    ax.set_xlabel("Time Steps", fontsize=11.5)
+    ax.set_ylabel("Value", fontsize=11.5)
+    ax.grid(True)
+
+    return fig
 
 
 def plot_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
