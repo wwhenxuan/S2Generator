@@ -178,9 +178,6 @@ class WienerFilterSimulator(object):
             # New sequence = White noise * Wiener filter (convolution)
             simulated_series[i, :] = self.invoke(white_noise=white_noise[i, :])
 
-        # Remove edge effects after filtering (first filter_order points)
-        simulated_series = simulated_series[:, self.filter_order :]
-
         # If normalization was performed previously,
         # denormalization is now needed to maintain the same mean and variance as the original sequence.
         if self.revin:
