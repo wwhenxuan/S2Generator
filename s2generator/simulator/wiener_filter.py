@@ -74,7 +74,7 @@ class WienerFilterSimulator(object):
         self.R = None
 
         # Noise variance σ²
-        self.sigma_sq = None
+        self._sigma_sq = None
 
         # Wiener filter coefficients [filter_order, ]
         self._coeffs = None
@@ -128,7 +128,7 @@ class WienerFilterSimulator(object):
         self.R = toeplitz(self.acf_vals[: self.filter_order])
 
         # The filter coefficients and noise variance are obtained by solving the Yule-Walker equation.
-        self._coeffs, self.sigma_sq = yule_walker(A=self.R)
+        self._coeffs, self._sigma_sq = yule_walker(A=self.R)
 
         # Initialize noise and calculate the fitted residuals.
         # Note that increasing the filter order is necessary to avoid edge effects.
@@ -259,6 +259,40 @@ class WienerFilterSimulator(object):
 
         return time_series
 
+    def set_coeffs(self, coeffs: np.ndarray) -> None:
+        """
+        Manually set the Wiener filter coefficients (for testing purposes).
+
+        :param coeffs: The Wiener filter coefficients to set, with shape 1D [filter_order, ].
+
+        :return: None
+        """
+        assert isinstance(coeffs, np.ndarray), "Coefficients must be a NumPy array."
+        assert (
+            len(coeffs) == self.filter_order
+        ), f"Length of coefficients must be equal to filter_order ({self.filter_order})."
+        self._coeffs = coeffs
+
+    def set_sigma_sq(self, sigma_sq: float) -> None:
+        """
+        Manually set the noise variance σ² (for testing purposes).
+
+        :param sigma_sq: The noise variance σ² to set, a positive float.
+
+        :return: None
+        """
+        # Check if sigma_sq is a numeric value
+        assert isinstance(sigma_sq, (int, float, np.ndarray)), "Noise variance σ² must be a numeric value."
+        
+        # Check if sigma_sq is a positive value
+        assert sigma_sq > 0, "Noise variance σ² must be a positive float."
+        
+        # If sigma_sq is a NumPy array, check if it is a scalar (shape should be ()).
+        if isinstance(sigma_sq, np.ndarray):
+            assert sigma_sq.shape == (), "Noise variance σ² must be a scalar value."
+        
+        self._sigma_sq = np.asarray(sigma_sq, dtype=np.float64)
+
     @property
     def coeffs(self) -> np.ndarray:
         """Get the Wiener filter coefficients after fitting the model."""
@@ -267,3 +301,12 @@ class WienerFilterSimulator(object):
                 "The filter coefficients have not been calculated yet; please call the `fit` method first."
             )
         return self._coeffs
+
+    @property
+    def sigma_sq(self) -> float:
+        """Get the noise variance σ² after fitting the model."""
+        if self._sigma_sq is None:
+            raise ValueError(
+                "The noise variance has not been calculated yet; please call the `fit` method first."
+            )
+        return self._sigma_sq
