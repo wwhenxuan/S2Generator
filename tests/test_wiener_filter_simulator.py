@@ -8,8 +8,10 @@ Created on 2026/03/02 12:16:05
 import unittest
 
 import numpy as np
+from scipy.linalg import toeplitz
 
 from s2generator.simulator import WienerFilterSimulator
+from s2generator.utils._tools import yule_walker
 
 
 class TestWienerFilterSimulator(unittest.TestCase):
@@ -182,3 +184,21 @@ class TestWienerFilterSimulator(unittest.TestCase):
             with self.subTest(wrong_sigma_sq=wrong_sigma_sq):
                 with self.assertRaises(AssertionError):
                     simulator.set_sigma_sq(wrong_sigma_sq)
+
+    def test_yule_walker(self) -> None:
+        """Test the yule_walker function used in WienerFilterSimulator."""
+
+        # Generate a random time series
+        np.random.seed(0)  # For reproducibility
+        time_series = np.random.rand(100)
+
+        # Test the yule_walker function with different filter orders
+        for filter_order in [5, 7, 9]:
+            with self.subTest(filter_order=filter_order):
+                simulator = WienerFilterSimulator(filter_order=filter_order)
+                A = toeplitz(simulator.acf(time_series)[:filter_order])
+                coeffs, sigma_sq = yule_walker(A=A)
+
+                # Check if the coefficients and sigma_sq are returned correctly
+                self.assertEqual(len(coeffs), filter_order)
+                self.assertIsInstance(sigma_sq, (float, np.ndarray))
