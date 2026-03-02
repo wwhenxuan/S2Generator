@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+Created on 2026/03/02 12:16:05
+@author: Whenxuan Wang
+@email: wwhenxuan@gmail.com
+@url: https://github.com/wwhenxuan/S2Generator
+"""
+
 import numpy as np
 from numpy import fft
 
@@ -55,9 +63,9 @@ def frequency_perturbation(
 
     :return: Perturbed time series, a 1D numpy array of the same length as the input series.
     """
-    f = np.fft.rfft(series)
+    f = fft.rfft(series)
     f_perturbed = f.copy()
-    frequencies = np.fft.fftfreq(len(series))
+    frequencies = fft.fftfreq(len(series))
 
     # Calculate the number of frequency domain components that can be perturbed
     K = int(len(frequencies) * r)
@@ -75,6 +83,6 @@ def frequency_perturbation(
     f_perturbed[indices] += alpha_real + 1j * alpha_imag
 
     # Perform inverse Fourier transform to restore the original time-domain signal
-    perturbed_series = np.fft.irfft(f_perturbed).real
+    perturbed_series = fft.irfft(f_perturbed).real
 
     return perturbed_series
