@@ -282,15 +282,17 @@ class WienerFilterSimulator(object):
         :return: None
         """
         # Check if sigma_sq is a numeric value
-        assert isinstance(sigma_sq, (int, float, np.ndarray)), "Noise variance σ² must be a numeric value."
-        
+        assert isinstance(
+            sigma_sq, (int, float, np.ndarray)
+        ), "Noise variance σ² must be a numeric value."
+
         # Check if sigma_sq is a positive value
         assert sigma_sq > 0, "Noise variance σ² must be a positive float."
-        
+
         # If sigma_sq is a NumPy array, check if it is a scalar (shape should be ()).
         if isinstance(sigma_sq, np.ndarray):
             assert sigma_sq.shape == (), "Noise variance σ² must be a scalar value."
-        
+
         self._sigma_sq = np.asarray(sigma_sq, dtype=np.float64)
 
     @property
