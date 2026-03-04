@@ -426,7 +426,6 @@ def plot_simulator_statistics(
 
     # Plot the histogram of residuals and the Q-Q plot for the normality test.
     if residuals is not None:
-
         from statsmodels.graphics.gofplots import qqplot
         from scipy.stats import shapiro, norm
 

@@ -44,7 +44,7 @@ def sample_random_perturbation(
 
 
 def frequency_perturbation(
-    series: np.ndarray,
+    time_series: np.ndarray,
     min_alpha: float,
     max_alpha: float,
     r: float = 0.5,
@@ -55,7 +55,7 @@ def frequency_perturbation(
     This method adds random perturbations to the frequency components of the time series,
     which can help to enhance the diversity of the data and improve the robustness of models trained on it.
 
-    :param series: Input time series, a 1D numpy array
+    :param time_series: Input time series, a 1D numpy array
     :param min_alpha: Minimum absolute value of the random perturbation added to the frequency components
     :param max_alpha: Maximum absolute value of the random perturbation added to the frequency components
     :param r: Proportion of frequency components to perturb (default is 0.5, meaning 50% of the frequency components will be perturbed)
@@ -63,9 +63,9 @@ def frequency_perturbation(
 
     :return: Perturbed time series, a 1D numpy array of the same length as the input series.
     """
-    f = fft.rfft(series)
+    f = fft.rfft(time_series)
     f_perturbed = f.copy()
-    frequencies = fft.fftfreq(len(series))
+    frequencies = fft.fftfreq(len(time_series))
 
     # Calculate the number of frequency domain components that can be perturbed
     K = int(len(frequencies) * r)
