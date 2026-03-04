@@ -18,9 +18,11 @@ from s2generator.utils._tools import (
 def amplitude_modulation(
     time_series: np.ndarray,
     num_changepoints: int = 5,
-    mean_amplitude: float = 1.0,
+    amplitude_mean: float = 1.0,
     amplitude_variation: float = 1.0,
     interpolation_method: str = "linear",
+    rng: np.random.RandomState = None,
+    seed: int = 42,
 ) -> np.ndarray:
     """
     Perform amplitude modulation on the input time series.
@@ -30,10 +32,72 @@ def amplitude_modulation(
 
     :param time_series: Input time series, a 1D numpy array
     :param num_changepoints: Number of change points to introduce in the modulation trend.
-    :param mean_amplitude: The mean amplitude of the modulation trend.
+    :param amplitude_mean: The mean amplitude of the modulation trend.
     :param amplitude_variation: The variation of the amplitude around the mean.
     :param interpolation_method: The method to interpolate the modulation trend.
                                  Options are "linear", "cubic", or "lagrange".
+    :param rng: Optional random number generator for reproducibility. If None, a new RNG will be created using the provided seed.
+    :param seed: Random seed for reproducibility if rng is not provided.
 
     :return: Amplitude modulated time series, a 1D numpy array of the same length as the input series.
     """
+    # Validate the input time series
+    time_series = np.asarray(time_series)
+    if time_series.ndim != 1:
+        raise ValueError("Input time_series must be a 1D array.")
+
+    # Validate interpolation method
+    if interpolation_method not in ["linear", "cubic", "lagrange"]:
+        raise ValueError(
+            "interpolation_method must be one of 'linear', 'cubic', or 'lagrange'."
+        )
+
+    # Get the length of the time series
+    n = len(time_series)
+
+    # Validate num_changepoints
+    if num_changepoints < 2:
+        raise ValueError(
+            "num_changepoints must be at least 2 to create a modulation trend."
+        )
+    if num_changepoints > n:
+        raise ValueError(
+            "num_changepoints cannot exceed the length of the time series."
+        )
+
+    # Initialize random number generator
+    if rng is None:
+        rng = np.random.RandomState(seed)
+
+    # Sample change points and their corresponding amplitudes
+    changepoints = np.hstack(
+        [
+            0,
+            np.sort(rng.choice(n - 2, size=num_changepoints - 2, replace=False) + 1),
+            n - 1,
+        ]
+    )
+
+    # Generate random amplitudes for each change point
+    amplitude = rng.normal(
+        loc=amplitude_mean, scale=amplitude_variation, size=num_changepoints
+    )
+
+    # Interpolate the modulation trend across the entire time series
+    if interpolation_method == "linear":
+        modulation_trend = linear_interpolation(
+            x_known=changepoints, y_known=amplitude, x_new=np.arange(n)
+        )
+    elif interpolation_method == "cubic":
+        modulation_trend = cubic_spline_interpolation(
+            x_known=changepoints, y_known=amplitude, x_new=np.arange(n)
+        )
+    elif interpolation_method == "lagrange":
+        modulation_trend = lagrange_interpolation(
+            x_known=changepoints, y_known=amplitude, x_new=np.arange(n)
+        )
+
+    # Apply the modulation trend to the original time series
+    modulated_series = time_series * modulation_trend
+
+    return modulated_series, np.array(modulation_trend)
