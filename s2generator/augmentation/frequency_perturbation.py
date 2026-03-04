@@ -63,6 +63,22 @@ def frequency_perturbation(
 
     :return: Perturbed time series, a 1D numpy array of the same length as the input series.
     """
+    # Validate the input parameters
+    assert 0 <= r <= 1, "The proportion r must be between 0 and 1."
+    assert min_alpha >= 0, "min_alpha must be non-negative."
+    assert (
+        max_alpha >= min_alpha
+    ), "max_alpha must be greater than or equal to min_alpha."
+
+    # Validate that the input time series is ndarray
+    if isinstance(time_series, list):
+        time_series = np.array(time_series)
+
+    # Validate that the input time series is 1D
+    if time_series.ndim != 1:
+        raise ValueError("Input time series must be a 1D array.")
+
+    # Perform Fast Fourier Transform to convert the time series to the frequency domain
     f = fft.rfft(time_series)
     f_perturbed = f.copy()
     frequencies = fft.fftfreq(len(time_series))
