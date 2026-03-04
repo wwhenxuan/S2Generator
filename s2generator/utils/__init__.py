@@ -22,6 +22,9 @@ __all__ = [
     "generate_nonstationary_sine",
     "eacf_rlike",
     "yule_walker",
+    "linear_interpolation",
+    "cubic_spline_interpolation",
+    "lagrange_interpolation",
     "fft",
     "fftshift",
     "ifft",
@@ -72,6 +75,13 @@ from ._tools import eacf_rlike
 
 # The Yule-Walker method to estimate the parameters of AR model
 from ._tools import yule_walker
+
+# The interpolation methods for time series data, including linear interpolation, cubic spline interpolation, and Lagrange interpolation
+from ._tools import (
+    linear_interpolation,
+    cubic_spline_interpolation,
+    lagrange_interpolation,
+)
 
 # Print the Generation Status
 from ._print_status import PrintStatus
