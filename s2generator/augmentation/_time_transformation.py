@@ -47,6 +47,27 @@ def add_linear_trend(
     return (time_series + trend) / 2
 
 
+def time_series_mixup(a: np.ndarray, b: np.ndarray, alpha: float = 0.7) -> np.ndarray:
+    """
+    Mixup Enhancement: Weighted mixing of two time series to create a new augmented signal.
+    This method combines two time series by taking a weighted average of them,
+    where the weights are determined by a mixing parameter alpha.
+    This can help models learn to generalize better by exposing them to a wider variety of signal combinations.
+
+    :param a: First input time series, a 1D numpy array.
+    :param b: Second input time series, a 1D numpy array of the same length as a.
+    :param alpha: The mixing parameter that controls the weight of each time series in the mixup,
+    default is 0.7. A value of alpha close to 1 gives more weight to the first time series (a),
+    while a value close to 0 gives more weight to the second time series (b).
+
+    :return: Mixed time series, a 1D numpy array of the same length as the input series.
+    """
+    assert a.shape == b.shape, "Input time series must have the same shape"
+
+    # Calculate the mixed signal as a weighted average of the two input signals
+    return alpha * a + (1 - alpha) * b
+
+
 if __name__ == "__main__":
     # Example usage
     import matplotlib.pyplot as plt
