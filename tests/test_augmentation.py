@@ -121,13 +121,12 @@ class TestDataAugmentation(unittest.TestCase):
         t = np.linspace(0, 1, 100)
         series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
 
-        min_modulation = 0.5
-        max_modulation = 1.5
+        amplitude_mean, amplitude_variation = 1.0, 1.0
 
         modulated_series = amplitude_modulation(
             time_series=series.copy(),
-            min_modulation=min_modulation,
-            max_modulation=max_modulation,
+            amplitude_mean=amplitude_mean,
+            amplitude_variation=amplitude_variation,
             rng=self.rng,
         )
 
