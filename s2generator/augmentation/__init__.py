@@ -13,6 +13,8 @@ __all__ = [
     "frequency_perturbation",
     "spike_injection",
     "wiener_filter",
+    "add_linear_trend",
+    "time_series_mixup",
 ]
 
 # Import the amplitude modulation function
