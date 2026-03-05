@@ -9,8 +9,13 @@ import unittest
 
 import numpy as np
 
-from s2generator.augmentation import frequency_perturbation
-from s2generator.augmentation.frequency_perturbation import sample_random_perturbation
+from s2generator.augmentation import (
+    amplitude_modulation,
+    censor_augmentation,
+    frequency_perturbation,
+)
+
+from s2generator.augmentation._frequency_perturbation import sample_random_perturbation
 
 
 class TestDataAugmentation(unittest.TestCase):
@@ -69,6 +74,66 @@ class TestDataAugmentation(unittest.TestCase):
         self.assertFalse(
             np.array_equal(perturbed_series, series),
             msg="Perturbed series is identical to original series in `test_frequency_perturbation` method",
+        )
+
+    def test_censor_augmentation(self) -> None:
+        """Test the function for performing censoring augmentation on time series data."""
+        # Generate a simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        upper_quantile = 0.65
+        lower_quantile = 0.35
+        bernoulli_p = 0.8
+
+        censored_series = censor_augmentation(
+            time_series=series.copy(),
+            upper_quantile=upper_quantile,
+            lower_quantile=lower_quantile,
+            bernoulli_p=bernoulli_p,
+            rng=self.rng,
+        )
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(censored_series),
+            len(series),
+            msg="Output length does not match input length in `test_censor_augmentation` method",
+        )
+
+        # Check that the output is different from the input (since we applied censoring)
+        self.assertFalse(
+            np.array_equal(censored_series, series),
+            msg="Censored series is identical to original series in `test_censor_augmentation` method",
+        )
+
+    def test_amplitude_modulation(self) -> None:
+        """Test the function for performing amplitude modulation on time series data."""
+        # Generate a simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        min_modulation = 0.5
+        max_modulation = 1.5
+
+        modulated_series = amplitude_modulation(
+            time_series=series.copy(),
+            min_modulation=min_modulation,
+            max_modulation=max_modulation,
+            rng=self.rng,
+        )
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(modulated_series),
+            len(series),
+            msg="Output length does not match input length in `test_amplitude_modulation` method",
+        )
+
+        # Check that the output is different from the input (since we applied amplitude modulation)
+        self.assertFalse(
+            np.array_equal(modulated_series, series),
+            msg="Modulated series is identical to original series in `test_amplitude_modulation` method",
         )
 
 

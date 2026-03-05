@@ -31,7 +31,6 @@ class TestWienerFilterSimulator(unittest.TestCase):
                         revin=revin,
                         random_state=random_state,
                     ):
-
                         # Create an instance of WienerFilterSimulator with the specified parameters
                         simulator = WienerFilterSimulator(
                             filter_order=filter_order,

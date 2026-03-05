@@ -44,7 +44,7 @@ def sample_random_perturbation(
 
 
 def frequency_perturbation(
-    series: np.ndarray,
+    time_series: np.ndarray,
     min_alpha: float,
     max_alpha: float,
     r: float = 0.5,
@@ -55,7 +55,7 @@ def frequency_perturbation(
     This method adds random perturbations to the frequency components of the time series,
     which can help to enhance the diversity of the data and improve the robustness of models trained on it.
 
-    :param series: Input time series, a 1D numpy array
+    :param time_series: Input time series, a 1D numpy array
     :param min_alpha: Minimum absolute value of the random perturbation added to the frequency components
     :param max_alpha: Maximum absolute value of the random perturbation added to the frequency components
     :param r: Proportion of frequency components to perturb (default is 0.5, meaning 50% of the frequency components will be perturbed)
@@ -63,9 +63,25 @@ def frequency_perturbation(
 
     :return: Perturbed time series, a 1D numpy array of the same length as the input series.
     """
-    f = fft.rfft(series)
+    # Validate the input parameters
+    assert 0 <= r <= 1, "The proportion r must be between 0 and 1."
+    assert min_alpha >= 0, "min_alpha must be non-negative."
+    assert (
+        max_alpha >= min_alpha
+    ), "max_alpha must be greater than or equal to min_alpha."
+
+    # Validate that the input time series is ndarray
+    if isinstance(time_series, list):
+        time_series = np.array(time_series)
+
+    # Validate that the input time series is 1D
+    if time_series.ndim != 1:
+        raise ValueError("Input time series must be a 1D array.")
+
+    # Perform Fast Fourier Transform to convert the time series to the frequency domain
+    f = fft.rfft(time_series)
     f_perturbed = f.copy()
-    frequencies = fft.fftfreq(len(series))
+    frequencies = fft.fftfreq(len(time_series))
 
     # Calculate the number of frequency domain components that can be perturbed
     K = int(len(frequencies) * r)
