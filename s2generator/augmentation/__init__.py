@@ -32,3 +32,6 @@ from ._spike_injection import spike_injection
 
 # Import the wiener filter function
 from ._wiener_filter import wiener_filter
+
+# Import the time transformation functions
+from ._time_transformation import add_linear_trend, time_series_mixup

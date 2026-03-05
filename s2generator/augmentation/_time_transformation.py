@@ -66,28 +66,3 @@ def time_series_mixup(a: np.ndarray, b: np.ndarray, alpha: float = 0.7) -> np.nd
 
     # Calculate the mixed signal as a weighted average of the two input signals
     return alpha * a + (1 - alpha) * b
-
-
-if __name__ == "__main__":
-    # Example usage
-    import matplotlib.pyplot as plt
-
-    # Create a sample time series (sine wave)
-    t = np.linspace(0, 10, 500)
-    original_series = np.sin(t)
-
-    # Add linear trend
-    augmented_series = add_linear_trend(
-        original_series, trend_strength=1, direction="downward"
-    )
-
-    # Plot the original and augmented time series
-    plt.figure(figsize=(12, 6))
-    plt.plot(t, original_series, label="Original Time Series")
-    plt.plot(t, augmented_series, label="Augmented Time Series with Linear Trend")
-    plt.legend()
-    plt.title("Linear Trend Augmentation")
-    plt.xlabel("Time")
-    plt.ylabel("Value")
-    plt.grid()
-    plt.show()
