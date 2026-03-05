@@ -15,7 +15,7 @@ from s2generator.augmentation import (
     frequency_perturbation,
 )
 
-from s2generator.augmentation.frequency_perturbation import sample_random_perturbation
+from s2generator.augmentation._frequency_perturbation import sample_random_perturbation
 
 
 class TestDataAugmentation(unittest.TestCase):
