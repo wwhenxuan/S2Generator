@@ -11,6 +11,8 @@ __all__ = [
     "censor_augmentation",
     "empirical_model_modulation",
     "frequency_perturbation",
+    "spike_injection",
+    "wiener_filter"
 ]
 
 # Import the amplitude modulation function
@@ -24,3 +26,9 @@ from ._empirical_model_modulation import empirical_model_modulation
 
 # Import the frequency perturbation function
 from ._frequency_perturbation import frequency_perturbation
+
+# Import the spike injection function
+from ._spike_injection import spike_injection
+
+# Import the wiener filter function
+from ._wiener_filter import wiener_filter
