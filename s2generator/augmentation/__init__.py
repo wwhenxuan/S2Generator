@@ -9,7 +9,7 @@ Created on 2026/03/02 12:15:45
 __all__ = [
     "amplitude_modulation",
     "censor_augmentation",
-    "empirical_model_modulation",
+    "empirical_mode_modulation",
     "frequency_perturbation",
     "spike_injection",
     "wiener_filter",
@@ -23,8 +23,8 @@ from ._amplitude_modulation import amplitude_modulation
 # Import the censoring augmentation function
 from ._censor_augmentation import censor_augmentation
 
-# Import the empirical model modulation function
-from ._empirical_model_modulation import empirical_model_modulation
+# Import the empirical mode modulation function
+from ._empirical_mode_modulation import empirical_mode_modulation
 
 # Import the frequency perturbation function
 from ._frequency_perturbation import frequency_perturbation

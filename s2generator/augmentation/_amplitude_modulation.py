@@ -100,4 +100,4 @@ def amplitude_modulation(
     # Apply the modulation trend to the original time series
     modulated_series = time_series * modulation_trend
 
-    return modulated_series, np.array(modulation_trend)
+    return modulated_series
