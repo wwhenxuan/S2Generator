@@ -12,7 +12,11 @@ import numpy as np
 from s2generator.augmentation import (
     amplitude_modulation,
     censor_augmentation,
+    empirical_mode_modulation,
     frequency_perturbation,
+    wiener_filter,
+    add_linear_trend,
+    time_series_mixup,
 )
 
 from s2generator.augmentation._frequency_perturbation import sample_random_perturbation
@@ -60,7 +64,11 @@ class TestDataAugmentation(unittest.TestCase):
         r = 0.3
 
         perturbed_series = frequency_perturbation(
-            series=series, min_alpha=min_alpha, max_alpha=max_alpha, r=r, rng=self.rng
+            time_series=series,
+            min_alpha=min_alpha,
+            max_alpha=max_alpha,
+            r=r,
+            rng=self.rng,
         )
 
         # Check that the output has the same length as the input
