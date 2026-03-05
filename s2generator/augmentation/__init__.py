@@ -12,7 +12,7 @@ __all__ = [
     "empirical_model_modulation",
     "frequency_perturbation",
     "spike_injection",
-    "wiener_filter"
+    "wiener_filter",
 ]
 
 # Import the amplitude modulation function
