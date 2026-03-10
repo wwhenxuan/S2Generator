@@ -236,6 +236,27 @@ class TestDataAugmentation(unittest.TestCase):
             msg="Modulated series is identical to original series in `test_empirical_mode_modulation` method",
         )
 
+    def test_wiener_filter(self) -> None:
+        """Test the function for performing Wiener filtering on time series data."""
+        # Generate a simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        # Apply Wiener filter augmentation
+        filtered_series = wiener_filter(time_series=series.copy())
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(filtered_series),
+            len(series),
+            msg="Output length does not match input length in `test_wiener_filter` method",
+        )
+
+        # Check that the output is different from the input (since we applied Wiener filtering)
+        self.assertFalse(
+            np.array_equal(filtered_series, series),
+            msg="Filtered series is identical to original series in `test_wiener_filter` method",
+        )
 
 if __name__ == "__main__":
     unittest.main()
