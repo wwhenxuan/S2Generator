@@ -143,6 +143,120 @@ class TestDataAugmentation(unittest.TestCase):
             msg="Modulated series is identical to original series in `test_amplitude_modulation` method",
         )
 
+    def test_time_series_mixup(self) -> None:
+        """Test the function for performing time series mixup augmentation."""
+        # Generate two simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series_a = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+        series_b = np.cos(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        alpha = 0.7
+
+        # Apply time series mixup augmentation
+        mixed_series = time_series_mixup(
+            a=series_a.copy(), b=series_b.copy(), alpha=alpha
+        )
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(mixed_series),
+            len(series_a),
+            msg="Output length does not match input length in `test_time_series_mixup` method",
+        )
+
+        # Check that the output is different from both inputs (since we applied mixup)
+        self.assertFalse(
+            np.array_equal(mixed_series, series_a),
+            msg="Mixed series is identical to first input series in `test_time_series_mixup` method",
+        )
+        self.assertFalse(
+            np.array_equal(mixed_series, series_b),
+            msg="Mixed series is identical to second input series in `test_time_series_mixup` method",
+        )
+
+    def test_add_linear_trend(self) -> None:
+        """Test the function for adding a linear trend to time series data."""
+        # Generate a simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        # Test the upward trend
+        trended_series = add_linear_trend(time_series=series.copy(), direction="upward")
+        # Check the outputs size
+        self.assertEqual(
+            len(trended_series),
+            len(series),
+            msg="Output length does not match input length in `test_add_linear_trend` method",
+        )
+        # Check the upward trend
+        trend_upward = trended_series - series
+        self.assertTrue(
+            trend_upward[-1] > trend_upward[0],
+            msg="Upward trend is not correctly applied in `test_add_linear_trend` method",
+        )
+
+        # Test the downward trend
+        trended_series = add_linear_trend(
+            time_series=series.copy(), direction="downward"
+        )
+        # Check the downward trend
+        trend_downward = trended_series - series
+        self.assertTrue(
+            trend_downward[-1] < trend_downward[0],
+            msg="Downward trend is not correctly applied in `test_add_linear_trend` method",
+        )
+
+        # Check that the output is different from the input (since we applied a linear trend)
+        self.assertFalse(
+            np.array_equal(trended_series, series),
+            msg="Trended series is identical to original series in `test_add_linear_trend` method",
+        )
+
+    def test_empirical_mode_modulation(self) -> None:
+        """Test the function for performing empirical mode modulation on time series data."""
+        # Generate a simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        # Apply empirical mode modulation augmentation
+        modulated_series = empirical_mode_modulation(
+            time_series=series.copy(), rng=self.rng
+        )
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(modulated_series),
+            len(series),
+            msg="Output length does not match input length in `test_empirical_mode_modulation` method",
+        )
+
+        # Check that the output is different from the input (since we applied empirical mode modulation)
+        self.assertFalse(
+            np.array_equal(modulated_series, series),
+            msg="Modulated series is identical to original series in `test_empirical_mode_modulation` method",
+        )
+
+    def test_wiener_filter(self) -> None:
+        """Test the function for performing Wiener filtering on time series data."""
+        # Generate a simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        # Apply Wiener filter augmentation
+        filtered_series = wiener_filter(time_series=series.copy())
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(filtered_series),
+            len(series),
+            msg="Output length does not match input length in `test_wiener_filter` method",
+        )
+
+        # Check that the output is different from the input (since we applied Wiener filtering)
+        self.assertFalse(
+            np.array_equal(filtered_series, series),
+            msg="Filtered series is identical to original series in `test_wiener_filter` method",
+        )
 
 if __name__ == "__main__":
     unittest.main()
