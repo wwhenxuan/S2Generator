@@ -180,19 +180,30 @@ class TestDataAugmentation(unittest.TestCase):
         t = np.linspace(0, 1, 100)
         series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
 
-        intercept = 0.5
-
-        trended_series = add_linear_trend(
-            time_series=series.copy(),
-            intercept=intercept,
-            rng=self.rng,
-        )
-
-        # Check that the output has the same length as the input
+        # Test the upward trend
+        trended_series = add_linear_trend(time_series=series.copy(), direction="upward")
+        # Check the outputs size
         self.assertEqual(
             len(trended_series),
             len(series),
             msg="Output length does not match input length in `test_add_linear_trend` method",
+        )
+        # Check the upward trend
+        trend_upward = trended_series - series
+        self.assertTrue(
+            trend_upward[-1] > trend_upward[0],
+            msg="Upward trend is not correctly applied in `test_add_linear_trend` method",
+        )
+
+        # Test the downward trend
+        trended_series = add_linear_trend(
+            time_series=series.copy(), direction="downward"
+        )
+        # Check the downward trend
+        trend_downward = trended_series - series
+        self.assertTrue(
+            trend_downward[-1] < trend_downward[0],
+            msg="Downward trend is not correctly applied in `test_add_linear_trend` method",
         )
 
         # Check that the output is different from the input (since we applied a linear trend)
