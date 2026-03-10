@@ -86,7 +86,6 @@ def empirical_mode_modulation(
     emd = EMD(
         max_imfs=max_imfs, spline_kind=spline_kind, extrema_detection=extrema_detection
     )
-    print(type(time_series))
     imfs = emd.fit_transform(signal=time_series)
 
     # Get the number of IMFs extracted
