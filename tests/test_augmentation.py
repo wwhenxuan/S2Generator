@@ -174,6 +174,32 @@ class TestDataAugmentation(unittest.TestCase):
             msg="Mixed series is identical to second input series in `test_time_series_mixup` method",
         )
 
+    def test_add_linear_trend(self) -> None:
+        """Test the function for adding a linear trend to time series data."""
+        # Generate a simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        intercept = 0.5
+
+        trended_series = add_linear_trend(
+            time_series=series.copy(),
+            intercept=intercept,
+            rng=self.rng,
+        )
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(trended_series),
+            len(series),
+            msg="Output length does not match input length in `test_add_linear_trend` method",
+        )
+
+        # Check that the output is different from the input (since we applied a linear trend)
+        self.assertFalse(
+            np.array_equal(trended_series, series),
+            msg="Trended series is identical to original series in `test_add_linear_trend` method",
+        )
 
 
 if __name__ == "__main__":

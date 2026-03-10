@@ -9,7 +9,10 @@ import numpy as np
 
 
 def add_linear_trend(
-    time_series: np.ndarray, trend_strength: float = 1.0, direction: str = "upward"
+    time_series: np.ndarray,
+    trend_strength: float = 1.0,
+    direction: str = "upward",
+    normalize: bool = True,
 ) -> np.ndarray:
     """
     Perform linear trend augmentation on the input time series.
@@ -19,6 +22,7 @@ def add_linear_trend(
     :param time_series: Input time series, a 1D numpy array
     :param trend_strength: The strength of the linear trend to be added, default is 1.0.
     :param direction: The direction of the linear trend, either "upward" or "downward", default is "upward".
+    :param normalize: Whether to normalize the output time series to maintain the same scale as the input, default is True.
 
     :return: Augmented time series with a linear trend, a 1D numpy array of the same length as the input series.
     """
@@ -31,9 +35,9 @@ def add_linear_trend(
 
     # Create a linear trend
     if direction == "upward":
-        trend = np.linspace(0, trend_strength * seq_length, seq_length)
+        trend = np.linspace(0, 1, seq_length)
     elif direction == "downward":
-        trend = np.linspace(0, -trend_strength * seq_length, seq_length)
+        trend = np.linspace(0, -1, seq_length)
     else:
         raise ValueError("direction must be either 'upward' or 'downward'")
 
@@ -41,7 +45,20 @@ def add_linear_trend(
     trend_energy = np.mean(trend**2)
 
     if trend_energy > 0:
-        trend = trend * np.sqrt(original_energy / trend_energy)
+        # Scale the trend to have the same energy as the original time series, and then apply the trend strength factor
+        trend = trend * np.sqrt(original_energy / trend_energy) * trend_strength
+    else:
+        # If the trend energy is zero (which can happen if the trend is constant),
+        # we set the trend to zero to avoid division by zero
+        trend = np.zeros_like(trend)
+
+    if normalize:
+        augmented_series = time_series + trend
+        # Normalize the augmented series to maintain the same energy as the original time series
+        augmented_series = (augmented_series - np.mean(augmented_series)) / np.std(
+            augmented_series
+        ) * np.std(time_series) + np.mean(time_series)
+        return augmented_series
 
     # Average the original signal and the trend to maintain the overall scale
     return (time_series + trend) / 2
