@@ -73,7 +73,13 @@ class GaussianMixtureSimulator(object):
     def transform(
         self, num_samples: int, seq_len: int, random_state: Optional[int] = None
     ) -> np.ndarray:
-        """ """
+        """
+        Transform the model to generate new samples.
+        :param num_samples: int. The number of samples to generate.
+        :param seq_len: int. The length of each generated sequence.
+        :param random_state: Optional[int]. The random state for reproducibility.
+        :return: Generated time series data.
+        """
 
         # 根据GMM的组件权重，随机选择每个样本属于哪个高斯组件
         component_indices = np.random.choice(
