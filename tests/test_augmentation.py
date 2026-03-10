@@ -212,6 +212,30 @@ class TestDataAugmentation(unittest.TestCase):
             msg="Trended series is identical to original series in `test_add_linear_trend` method",
         )
 
+    def test_empirical_mode_modulation(self) -> None:
+        """Test the function for performing empirical mode modulation on time series data."""
+        # Generate a simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        # Apply empirical mode modulation augmentation
+        modulated_series = empirical_mode_modulation(
+            time_series=series.copy(), rng=self.rng
+        )
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(modulated_series),
+            len(series),
+            msg="Output length does not match input length in `test_empirical_mode_modulation` method",
+        )
+
+        # Check that the output is different from the input (since we applied empirical mode modulation)
+        self.assertFalse(
+            np.array_equal(modulated_series, series),
+            msg="Modulated series is identical to original series in `test_empirical_mode_modulation` method",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
