@@ -143,6 +143,38 @@ class TestDataAugmentation(unittest.TestCase):
             msg="Modulated series is identical to original series in `test_amplitude_modulation` method",
         )
 
+    def test_time_series_mixup(self) -> None:
+        """Test the function for performing time series mixup augmentation."""
+        # Generate two simple time series for testing
+        t = np.linspace(0, 1, 100)
+        series_a = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+        series_b = np.cos(2 * np.pi * 5 * t) + 0.5 * np.random.normal(size=100)
+
+        alpha = 0.7
+
+        # Apply time series mixup augmentation
+        mixed_series = time_series_mixup(
+            a=series_a.copy(), b=series_b.copy(), alpha=alpha
+        )
+
+        # Check that the output has the same length as the input
+        self.assertEqual(
+            len(mixed_series),
+            len(series_a),
+            msg="Output length does not match input length in `test_time_series_mixup` method",
+        )
+
+        # Check that the output is different from both inputs (since we applied mixup)
+        self.assertFalse(
+            np.array_equal(mixed_series, series_a),
+            msg="Mixed series is identical to first input series in `test_time_series_mixup` method",
+        )
+        self.assertFalse(
+            np.array_equal(mixed_series, series_b),
+            msg="Mixed series is identical to second input series in `test_time_series_mixup` method",
+        )
+
+
 
 if __name__ == "__main__":
     unittest.main()
