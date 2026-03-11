@@ -258,5 +258,6 @@ class TestDataAugmentation(unittest.TestCase):
             msg="Filtered series is identical to original series in `test_wiener_filter` method",
         )
 
+
 if __name__ == "__main__":
     unittest.main()
