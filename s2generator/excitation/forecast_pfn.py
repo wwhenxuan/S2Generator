@@ -246,6 +246,7 @@ def make_series_trend(
     days = (dates - dates[0]).days
     if series.scale.linear is not None:
         values += shift_axis(days, series.offset.linear) * series.scale.linear
+
     if series.scale.exp is not None:
         values *= np.power(series.scale.exp, shift_axis(days, series.offset.exp))
 
@@ -368,11 +369,16 @@ def make_series(
     if random_walk:
         values = get_random_walk_series(rng=rng, length=len(dates))
     else:
+        # generate the trend component of the series
         values_trend = make_series_trend(series=series, dates=dates)
+
+        # generate the seasonal component of the series and multiply it with the trend
         values_seasonal = make_series_seasonal(rng=rng, series=series, dates=dates)
 
+        # combine the trend and seasonal components to get the base series values
         values = values_trend * values_seasonal["seasonal"]
 
+        # generate the noise term of the series and add it to the base series values
         weibull_noise_term = weibull_noise(
             rng=rng,
             k=series.noise_config.k,
@@ -424,6 +430,7 @@ class ForecastPFN(BaseExcitation):
         transition: Optional[bool] = True,
         start_time: Optional[str] = "1885-01-01",
         end_time: Optional[str] = None,
+        exp_trend: Optional[bool] = True,
         random_walk: bool = False,
         dtype: np.dtype = np.float64,
     ) -> None:
@@ -431,17 +438,12 @@ class ForecastPFN(BaseExcitation):
         Initializes the time series generator with configuration parameters.
 
         :param is_sub_day: Enable sub-daily frequency components (minutes/hours)
-        :type is_sub_day: Optional[bool]
         :param transition: Enable smooth transitions between frequency components
-        :type transition: Optional[bool]
         :param start_time: Start timestamp for generated series (ISO format: YYYY-MM-DD)
-        :type start_time: Optional[str]
         :param end_time: End timestamp for generated series. Uses current date if None.
-        :type end_time: Optional[str]
         :param random_walk: Enable random walk transformation for non-stationary series
-        :type random_walk: bool
+        :param exp_trend: Enable exponential trend transformation
         :param dtype: Numerical precision for output series
-        :type dtype: np.dtype
         """
         super().__init__(dtype=dtype)
         self.is_sub_day = is_sub_day
@@ -483,6 +485,9 @@ class ForecastPFN(BaseExcitation):
 
         # Global series configuration
         self._time_series_config: Optional[SeriesConfig] = None
+
+        # Whether to apply exponential trend transformation
+        self.exp_trend = exp_trend
 
     def __call__(
         self,
@@ -748,7 +753,7 @@ class ForecastPFN(BaseExcitation):
         freq_index: int = None,
         start: pd.Timestamp = None,
         options: Optional[dict] = None,
-        random_walk: bool = False,  # TODO: 是否可以添加为类属性
+        random_walk: bool = False,
     ) -> Dict[str, Union[pd.Series, np.ndarray, pd.DataFrame, DatetimeIndex]]:
         """
         Function to construct synthetic series configs and generate synthetic series.
@@ -793,7 +798,9 @@ class ForecastPFN(BaseExcitation):
         self._scale_config = self.get_component_scale_config(
             base=1.0,
             linear=rng.normal(loc=0.0, scale=0.01),
-            exp=rng.normal(loc=1.0, scale=0.005 / timescale),
+            exp=rng.normal(loc=1.0, scale=0.001 / timescale)
+            if self.exp_trend
+            else None,
             annual=self._annual,
             monthly=self._monthly,
             weekly=self._weekly,
@@ -805,7 +812,7 @@ class ForecastPFN(BaseExcitation):
         self._offset_config = self.get_component_scale_config(
             base=0.0,
             linear=rng.normal(loc=-0.1, scale=0.5),
-            exp=rng.normal(loc=-0.1, scale=0.5),
+            exp=rng.normal(loc=-0.1, scale=0.5 / timescale),
             annual=self._annual,
             monthly=self._monthly,
             weekly=self._weekly,
@@ -859,6 +866,9 @@ class ForecastPFN(BaseExcitation):
         :param options: Options dict for generating series.
         :return: The selected time series data with `np.ndarray`.
         """
+
+        # Generate two time series segments using the `generate_series` method.
+        # These segments will be used to create a transition series if the transition option is enabled.
         series1 = self.generate_series(
             rng=rng,
             length=length,
@@ -867,7 +877,6 @@ class ForecastPFN(BaseExcitation):
             options=options,
             random_walk=self.random_walk,
         )
-
         series2 = self.generate_series(
             rng=rng,
             length=length,
@@ -877,6 +886,9 @@ class ForecastPFN(BaseExcitation):
             random_walk=self.random_walk,
         )
 
+        # If transition is enabled,
+        # compute the transition coefficients and create a blended series that transitions from series1 to series2.
+        # Otherwise, use series1 directly.
         if self.transition:
             coefficients = get_transition_coefficients(context_length=length)
             values = (
@@ -942,13 +954,13 @@ class ForecastPFN(BaseExcitation):
             # 在这里检查是否存在NaN值，如果存在则重新生成，直到没有NaN值为止
             if np.any(np.isnan(generated_series)):
                 continue  # Skip this iteration and regenerate the series
-            
+
             # 如果生成的系列没有NaN值，则将其赋值到输出数组中，并继续生成下一个维度
             time_series[:, index] = generated_series
 
             # Increment the index to generate the next dimension
             index += 1
-            
+
         # for i in range(input_dimension):
         #     time_series[:, i] = self._select_ndarray_from_dict(
         #         rng=rng,
