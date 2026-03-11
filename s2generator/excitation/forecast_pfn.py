@@ -951,24 +951,18 @@ class ForecastPFN(BaseExcitation):
                 start=start,
                 options=options,
             )
-            # 在这里检查是否存在NaN值，如果存在则重新生成，直到没有NaN值为止
+
+            # Here, we check if NaN values ​​exist.
+            # If they do, we regenerate until no NaN values ​​are found.
             if np.any(np.isnan(generated_series)):
                 continue  # Skip this iteration and regenerate the series
 
-            # 如果生成的系列没有NaN值，则将其赋值到输出数组中，并继续生成下一个维度
+            # If the generated series does not contain NaN values,
+            # assign them to the output array and continue generating the next dimension.
             time_series[:, index] = generated_series
 
             # Increment the index to generate the next dimension
             index += 1
-
-        # for i in range(input_dimension):
-        #     time_series[:, i] = self._select_ndarray_from_dict(
-        #         rng=rng,
-        #         length=n_inputs_points,
-        #         freq_index=freq_index,
-        #         start=start,
-        #         options=options,
-        #     )
 
         return time_series
 
