@@ -11,6 +11,8 @@ __all__ = [
     "censor_augmentation",
     "empirical_mode_modulation",
     "frequency_perturbation",
+    "time_series_upsampling",
+    "time_series_downsampling",
     "spike_injection",
     "wiener_filter",
     "add_linear_trend",
@@ -28,6 +30,9 @@ from ._empirical_mode_modulation import empirical_mode_modulation
 
 # Import the frequency perturbation function
 from ._frequency_perturbation import frequency_perturbation
+
+# Import the resampling functions
+from ._resampling import time_series_upsampling, time_series_downsampling
 
 # Import the spike injection function
 from ._spike_injection import spike_injection
