@@ -16,6 +16,7 @@ __all__ = [
     "spike_injection",
     "wiener_filter",
     "add_linear_trend",
+    "value_flipping",
     "time_series_mixup",
 ]
 
@@ -41,4 +42,4 @@ from ._spike_injection import spike_injection
 from ._wiener_filter import wiener_filter
 
 # Import the time transformation functions
-from ._time_transformation import add_linear_trend, time_series_mixup
+from ._time_transformation import add_linear_trend, value_flipping, time_series_mixup

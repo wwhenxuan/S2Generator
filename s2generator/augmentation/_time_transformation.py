@@ -5,6 +5,8 @@ Created on 2026/03/05 16:19:59
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+__all__ = ["add_linear_trend", "value_flipping", "time_series_mixup"]
+
 import numpy as np
 
 
@@ -62,6 +64,20 @@ def add_linear_trend(
 
     # Average the original signal and the trend to maintain the overall scale
     return (time_series + trend) / 2
+
+
+def value_flipping(time_series: np.ndarray) -> np.ndarray:
+    """
+    Perform value flipping augmentation on the input time series.
+    The input and output series are both multiplied by -1,
+    thereby inverting their trends while preserving temporal dependencies.
+    This simple operation counteracts the model's tendency to latch onto persistent directional trends
+
+    :param time_series: Input time series, a 1D numpy array
+
+    :return: Augmented time series with flipped values, a 1D numpy array of the same length as the input series.
+    """
+    return -time_series
 
 
 def time_series_mixup(a: np.ndarray, b: np.ndarray, alpha: float = 0.7) -> np.ndarray:
