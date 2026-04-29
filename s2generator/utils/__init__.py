@@ -67,9 +67,6 @@ from ._tools import save_s2data, load_s2data
 # The Fast Fourier Transform
 from ._tools import fft, fftshift, ifft, ifftshift
 
-# The generate the time series data through the ARMA model
-from ._tools import generate_arma_samples, generate_nonstationary_sine
-
 # The EACF function to determine the order of ARMA model
 from ._tools import eacf_rlike
 
@@ -110,6 +107,9 @@ from ._decomposition import MovingDecomp
 
 # The Seasonal-Trend decomposition using LOESS (STL)
 from ._decomposition import STL, STLResult
+
+# The generate the time series data through the ARMA model
+from ._data import generate_arma_samples, generate_nonstationary_sine
 
 # The Shapiro-Wilk test for normality of the residuals
 from .visualization import (

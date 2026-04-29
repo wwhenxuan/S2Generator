@@ -27,8 +27,6 @@ __all__ = [
     "ifft",
     "fftshift",
     "ifftshift",
-    "generate_arma_samples",
-    "generate_nonstationary_sine",
     "eacf_rlike",
     "yule_walker",
     "linear_interpolation",

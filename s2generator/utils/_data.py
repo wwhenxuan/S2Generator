@@ -5,6 +5,11 @@ Created on 2025/08/23 17:09:18
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+__all__ = [
+    "generate_arma_samples",
+    "generate_nonstationary_sine",
+]
+
 from typing import Union, Tuple
 
 import numpy as np
