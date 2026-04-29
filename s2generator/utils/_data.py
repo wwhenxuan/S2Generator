@@ -19,86 +19,88 @@ import numpy as np
 
 
 def generate_arma_samples(
-    num_samples: int,
-    seq_len: int,
+    seq_length: int,
     phi1: float = 0.6,
     theta1: float = -0.4,
     sigma: float = 0.5,
     return_params: bool = False,
-) -> Union[np.ndarray, Tuple[np.ndarray, float, float, float]]:
+) -> Union[np.ndarray, Tuple[np.ndarray, Tuple[float, float, float]]]:
     """
-    Generate ARMA(1,1) stationary time series samples of shape [num_samples, seq_len].
+    Generate an ARMA(1,1) stationary one-dimensional time series.
 
-    :param num_samples: Number of samples to generate.
-    :param seq_len: Length of each time series sample.
+    :param seq_length: Length of the time series.
     :param phi1: AR(1) coefficient.
     :param theta1: MA(1) coefficient.
     :param sigma: Standard deviation of the white noise.
     :param return_params: Whether to return the parameters used for generation.
 
-    :return: Generated samples of shape [num_samples, seq_len]. If return_params is True, also returns the parameters (phi1, theta1, sigma).
+    :return: Generated one-dimensional time series. If return_params is True, also returns the parameters (phi1, theta1, sigma).
     """
-    samples = []
-    for _ in range(num_samples):
-        # Initialize white noise (excitation source) and time series
-        eps = np.random.normal(0, sigma, seq_len)  # White noise sequence
-        x = np.zeros(seq_len)
-        x[0] = eps[0]  # Initial value
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if sigma < 0:
+        raise ValueError("sigma must be non-negative")
 
-        # Recursively generate ARMA(1,1) sequence: Xt = phi1*Xt-1 + eps_t - theta1*eps_t-1
-        for t in range(1, seq_len):
-            x[t] = phi1 * x[t - 1] + eps[t] - theta1 * eps[t - 1]
-        samples.append(x)
+    # Initialize white noise (excitation source) and time series
+    eps = np.random.normal(0, sigma, seq_length)  # White noise sequence
+    x = np.zeros(seq_length)
+    x[0] = eps[0]  # Initial value
 
-    # Return generated samples and parameters
+    # Recursively generate ARMA(1,1) sequence: Xt = phi1*Xt-1 + eps_t - theta1*eps_t-1
+    for t in range(1, seq_length):
+        x[t] = phi1 * x[t - 1] + eps[t] - theta1 * eps[t - 1]
+
+    # Return generated sample and parameters
     if return_params:
-        return np.array(samples), (phi1, theta1, sigma)
-    return np.array(samples)
+        return x, (phi1, theta1, sigma)
+    return x
 
 
 def generate_nonstationary_sine(
-    num_samples: int,
-    seq_len: int,
+    seq_length: int,
     freq: float = 2.0,
     sample_rate: Union[int, float] = 100,
     amp: float = 1.5,
     return_params: bool = False,
 ) -> Union[np.ndarray, Tuple[np.ndarray, float, Union[int, float]]]:
-    """Generate non-stationary sine signals with linear trend of shape [num_samples, seq_len].
+    """Generate a non-stationary sine signal with linear trend.
 
-    :param num_samples: Number of samples to generate.
-    :param seq_len: Length of each time series sample.
+    :param seq_length: Length of the time series.
     :param freq: Frequency of the sine wave.
     :param sample_rate: Sampling rate of the time series.
     :param amp: Amplitude of the sine wave.
     :param return_params: Whether to return the parameters used for generation.
 
-    :return: Generated non-stationary sine wave samples of shape [num_samples, seq_len], frequency, and sample rate.
+    :return: Generated one-dimensional non-stationary sine wave, frequency, and sample rate.
     """
-    t = np.linspace(0, seq_len / sample_rate, seq_len, endpoint=False)
-    nonstationary_samples = []
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if freq < 0:
+        raise ValueError("freq must be non-negative")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
 
-    for _ in range(num_samples):
-        phase = np.random.uniform(0, 2 * np.pi)
+    t = np.linspace(0, seq_length / sample_rate, seq_length, endpoint=False)
+    phase = np.random.uniform(0, 2 * np.pi)
 
-        # Sine signal + linear trend (causing non-stationarity) + small noise
-        sine_seq = amp * np.sin(2 * np.pi * freq * t + phase)
+    # Sine signal + linear trend (causing non-stationarity) + small noise
+    sine_seq = amp * np.sin(2 * np.pi * freq * t + phase)
 
-        # Linear trend: increases over time, core source of non-stationarity
-        trend = 0.1 * t
-        noise = np.random.normal(0, 0.05, seq_len)
-        nonstationary_seq = sine_seq + trend + noise
-        nonstationary_samples.append(nonstationary_seq)
+    # Linear trend: increases over time, core source of non-stationarity
+    trend = 0.1 * t
+    noise = np.random.normal(0, 0.05, seq_length)
+    nonstationary_seq = sine_seq + trend + noise
 
-    # Return generated samples and parameters
+    # Return generated sample and parameters
     if return_params:
-        return np.array(nonstationary_samples), freq, sample_rate
-    return np.array(nonstationary_samples)
+        return nonstationary_seq, freq, sample_rate
+    return nonstationary_seq
 
 
 def generate_variable_frequency_sine(
-    num_samples: int,
-    seq_len: int,
+    seq_length: int,
     start_freq: float = 1.0,
     end_freq: float = 5.0,
     sample_rate: Union[int, float] = 100,
@@ -106,10 +108,9 @@ def generate_variable_frequency_sine(
     noise_std: float = 0.05,
     return_params: bool = False,
 ) -> Union[np.ndarray, Tuple[np.ndarray, float, float, Union[int, float]]]:
-    """Generate sine signals with time-varying frequency of shape [num_samples, seq_len].
+    """Generate a sine signal with time-varying frequency.
 
-    :param num_samples: Number of samples to generate.
-    :param seq_len: Length of each time series sample.
+    :param seq_length: Length of the time series.
     :param start_freq: Initial frequency of the sine wave.
     :param end_freq: Final frequency of the sine wave.
     :param sample_rate: Sampling rate of the time series.
@@ -117,35 +118,41 @@ def generate_variable_frequency_sine(
     :param noise_std: Standard deviation of the Gaussian noise added to the signal.
     :param return_params: Whether to return the parameters used for generation.
 
-    :return: Generated variable-frequency sine wave samples of shape [num_samples, seq_len], start frequency, end frequency, and sample rate.
+    :return: Generated one-dimensional variable-frequency sine wave, start frequency, end frequency, and sample rate.
     """
-    freq_progress = np.linspace(0, 1, seq_len)
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if start_freq < 0 or end_freq < 0:
+        raise ValueError("start_freq and end_freq must be non-negative")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    freq_progress = np.linspace(0, 1, seq_length)
     instantaneous_freq = start_freq + (end_freq - start_freq) * freq_progress
-    variable_frequency_samples = []
+    phase = np.random.uniform(0, 2 * np.pi)
 
-    for _ in range(num_samples):
-        phase = np.random.uniform(0, 2 * np.pi)
+    # Integrate instantaneous frequency to keep the sine signal continuous
+    instantaneous_phase = (
+        phase + 2 * np.pi * np.cumsum(instantaneous_freq) / sample_rate
+    )
+    sine_seq = amp * np.sin(instantaneous_phase)
 
-        # Integrate instantaneous frequency to keep the sine signal continuous
-        instantaneous_phase = (
-            phase + 2 * np.pi * np.cumsum(instantaneous_freq) / sample_rate
-        )
-        sine_seq = amp * np.sin(instantaneous_phase)
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    variable_frequency_seq = sine_seq + noise
 
-        # Add small noise to make generated samples more realistic
-        noise = np.random.normal(0, noise_std, seq_len)
-        variable_frequency_seq = sine_seq + noise
-        variable_frequency_samples.append(variable_frequency_seq)
-
-    # Return generated samples and parameters
+    # Return generated sample and parameters
     if return_params:
-        return np.array(variable_frequency_samples), start_freq, end_freq, sample_rate
-    return np.array(variable_frequency_samples)
+        return variable_frequency_seq, start_freq, end_freq, sample_rate
+    return variable_frequency_seq
 
 
 def generate_sine_with_local_frequency_changes(
-    num_samples: int,
-    seq_len: int,
+    seq_length: int,
     base_freq: float = 2.0,
     sample_rate: Union[int, float] = 100,
     amp: float = 1.5,
@@ -155,15 +162,14 @@ def generate_sine_with_local_frequency_changes(
     directions: Optional[Union[str, Sequence[str]]] = None,
     noise_std: float = 0.05,
     return_params: bool = False,
-) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray, float, Union[int, float]],]:
-    """Generate sine signals with local frequency changes of shape [num_samples, seq_len].
+) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray, float, Union[int, float]]]:
+    """Generate a sine signal with local frequency changes.
 
     The frequency starts from ``base_freq``. Users can specify several sequence
     positions by percentile values, and the frequency will be increased or decreased
     within a local range around each specified position.
 
-    :param num_samples: Number of samples to generate.
-    :param seq_len: Length of each time series sample.
+    :param seq_length: Length of the time series.
     :param base_freq: Base frequency of the sine wave.
     :param sample_rate: Sampling rate of the time series.
     :param amp: Amplitude of the sine wave.
@@ -182,14 +188,11 @@ def generate_sine_with_local_frequency_changes(
     :param return_params: Whether to return the instantaneous frequency sequence
                           and generation parameters.
 
-    :return: Generated sine wave samples of shape [num_samples, seq_len]. If
-             return_params is True, also returns the instantaneous frequency
-             sequence, base frequency, and sample rate.
+    :return: Generated one-dimensional sine wave. If return_params is True, also
+             returns the instantaneous frequency sequence, base frequency, and sample rate.
     """
-    if num_samples <= 0:
-        raise ValueError("num_samples must be a positive integer")
-    if seq_len <= 0:
-        raise ValueError("seq_len must be a positive integer")
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
     if base_freq < 0:
         raise ValueError("base_freq must be non-negative")
     if sample_rate <= 0:
@@ -199,7 +202,7 @@ def generate_sine_with_local_frequency_changes(
     if noise_std < 0:
         raise ValueError("noise_std must be non-negative")
 
-    instantaneous_freq = np.full(seq_len, base_freq, dtype=float)
+    instantaneous_freq = np.full(seq_length, base_freq, dtype=float)
 
     if change_positions is not None:
         positions = list(change_positions)
@@ -250,10 +253,10 @@ def generate_sine_with_local_frequency_changes(
                     "directions must contain only 'increase' or 'decrease'"
                 )
 
-            center_idx = int(round(position * (seq_len - 1)))
-            half_width = max(1, int(round(range_percent * seq_len / 2)))
+            center_idx = int(round(position * (seq_length - 1)))
+            half_width = max(1, int(round(range_percent * seq_length / 2)))
             start_idx = max(0, center_idx - half_width)
-            end_idx = min(seq_len, center_idx + half_width + 1)
+            end_idx = min(seq_length, center_idx + half_width + 1)
 
             factor = (
                 1.0 + change_percent
@@ -263,51 +266,45 @@ def generate_sine_with_local_frequency_changes(
             factor = max(0.0, factor)
             instantaneous_freq[start_idx:end_idx] *= factor
 
-    samples = []
-    for _ in range(num_samples):
-        phase = np.random.uniform(0, 2 * np.pi)
+    phase = np.random.uniform(0, 2 * np.pi)
 
-        # Integrate instantaneous frequency to keep the sine signal continuous
-        instantaneous_phase = (
-            phase + 2 * np.pi * np.cumsum(instantaneous_freq) / sample_rate
-        )
-        sine_seq = amp * np.sin(instantaneous_phase)
+    # Integrate instantaneous frequency to keep the sine signal continuous
+    instantaneous_phase = (
+        phase + 2 * np.pi * np.cumsum(instantaneous_freq) / sample_rate
+    )
+    sine_seq = amp * np.sin(instantaneous_phase)
 
-        # Add small noise to make generated samples more realistic
-        noise = np.random.normal(0, noise_std, seq_len)
-        samples.append(sine_seq + noise)
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    sample = sine_seq + noise
 
-    # Return generated samples and parameters
+    # Return generated sample and parameters
     if return_params:
-        return np.array(samples), instantaneous_freq, base_freq, sample_rate
-    return np.array(samples)
+        return sample, instantaneous_freq, base_freq, sample_rate
+    return sample
 
 
 def generate_triangle_wave(
-    num_samples: int,
-    seq_len: int,
+    seq_length: int,
     freq: float = 2.0,
     sample_rate: Union[int, float] = 100,
     amp: float = 1.5,
     noise_std: float = 0.05,
     return_params: bool = False,
 ) -> Union[np.ndarray, Tuple[np.ndarray, float, Union[int, float]]]:
-    """Generate triangle wave signals of shape [num_samples, seq_len].
+    """Generate a one-dimensional triangle wave signal.
 
-    :param num_samples: Number of samples to generate.
-    :param seq_len: Length of each time series sample.
+    :param seq_length: Length of the time series.
     :param freq: Frequency of the triangle wave.
     :param sample_rate: Sampling rate of the time series.
     :param amp: Amplitude of the triangle wave.
     :param noise_std: Standard deviation of the Gaussian noise added to the signal.
     :param return_params: Whether to return the parameters used for generation.
 
-    :return: Generated triangle wave samples of shape [num_samples, seq_len], frequency, and sample rate.
+    :return: Generated one-dimensional triangle wave, frequency, and sample rate.
     """
-    if num_samples <= 0:
-        raise ValueError("num_samples must be a positive integer")
-    if seq_len <= 0:
-        raise ValueError("seq_len must be a positive integer")
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
     if freq < 0:
         raise ValueError("freq must be non-negative")
     if sample_rate <= 0:
@@ -317,32 +314,27 @@ def generate_triangle_wave(
     if noise_std < 0:
         raise ValueError("noise_std must be non-negative")
 
-    t = np.linspace(0, seq_len / sample_rate, seq_len, endpoint=False)
-    triangle_samples = []
+    t = np.linspace(0, seq_length / sample_rate, seq_length, endpoint=False)
+    phase = np.random.uniform(0, 1)
 
-    for _ in range(num_samples):
-        phase = np.random.uniform(0, 1)
+    # Generate a triangle wave in the range [-amp, amp]
+    cycle_position = (freq * t + phase) % 1
+    triangle_seq = amp * (4 * np.abs(cycle_position - 0.5) - 1)
 
-        # Generate a triangle wave in the range [-amp, amp]
-        cycle_position = (freq * t + phase) % 1
-        triangle_seq = amp * (4 * np.abs(cycle_position - 0.5) - 1)
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    triangle_sample = triangle_seq + noise
 
-        # Add small noise to make generated samples more realistic
-        noise = np.random.normal(0, noise_std, seq_len)
-        triangle_samples.append(triangle_seq + noise)
-
-    # Return generated samples and parameters
+    # Return generated sample and parameters
     if return_params:
-        return np.array(triangle_samples), freq, sample_rate
-    return np.array(triangle_samples)
-
+        return triangle_sample, freq, sample_rate
+    return triangle_sample
 
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
-    samples = generate_sine_with_local_frequency_changes(
-        2,
+    sample = generate_sine_with_local_frequency_changes(
         1000,
         base_freq=12.0,
         change_positions=[0.3, 0.7],
@@ -350,7 +342,5 @@ if __name__ == "__main__":
         change_percents=[0.9, 0.9],
         directions=["increase", "decrease"],
     )
-    fig, ax = plt.subplots(2, 1, figsize=(10, 5), dpi=160, sharex=True)
-    ax[0].plot(samples[0])
-    ax[1].plot(samples[1])
+    plt.plot(sample)
     plt.show()
