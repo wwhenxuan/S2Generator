@@ -11,6 +11,8 @@ __all__ = [
     "generate_variable_frequency_sine",
     "generate_sine_with_local_frequency_changes",
     "generate_triangle_wave",
+    "generate_square_wave",
+    "generate_sawtooth_wave",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -331,16 +333,67 @@ def generate_triangle_wave(
     return triangle_sample
 
 
+def generate_square_wave(
+    seq_length: int,
+    freq: float = 2.0,
+    sample_rate: Union[int, float] = 100,
+    amp: float = 1.5,
+    duty_cycle: float = 0.5,
+    noise_std: float = 0.05,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, float, Union[int, float]]]:
+    """Generate a one-dimensional square wave signal.
+
+    :param seq_length: Length of the time series.
+    :param freq: Frequency of the square wave.
+    :param sample_rate: Sampling rate of the time series.
+    :param amp: Amplitude of the square wave.
+    :param duty_cycle: Fraction of each cycle where the signal stays at the positive amplitude.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional square wave, frequency, and sample rate.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if freq < 0:
+        raise ValueError("freq must be non-negative")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if not 0 < duty_cycle < 1:
+        raise ValueError("duty_cycle must be in (0, 1)")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    t = np.linspace(0, seq_length / sample_rate, seq_length, endpoint=False)
+    phase = np.random.uniform(0, 1)
+
+    # Generate a square wave in the range [-amp, amp]
+    cycle_position = (freq * t + phase) % 1
+    square_seq = np.where(cycle_position < duty_cycle, amp, -amp)
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    square_sample = square_seq + noise
+
+    # Return generated sample and parameters
+    if return_params:
+        return square_sample, freq, sample_rate
+    return square_sample
+
+
+
+
+
+def generate_damped_oscillation():
+    pass
+
+
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
-    sample = generate_sine_with_local_frequency_changes(
-        1000,
-        base_freq=12.0,
-        change_positions=[0.3, 0.7],
-        change_ranges=[0.1, 0.1],
-        change_percents=[0.9, 0.9],
-        directions=["increase", "decrease"],
-    )
+    sample = generate_sawtooth_wave(1000, noise_std=0)
     plt.plot(sample)
     plt.show()
