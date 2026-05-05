@@ -384,7 +384,66 @@ def generate_square_wave(
     return square_sample
 
 
+def generate_sawtooth_wave(
+    seq_length: int,
+    freq: float = 2.0,
+    sample_rate: Union[int, float] = 100,
+    amp: float = 1.5,
+    width: float = 1.0,
+    noise_std: float = 0.05,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, float, Union[int, float]]]:
+    """Generate a one-dimensional sawtooth wave signal.
 
+    :param seq_length: Length of the time series.
+    :param freq: Frequency of the sawtooth wave.
+    :param sample_rate: Sampling rate of the time series.
+    :param amp: Amplitude of the sawtooth wave.
+    :param width: Fraction of each cycle used for the rising ramp. A value of 1.0
+                  produces a standard rising sawtooth wave, while 0.0 produces a
+                  falling sawtooth wave.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional sawtooth wave, frequency, and sample rate.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if freq < 0:
+        raise ValueError("freq must be non-negative")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if not 0 <= width <= 1:
+        raise ValueError("width must be in [0, 1]")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    t = np.linspace(0, seq_length / sample_rate, seq_length, endpoint=False)
+    phase = np.random.uniform(0, 1)
+
+    # Generate a sawtooth wave in the range [-amp, amp]
+    cycle_position = (freq * t + phase) % 1
+    if width == 0:
+        sawtooth_seq = amp * (1 - 2 * cycle_position)
+    elif width == 1:
+        sawtooth_seq = amp * (2 * cycle_position - 1)
+    else:
+        sawtooth_seq = amp * np.where(
+            cycle_position < width,
+            2 * cycle_position / width - 1,
+            1 - 2 * (cycle_position - width) / (1 - width),
+        )
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    sawtooth_sample = sawtooth_seq + noise
+
+    # Return generated sample and parameters
+    if return_params:
+        return sawtooth_sample, freq, sample_rate
+    return sawtooth_sample
 
 
 def generate_damped_oscillation():
