@@ -13,6 +13,7 @@ __all__ = [
     "generate_triangle_wave",
     "generate_square_wave",
     "generate_sawtooth_wave",
+    "generate_damped_oscillation",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -446,13 +447,77 @@ def generate_sawtooth_wave(
     return sawtooth_sample
 
 
-def generate_damped_oscillation():
-    pass
+def generate_damped_oscillation(
+    seq_length: int,
+    freq: float = 2.0,
+    damping_factor: float = 0.05,
+    sample_rate: Union[int, float] = 100,
+    amp: float = 1.5,
+    noise_std: float = 0.05,
+    flip: bool = False,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, float, float, Union[int, float], bool]]:
+    """Generate a one-dimensional damped oscillation signal.
+
+    A damped oscillation is formed by multiplying a sine wave by an exponential
+    decay envelope, so the amplitude gradually decreases over time.
+
+    :param seq_length: Length of the time series.
+    :param freq: Frequency of the oscillation.
+    :param damping_factor: Exponential damping factor controlling how quickly the amplitude decays.
+    :param sample_rate: Sampling rate of the time series.
+    :param amp: Initial amplitude of the oscillation.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param flip: Whether to flip the damping direction so the envelope grows over time.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional damped oscillation, frequency, damping factor, sample rate, and flip flag.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if freq < 0:
+        raise ValueError("freq must be non-negative")
+    if damping_factor < 0:
+        raise ValueError("damping_factor must be non-negative")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    t = np.linspace(0, seq_length / sample_rate, seq_length, endpoint=False)
+    phase = np.random.uniform(0, 2 * np.pi)
+
+    # Generate exponential damping envelope and optionally flip its direction
+    envelope = np.exp(-damping_factor * t)
+    damped_seq = amp * envelope * np.sin(2 * np.pi * freq * t + phase)
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    damped_sample = damped_seq + noise
+
+    # Return generated sample and parameters
+    if return_params:
+        if flip:
+            return np.flip(damped_sample), freq, damping_factor, sample_rate, flip
+        else:
+            return damped_sample, freq, damping_factor, sample_rate, flip
+
+    if flip:
+        return np.flip(damped_sample)
+    else:
+        return damped_sample
 
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
-    sample = generate_sawtooth_wave(1000, noise_std=0)
+    a = np.array([1, 2, 3])
+    print(a[::-1])
+
+    sample = generate_damped_oscillation(
+        1000, freq=4, damping_factor=0.1, noise_std=0, flip=True
+    )
     plt.plot(sample)
     plt.show()
