@@ -27,8 +27,6 @@ __all__ = [
     "ifft",
     "fftshift",
     "ifftshift",
-    "generate_arma_samples",
-    "generate_nonstationary_sine",
     "eacf_rlike",
     "yule_walker",
     "linear_interpolation",
@@ -396,84 +394,6 @@ def ifftshift(array: np.ndarray) -> np.ndarray:
     return np_fft.ifftshift(array)
 
 
-def generate_arma_samples(
-    num_samples: int,
-    seq_len: int,
-    phi1: float = 0.6,
-    theta1: float = -0.4,
-    sigma: float = 0.5,
-    return_params: bool = False,
-) -> Union[np.ndarray, Tuple[np.ndarray, float, float, float]]:
-    """
-    Generate ARMA(1,1) stationary time series samples of shape [num_samples, seq_len].
-
-    :param num_samples: Number of samples to generate.
-    :param seq_len: Length of each time series sample.
-    :param phi1: AR(1) coefficient.
-    :param theta1: MA(1) coefficient.
-    :param sigma: Standard deviation of the white noise.
-    :param return_params: Whether to return the parameters used for generation.
-
-    :return: Generated samples of shape [num_samples, seq_len]. If return_params is True, also returns the parameters (phi1, theta1, sigma).
-    """
-    samples = []
-    for _ in range(num_samples):
-        # Initialize white noise (excitation source) and time series
-        eps = np.random.normal(0, sigma, seq_len)  # White noise sequence
-        x = np.zeros(seq_len)
-        x[0] = eps[0]  # Initial value
-
-        # Recursively generate ARMA(1,1) sequence: Xt = phi1*Xt-1 + eps_t - theta1*eps_t-1
-        for t in range(1, seq_len):
-            x[t] = phi1 * x[t - 1] + eps[t] - theta1 * eps[t - 1]
-        samples.append(x)
-
-    # Return generated samples and parameters
-    if return_params:
-        return np.array(samples), (phi1, theta1, sigma)
-    return np.array(samples)
-
-
-def generate_nonstationary_sine(
-    num_samples: int,
-    seq_len: int,
-    freq: float = 2.0,
-    sample_rate: Union[int, float] = 100,
-    amp: float = 1.5,
-    return_params: bool = False,
-) -> Union[np.ndarray, Tuple[np.ndarray, float, Union[int, float]]]:
-    """Generate non-stationary sine signals with linear trend of shape [num_samples, seq_len].
-
-    :param num_samples: Number of samples to generate.
-    :param seq_len: Length of each time series sample.
-    :param freq: Frequency of the sine wave.
-    :param sample_rate: Sampling rate of the time series.
-    :param amp: Amplitude of the sine wave.
-    :param return_params: Whether to return the parameters used for generation.
-
-    :return: Generated non-stationary sine wave samples of shape [num_samples, seq_len], frequency, and sample rate.
-    """
-    t = np.linspace(0, seq_len / sample_rate, seq_len, endpoint=False)
-    nonstationary_samples = []
-
-    for _ in range(num_samples):
-        phase = np.random.uniform(0, 2 * np.pi)
-
-        # Sine signal + linear trend (causing non-stationarity) + small noise
-        sine_seq = amp * np.sin(2 * np.pi * freq * t + phase)
-
-        # Linear trend: increases over time, core source of non-stationarity
-        trend = 0.1 * t
-        noise = np.random.normal(0, 0.05, seq_len)
-        nonstationary_seq = sine_seq + trend + noise
-        nonstationary_samples.append(nonstationary_seq)
-
-    # Return generated samples and parameters
-    if return_params:
-        return np.array(nonstationary_samples), freq, sample_rate
-    return np.array(nonstationary_samples)
-
-
 def eacf_rlike(
     time_series: Union[np.ndarray, list, pd.Series], max_ar: int = 5, max_ma: int = 5
 ) -> Tuple[np.ndarray, float, pd.DataFrame]:
@@ -598,21 +518,23 @@ def linear_interpolation(
     x_known: np.ndarray, y_known: np.ndarray, x_new: np.ndarray
 ) -> np.ndarray:
     """
-    线性插值函数
-    :param x_known: 已知离散点的x坐标（时间点），numpy数组
-    :param y_known: 已知离散点的y坐标，numpy数组
-    :param x_new: 需要插值的新x坐标，numpy数组或单个数值
-    :return: 插值后的y_new值，与x_new形状相同
-    """
-    # 输入校验
-    if len(x_known) != len(y_known):
-        raise ValueError("x_known和y_known的长度必须相等")
-    if np.any(np.diff(x_known) <= 0):
-        raise ValueError("x_known必须是严格递增的序列")
+    Linear interpolation function.
 
-    # 创建线性插值器
+    :param x_known: x-coordinates of known discrete points (time points), as a NumPy array
+    :param y_known: y-coordinates of known discrete points, as a NumPy array
+    :param x_new: new x-coordinates to interpolate, as a NumPy array or a single value
+
+    :return: interpolated y_new values with the same shape as x_new
+    """
+    # Input validation
+    if len(x_known) != len(y_known):
+        raise ValueError("x_known and y_known must have the same length")
+    if np.any(np.diff(x_known) <= 0):
+        raise ValueError("x_known must be a strictly increasing sequence")
+
+    # Create a linear interpolator
     linear_interp = interp1d(x_known, y_known, kind="linear", fill_value="extrapolate")
-    # 计算插值结果
+    # Calculate interpolation results
     y_new = linear_interp(x_new)
     return y_new
 
@@ -621,45 +543,47 @@ def cubic_spline_interpolation(
     x_known: np.ndarray, y_known: np.ndarray, x_new: np.ndarray
 ) -> np.ndarray:
     """
-    三次样条插值函数
-    :param x_known: 已知离散点的x坐标（时间点），numpy数组
-    :param y_known: 已知离散点的y坐标，numpy数组
-    :param x_new: 需要插值的新x坐标，numpy数组或单个数值
-    :return: 插值后的y_new值，与x_new形状相同
-    """
-    # 输入校验
-    if len(x_known) != len(y_known):
-        raise ValueError("x_known和y_known的长度必须相等")
-    if len(x_known) < 3:
-        raise ValueError("三次样条插值需要至少3个已知点")
-    if np.any(np.diff(x_known) <= 0):
-        raise ValueError("x_known必须是严格递增的序列")
+    Cubic spline interpolation function.
 
-    # 创建三次样条插值器
+    :param x_known: x-coordinates of known discrete points (time points), as a NumPy array
+    :param y_known: y-coordinates of known discrete points, as a NumPy array
+    :param x_new: new x-coordinates to interpolate, as a NumPy array or a single value
+
+    :return: interpolated y_new values with the same shape as x_new
+    """
+    # Input validation
+    if len(x_known) != len(y_known):
+        raise ValueError("x_known and y_known must have the same length")
+    if len(x_known) < 3:
+        raise ValueError("Cubic spline interpolation requires at least 3 known points")
+    if np.any(np.diff(x_known) <= 0):
+        raise ValueError("x_known must be a strictly increasing sequence")
+
+    # Create a cubic spline interpolator
     spline_interp = interp1d(x_known, y_known, kind="cubic", fill_value="extrapolate")
-    # 计算插值结果
+    # Calculate interpolation results
     y_new = spline_interp(x_new)
     return y_new
 
 
 def lagrange_interpolation(x_known: np.ndarray, y_known: np.ndarray, x_new: np.ndarray):
     """
-    拉格朗日插值函数（兼容所有scipy版本）
-    :param x_known: 已知离散点的x坐标（时间点），numpy数组
-    :param y_known: 已知离散点的y坐标，numpy数组
-    :param x_new: 需要插值的新x坐标，numpy数组或单个数值
-    :return: 插值后的y_new值，与x_new形状相同
+    Lagrange interpolation function (compatible with all SciPy versions).
+    :param x_known: x-coordinates of known discrete points (time points), as a NumPy array
+    :param y_known: y-coordinates of known discrete points, as a NumPy array
+    :param x_new: new x-coordinates to interpolate, as a NumPy array or a single value
+    :return: interpolated y_new values with the same shape as x_new
     """
-    # 输入校验
+    # Input validation
     if len(x_known) != len(y_known):
-        raise ValueError("x_known和y_known的长度必须相等")
+        raise ValueError("x_known and y_known must have the same length")
     if len(x_known) < 2:
-        raise ValueError("拉格朗日插值需要至少2个已知点")
+        raise ValueError("Lagrange interpolation requires at least 2 known points")
     if len(np.unique(x_known)) != len(x_known):
-        raise ValueError("x_known中不能有重复的坐标点")
+        raise ValueError("x_known must not contain duplicate coordinate points")
 
-    # 创建拉格朗日插值多项式（兼容旧版本scipy）
+    # Create a Lagrange interpolation polynomial (compatible with older SciPy versions)
     lagrange_poly = lagrange(x_known, y_known)
-    # 计算插值结果（polyval支持单个值或数组输入）
+    # Calculate interpolation results (polyval supports single values or array inputs)
     y_new = np.polyval(lagrange_poly, x_new)
     return y_new

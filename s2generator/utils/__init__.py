@@ -18,8 +18,6 @@ __all__ = [
     "get_time_now",
     "save_s2data",
     "load_s2data",
-    "generate_arma_samples",
-    "generate_nonstationary_sine",
     "eacf_rlike",
     "yule_walker",
     "linear_interpolation",
@@ -47,6 +45,23 @@ __all__ = [
     "plot_symbol",
     "plot_shapiro_wilk",
     "plot_simulator_statistics",
+    "generate_arma_samples",
+    "generate_nonstationary_sine",
+    "generate_variable_frequency_sine",
+    "generate_sine_with_local_frequency_changes",
+    "generate_triangle_wave",
+    "generate_square_wave",
+    "generate_sawtooth_wave",
+    "generate_damped_oscillation",
+    "generate_chirp_signal",
+    "generate_impulse_signal",
+    "generate_step_signal",
+    "generate_ramp_signal",
+    "generate_exponential_signal",
+    "generate_logarithmic_signal",
+    "generate_stock_price",
+    "generate_electrocardiogram",
+    "generate_electroencephalogram",
 ]
 
 # Transform the symbol from string to latex
@@ -66,9 +81,6 @@ from ._tools import save_s2data, load_s2data
 
 # The Fast Fourier Transform
 from ._tools import fft, fftshift, ifft, ifftshift
-
-# The generate the time series data through the ARMA model
-from ._tools import generate_arma_samples, generate_nonstationary_sine
 
 # The EACF function to determine the order of ARMA model
 from ._tools import eacf_rlike
@@ -118,4 +130,25 @@ from .visualization import (
     plot_symbol,
     plot_shapiro_wilk,
     plot_simulator_statistics,
+)
+
+# The generate the time series data through the ARMA model
+from ._data import (
+    generate_arma_samples,
+    generate_nonstationary_sine,
+    generate_variable_frequency_sine,
+    generate_sine_with_local_frequency_changes,
+    generate_triangle_wave,
+    generate_square_wave,
+    generate_sawtooth_wave,
+    generate_damped_oscillation,
+    generate_chirp_signal,
+    generate_impulse_signal,
+    generate_step_signal,
+    generate_ramp_signal,
+    generate_exponential_signal,
+    generate_logarithmic_signal,
+    generate_stock_price,
+    generate_electrocardiogram,
+    generate_electroencephalogram,
 )

@@ -798,9 +798,9 @@ class ForecastPFN(BaseExcitation):
         self._scale_config = self.get_component_scale_config(
             base=1.0,
             linear=rng.normal(loc=0.0, scale=0.01),
-            exp=rng.normal(loc=1.0, scale=0.001 / timescale)
-            if self.exp_trend
-            else None,
+            exp=(
+                rng.normal(loc=1.0, scale=0.001 / timescale) if self.exp_trend else None
+            ),
             annual=self._annual,
             monthly=self._monthly,
             weekly=self._weekly,
