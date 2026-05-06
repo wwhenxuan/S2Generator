@@ -21,6 +21,7 @@ __all__ = [
     "generate_exponential_signal",
     "generate_logarithmic_signal",
     "generate_stock_price",
+    "generate_electrocardiogram",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -984,8 +985,82 @@ def generate_stock_price(
     return prices
 
 
-def generate_electrocardiogram():
-    pass
+def generate_electrocardiogram(
+    seq_length: int,
+    heart_rate: float = 72.0,
+    sample_rate: Union[int, float] = 250,
+    amp: float = 1.0,
+    noise_std: float = 0.01,
+    baseline_wander_amp: float = 0.05,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, float, Union[int, float], float]]:
+    """Generate a one-dimensional simulated electrocardiogram (ECG) signal.
+
+    The ECG waveform is synthesized beat-by-beat using a sum of Gaussian
+    components corresponding to the P wave, Q wave, R wave, S wave, and T wave,
+    with optional baseline wander and additive Gaussian noise.
+
+    :param seq_length: Length of the time series.
+    :param heart_rate: Heart rate in beats per minute.
+    :param sample_rate: Sampling rate of the time series.
+    :param amp: Global amplitude scaling factor of the ECG waveform.
+    :param noise_std: Standard deviation of additive Gaussian noise.
+    :param baseline_wander_amp: Amplitude of low-frequency baseline wander.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional ECG signal. If return_params is True,
+             also returns the heart rate, sample rate, and amplitude.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if heart_rate <= 0:
+        raise ValueError("heart_rate must be positive")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+    if baseline_wander_amp < 0:
+        raise ValueError("baseline_wander_amp must be non-negative")
+
+    t = np.arange(seq_length) / sample_rate
+    beat_period = 60.0 / heart_rate
+    signal = np.zeros(seq_length, dtype=float)
+
+    # A simple physiological template using Gaussian components.
+    # Each tuple is (relative_position, relative_width, relative_amplitude).
+    wave_components = [
+        (0.18, 0.040, 0.12),  # P wave
+        (0.36, 0.012, -0.15),  # Q wave
+        (0.40, 0.010, 1.00),  # R wave
+        (0.44, 0.014, -0.25),  # S wave
+        (0.68, 0.080, 0.35),  # T wave
+    ]
+
+    beat_starts = np.arange(0.0, t[-1] + beat_period, beat_period)
+    for beat_start in beat_starts:
+        for rel_pos, rel_width, rel_amp in wave_components:
+            center = beat_start + rel_pos * beat_period
+            width = max(rel_width * beat_period, 1e-6)
+            signal += rel_amp * np.exp(-0.5 * ((t - center) / width) ** 2)
+
+    signal *= amp
+
+    if baseline_wander_amp > 0:
+        baseline_freq = np.random.uniform(0.15, 0.35)
+        baseline_phase = np.random.uniform(0, 2 * np.pi)
+        signal += baseline_wander_amp * np.sin(
+            2 * np.pi * baseline_freq * t + baseline_phase
+        )
+
+    if noise_std > 0:
+        signal += np.random.normal(0, noise_std, seq_length)
+
+    # Return generated sample and parameters
+    if return_params:
+        return signal, heart_rate, sample_rate, amp
+    return signal
 
 
 def generate_electroencephalogram():
@@ -994,9 +1069,6 @@ def generate_electroencephalogram():
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
-
-    a = np.array([1, 2, 3])
-    print(a[::-1])
 
     # sample = generate_ramp_signal(
     #     1000, start_position=[0.1, 0.5], end_position=[0.3, 0.7], ramp_height=[1, -1]
@@ -1013,6 +1085,7 @@ if __name__ == "__main__":
     #     growth_rate=1,
     #     noise_std=0.05,
     # )
-    sample = generate_stock_price(1000)
+    # sample = generate_stock_price(1000)
+    sample = generate_electrocardiogram(1000)
     plt.plot(sample)
     plt.show()
