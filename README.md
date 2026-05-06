@@ -18,6 +18,8 @@ This method allows for the unrestricted creation of high-quality time series dat
 
 ### 🔥 News
 
+**[May. 2026]** We updated [the regular time-series data generation module](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/utils/_data.py) with multiple generation methods for regular time-series patterns.
+
 **[Feb. 2026]** Since all stationary time series can be obtained by exciting a linear time-invariant system with white noise, we propose [a learnable series generation method](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/arima.py) based on the ARIMA model. This method ensures the generated series is highly similar to the inputs in autocorrelation and power spectrum density.
 
 **[Sep. 2025]** Our paper "Synthetic Series-Symbol Data Generation for Time Series Foundation Models" has been accepted by **NeurIPS 2025**, where **[*SymTime*](https://arxiv.org/abs/2502.15466)** pre-trained on the $S^2$ synthetic dataset achieved SOTA results in fine-tuning of forecasting, classification, imputation and anomaly detection tasks.
