@@ -19,6 +19,7 @@ __all__ = [
     "generate_step_signal",
     "generate_ramp_signal",
     "generate_exponential_signal",
+    "generate_logarithmic_signal",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -849,8 +850,72 @@ def generate_exponential_signal(
     return exponential_sample
 
 
-def generate_logarithmic_signal():
-    pass
+def generate_logarithmic_signal(
+    seq_length: int,
+    sample_rate: Union[int, float] = 100,
+    amp: float = 1.5,
+    offset: float = 0.0,
+    log_base: float = np.e,
+    growth_rate: float = 1.0,
+    shift: float = 1.0,
+    normalize: bool = False,
+    noise_std: float = 0.05,
+    return_params: bool = False,
+) -> Union[
+    np.ndarray,
+    Tuple[np.ndarray, Union[int, float], float, float, float, float],
+]:
+    """Generate a one-dimensional logarithmic signal.
+
+    :param seq_length: Length of the time series.
+    :param sample_rate: Sampling rate of the time series.
+    :param amp: Amplitude multiplier of the logarithmic signal.
+    :param offset: Constant offset added to the signal.
+    :param log_base: Base of the logarithm. Must be positive and not equal to 1.
+    :param growth_rate: Scaling factor applied to time before the logarithm.
+    :param shift: Positive shift added inside the logarithm to avoid invalid values.
+    :param normalize: Whether to normalize the logarithmic component to [0, 1] before applying amp and offset.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional logarithmic signal. If return_params is True,
+             also returns sample rate, amplitude, offset, log base, and growth rate.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+    if log_base <= 0 or log_base == 1:
+        raise ValueError("log_base must be positive and not equal to 1")
+    if growth_rate <= 0:
+        raise ValueError("growth_rate must be positive")
+    if shift <= 0:
+        raise ValueError("shift must be positive")
+
+    t = np.linspace(0, seq_length / sample_rate, seq_length, endpoint=False)
+    log_argument = growth_rate * t + shift
+    logarithmic_seq = np.log(log_argument) / np.log(log_base)
+
+    if normalize:
+        seq_min = np.min(logarithmic_seq)
+        seq_max = np.max(logarithmic_seq)
+        if seq_max > seq_min:
+            logarithmic_seq = (logarithmic_seq - seq_min) / (seq_max - seq_min)
+
+    logarithmic_sample = amp * logarithmic_seq + offset
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    logarithmic_sample = logarithmic_sample + noise
+
+    # Return generated sample and parameters
+    if return_params:
+        return logarithmic_sample, sample_rate, amp, offset, log_base, growth_rate
+    return logarithmic_sample
 
 
 def generate_stock_price():
@@ -874,8 +939,17 @@ if __name__ == "__main__":
     # sample = generate_ramp_signal(
     #     1000, start_position=[0.1, 0.5], end_position=[0.3, 0.7], ramp_height=[1, -1]
     # )
-    sample = generate_exponential_signal(
-        1000, growth_rate=0.1, sample_rate=100, amp=1.5, offset=0.5, decay=True
+    # sample = generate_exponential_signal(
+    #     1000, growth_rate=0.1, sample_rate=100, amp=1.5, offset=0.5, decay=True
+    # )
+    sample = generate_logarithmic_signal(
+        1000,
+        sample_rate=10,
+        amp=4,
+        offset=0.5,
+        log_base=10,
+        growth_rate=1,
+        noise_std=0.05,
     )
     plt.plot(sample)
     plt.show()
