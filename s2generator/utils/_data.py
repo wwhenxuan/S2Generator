@@ -22,6 +22,7 @@ __all__ = [
     "generate_logarithmic_signal",
     "generate_stock_price",
     "generate_electrocardiogram",
+    "generate_electroencephalogram",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -1063,8 +1064,98 @@ def generate_electrocardiogram(
     return signal
 
 
-def generate_electroencephalogram():
-    pass
+def generate_electroencephalogram(
+    seq_length: int,
+    sample_rate: Union[int, float] = 256,
+    amp: float = 1.0,
+    alpha_weight: float = 1.0,
+    beta_weight: float = 0.6,
+    theta_weight: float = 0.4,
+    delta_weight: float = 0.25,
+    noise_std: float = 0.08,
+    return_params: bool = False,
+) -> Union[
+    np.ndarray,
+    Tuple[np.ndarray, Union[int, float], float, float, float, float, float],
+]:
+    """Generate a one-dimensional simulated electroencephalogram (EEG) signal.
+
+    The EEG waveform is synthesized as a weighted combination of several
+    canonical brain-rhythm bands, including delta, theta, alpha, and beta,
+    with random phases, slow amplitude modulation, and additive Gaussian noise.
+
+    :param seq_length: Length of the time series.
+    :param sample_rate: Sampling rate of the time series.
+    :param amp: Global amplitude scaling factor of the EEG waveform.
+    :param alpha_weight: Weight of the alpha rhythm component.
+    :param beta_weight: Weight of the beta rhythm component.
+    :param theta_weight: Weight of the theta rhythm component.
+    :param delta_weight: Weight of the delta rhythm component.
+    :param noise_std: Standard deviation of additive Gaussian noise.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional EEG signal. If return_params is True,
+             also returns the sample rate, amplitude, alpha weight, beta weight,
+             theta weight, and delta weight.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if alpha_weight < 0:
+        raise ValueError("alpha_weight must be non-negative")
+    if beta_weight < 0:
+        raise ValueError("beta_weight must be non-negative")
+    if theta_weight < 0:
+        raise ValueError("theta_weight must be non-negative")
+    if delta_weight < 0:
+        raise ValueError("delta_weight must be non-negative")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    t = np.arange(seq_length) / sample_rate
+
+    alpha_freq = np.random.uniform(8.0, 12.0)
+    beta_freq = np.random.uniform(13.0, 30.0)
+    theta_freq = np.random.uniform(4.0, 7.0)
+    delta_freq = np.random.uniform(0.5, 3.5)
+
+    alpha_phase = np.random.uniform(0, 2 * np.pi)
+    beta_phase = np.random.uniform(0, 2 * np.pi)
+    theta_phase = np.random.uniform(0, 2 * np.pi)
+    delta_phase = np.random.uniform(0, 2 * np.pi)
+
+    alpha_env = 1.0 + 0.20 * np.sin(2 * np.pi * np.random.uniform(0.1, 0.3) * t)
+    beta_env = 1.0 + 0.15 * np.sin(2 * np.pi * np.random.uniform(0.2, 0.5) * t)
+    theta_env = 1.0 + 0.18 * np.sin(2 * np.pi * np.random.uniform(0.05, 0.2) * t)
+    delta_env = 1.0 + 0.12 * np.sin(2 * np.pi * np.random.uniform(0.03, 0.1) * t)
+
+    signal = (
+        alpha_weight * alpha_env * np.sin(2 * np.pi * alpha_freq * t + alpha_phase)
+        + beta_weight * beta_env * np.sin(2 * np.pi * beta_freq * t + beta_phase)
+        + theta_weight * theta_env * np.sin(2 * np.pi * theta_freq * t + theta_phase)
+        + delta_weight * delta_env * np.sin(2 * np.pi * delta_freq * t + delta_phase)
+    )
+
+    signal *= amp
+
+    if noise_std > 0:
+        signal += np.random.normal(0, noise_std, seq_length)
+
+    # Return generated sample and parameters
+    if return_params:
+        return (
+            signal,
+            sample_rate,
+            amp,
+            alpha_weight,
+            beta_weight,
+            theta_weight,
+            delta_weight,
+        )
+    return signal
 
 
 if __name__ == "__main__":
@@ -1086,6 +1177,7 @@ if __name__ == "__main__":
     #     noise_std=0.05,
     # )
     # sample = generate_stock_price(1000)
-    sample = generate_electrocardiogram(1000)
+    # sample = generate_electrocardiogram(1000)
+    sample = generate_electroencephalogram(1000)
     plt.plot(sample)
     plt.show()
