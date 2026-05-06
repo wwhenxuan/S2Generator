@@ -17,6 +17,8 @@ __all__ = [
     "generate_chirp_signal",
     "generate_impulse_signal",
     "generate_step_signal",
+    "generate_ramp_signal",
+    "generate_exponential_signal",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -694,7 +696,172 @@ def generate_step_signal(
     return step_sample
 
 
-def generate_ramp_signal():
+def generate_ramp_signal(
+    seq_length: int,
+    start_position: Union[float, Sequence[float]] = 0.0,
+    end_position: Union[float, Sequence[float]] = 1.0,
+    ramp_height: Union[float, Sequence[float]] = 1.0,
+    base_value: float = 0.0,
+    noise_std: float = 0.05,
+    flip: bool = False,
+    return_params: bool = False,
+) -> Union[
+    np.ndarray,
+    Tuple[np.ndarray, Sequence[float], Sequence[float], Sequence[float]],
+]:
+    """Generate a one-dimensional ramp signal.
+
+    :param seq_length: Length of the time series.
+    :param start_position: Relative ramp start position or positions in [0, 1].
+                           A scalar creates one ramp, and a sequence creates
+                           multiple ramp segments, such as [0.1, 0.5] creates two ramp segments.
+    :param end_position: Relative ramp end position or positions in [0, 1].
+                         A scalar applies to all ramp segments.
+    :param ramp_height: Height change from the start to the end of each ramp.
+                        A scalar applies to all ramp segments.
+    :param base_value: Initial background value before any ramp is added.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param flip: Whether to reverse the generated signal along the time axis.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional ramp signal. If return_params is True,
+             also returns the ramp start positions, end positions, and ramp heights.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    if isinstance(start_position, (int, float)):
+        start_positions = [float(start_position)]
+    else:
+        start_positions = list(start_position)
+    if len(start_positions) == 0:
+        raise ValueError("start_position must contain at least one position")
+    if any(not 0 <= position <= 1 for position in start_positions):
+        raise ValueError("each value in start_position must be in [0, 1]")
+
+    num_ramps = len(start_positions)
+
+    if isinstance(end_position, (int, float)):
+        end_positions = [float(end_position)] * num_ramps
+    else:
+        end_positions = list(end_position)
+    if len(end_positions) != num_ramps:
+        raise ValueError("start_position and end_position must have the same length")
+    if any(not 0 <= position <= 1 for position in end_positions):
+        raise ValueError("each value in end_position must be in [0, 1]")
+
+    if isinstance(ramp_height, (int, float)):
+        ramp_heights = [float(ramp_height)] * num_ramps
+    else:
+        ramp_heights = list(ramp_height)
+    if len(ramp_heights) != num_ramps:
+        raise ValueError("start_position and ramp_height must have the same length")
+
+    ramp_sample = np.full(seq_length, base_value, dtype=float)
+
+    for start, end, height in zip(start_positions, end_positions, ramp_heights):
+        start_idx = int(round(start * (seq_length - 1)))
+        end_idx = int(round(end * (seq_length - 1)))
+
+        if start_idx == end_idx:
+            ramp_sample[start_idx:] += height
+            continue
+
+        segment_start = min(start_idx, end_idx)
+        segment_end = max(start_idx, end_idx)
+        segment_length = segment_end - segment_start + 1
+        ramp_values = np.linspace(0, height, segment_length)
+        if end_idx < start_idx:
+            ramp_values = ramp_values[::-1]
+
+        ramp_sample[segment_start : segment_end + 1] += ramp_values
+        ramp_sample[segment_end + 1 :] += height
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    ramp_sample = ramp_sample + noise
+
+    if flip:
+        ramp_sample = np.flip(ramp_sample)
+
+    # Return generated sample and parameters
+    if return_params:
+        return ramp_sample, start_positions, end_positions, ramp_heights
+    return ramp_sample
+
+
+def generate_exponential_signal(
+    seq_length: int,
+    growth_rate: float = 1.0,
+    sample_rate: Union[int, float] = 100,
+    amp: float = 1.0,
+    offset: float = 0.0,
+    decay: bool = False,
+    normalize: bool = False,
+    noise_std: float = 0.05,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, float, Union[int, float], float, float, bool]]:
+    """Generate a one-dimensional exponential signal.
+
+    :param seq_length: Length of the time series.
+    :param growth_rate: Exponential growth or decay rate.
+    :param sample_rate: Sampling rate of the time series.
+    :param amp: Amplitude multiplier of the exponential signal.
+    :param offset: Constant offset added to the signal.
+    :param decay: Whether to generate an exponential decay signal instead of a growth signal.
+    :param normalize: Whether to normalize the exponential component to [0, 1] before applying amp and offset.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional exponential signal. If return_params is True,
+             also returns growth rate, sample rate, amplitude, offset, and decay flag.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    t = np.linspace(0, seq_length / sample_rate, seq_length, endpoint=False)
+    exponent = -growth_rate * t if decay else growth_rate * t
+    exponential_seq = np.exp(exponent)
+
+    if normalize:
+        seq_min = np.min(exponential_seq)
+        seq_max = np.max(exponential_seq)
+        if seq_max > seq_min:
+            exponential_seq = (exponential_seq - seq_min) / (seq_max - seq_min)
+
+    exponential_sample = amp * exponential_seq + offset
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    exponential_sample = exponential_sample + noise
+
+    # Return generated sample and parameters
+    if return_params:
+        return exponential_sample, growth_rate, sample_rate, amp, offset, decay
+    return exponential_sample
+
+
+def generate_logarithmic_signal():
+    pass
+
+
+def generate_stock_price():
+    pass
+
+
+def generate_electrocardiogram():
+    pass
+
+
+def generate_electroencephalogram():
     pass
 
 
@@ -704,6 +871,11 @@ if __name__ == "__main__":
     a = np.array([1, 2, 3])
     print(a[::-1])
 
-    sample = generate_step_signal(1000, [0.1, 0.5], flip=True, step_height=[1, -10])
+    # sample = generate_ramp_signal(
+    #     1000, start_position=[0.1, 0.5], end_position=[0.3, 0.7], ramp_height=[1, -1]
+    # )
+    sample = generate_exponential_signal(
+        1000, growth_rate=0.1, sample_rate=100, amp=1.5, offset=0.5, decay=True
+    )
     plt.plot(sample)
     plt.show()
