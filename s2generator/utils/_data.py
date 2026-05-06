@@ -14,6 +14,7 @@ __all__ = [
     "generate_square_wave",
     "generate_sawtooth_wave",
     "generate_damped_oscillation",
+    "generate_chirp_signal",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -510,14 +511,65 @@ def generate_damped_oscillation(
         return damped_sample
 
 
+def generate_chirp_signal(
+    seq_length: int,
+    start_freq: float = 1.0,
+    end_freq: float = 10.0,
+    sample_rate: Union[int, float] = 100,
+    amp: float = 1.5,
+    noise_std: float = 0.05,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, float, float, Union[int, float]]]:
+    """Generate a one-dimensional chirp signal.
+
+    :param seq_length: Length of the time series.
+    :param start_freq: Starting frequency of the chirp signal.
+    :param end_freq: Ending frequency of the chirp signal.
+    :param sample_rate: Sampling rate of the time series.
+    :param amp: Amplitude of the chirp signal.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional chirp signal. If return_params is True,
+             also returns the start frequency, end frequency, and sample rate.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if start_freq < 0 or end_freq < 0:
+        raise ValueError("start_freq and end_freq must be non-negative")
+    if sample_rate <= 0:
+        raise ValueError("sample_rate must be positive")
+    if amp < 0:
+        raise ValueError("amp must be non-negative")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    t = np.linspace(0, seq_length / sample_rate, seq_length, endpoint=False)
+    phase = np.random.uniform(0, 2 * np.pi)
+    freq_slope = (end_freq - start_freq) / (seq_length / sample_rate)
+
+    # Generate chirp signal with linearly varying instantaneous frequency
+    chirp_phase = 2 * np.pi * (start_freq * t + 0.5 * freq_slope * t**2) + phase
+    chirp_seq = amp * np.sin(chirp_phase)
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    chirp_sample = chirp_seq + noise
+
+    # Return generated sample and parameters
+    if return_params:
+        return chirp_sample, start_freq, end_freq, sample_rate
+    return chirp_sample
+
+
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     a = np.array([1, 2, 3])
     print(a[::-1])
 
-    sample = generate_damped_oscillation(
-        1000, freq=4, damping_factor=0.1, noise_std=0, flip=True
+    sample = generate_chirp_signal(
+        1000, start_freq=1, end_freq=5, sample_rate=100, amp=1.5, noise_std=0.05
     )
     plt.plot(sample)
     plt.show()
