@@ -15,6 +15,7 @@ __all__ = [
     "generate_sawtooth_wave",
     "generate_damped_oscillation",
     "generate_chirp_signal",
+    "generate_impulse_signal",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -562,14 +563,81 @@ def generate_chirp_signal(
     return chirp_sample
 
 
+def generate_impulse_signal(
+    seq_length: int,
+    impulse_position: Union[float, Sequence[float]] = 0.5,
+    impulse_width: int = 2,
+    impulse_amp: float = 1.5,
+    background_value: float = 0.0,
+    noise_std: float = 0.05,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, Sequence[float], int, float]]:
+    """Generate a one-dimensional impulse signal.
+
+    :param seq_length: Length of the time series.
+    :param impulse_position: Relative impulse center position or positions in [0, 1].
+                             For example, 0.5 places the impulse near the middle,
+                             and [0.2, 0.5, 0.8] places impulses at multiple positions.
+    :param impulse_width: Width of each impulse in number of samples.
+    :param impulse_amp: Amplitude added within each impulse region.
+    :param background_value: Background value outside the impulse regions.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional impulse signal. If return_params is True,
+             also returns the impulse positions, impulse width, and impulse amplitude.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if isinstance(impulse_position, (int, float)):
+        impulse_positions = [float(impulse_position)]
+    else:
+        impulse_positions = list(impulse_position)
+    if len(impulse_positions) == 0:
+        raise ValueError("impulse_position must contain at least one position")
+    if any(not 0 <= position <= 1 for position in impulse_positions):
+        raise ValueError("each value in impulse_position must be in [0, 1]")
+    if impulse_width <= 0:
+        raise ValueError("impulse_width must be a positive integer")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    impulse_sample = np.full(seq_length, background_value, dtype=float)
+    half_width = impulse_width // 2
+
+    for position in impulse_positions:
+        center_idx = int(round(position * (seq_length - 1)))
+        start_idx = max(0, center_idx - half_width)
+        end_idx = min(seq_length, start_idx + impulse_width)
+        start_idx = max(0, end_idx - impulse_width)
+
+        # Add impulse in the selected local region
+        impulse_sample[start_idx:end_idx] += impulse_amp
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    impulse_sample = impulse_sample + noise
+
+    # Return generated sample and parameters
+    if return_params:
+        return impulse_sample, impulse_positions, impulse_width, impulse_amp
+    return impulse_sample
+
+
+def generate_step_signal():
+    pass
+
+
+def generate_ramp_signal():
+    pass
+
+
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
     a = np.array([1, 2, 3])
     print(a[::-1])
 
-    sample = generate_chirp_signal(
-        1000, start_freq=1, end_freq=5, sample_rate=100, amp=1.5, noise_std=0.05
-    )
+    sample = generate_impulse_signal(1000, [0.1, 0.5, 0.7])
     plt.plot(sample)
     plt.show()
