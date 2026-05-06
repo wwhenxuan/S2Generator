@@ -20,6 +20,7 @@ __all__ = [
     "generate_ramp_signal",
     "generate_exponential_signal",
     "generate_logarithmic_signal",
+    "generate_stock_price",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -918,8 +919,69 @@ def generate_logarithmic_signal(
     return logarithmic_sample
 
 
-def generate_stock_price():
-    pass
+def generate_stock_price(
+    seq_length: int,
+    initial_price: float = 100.0,
+    drift: float = 0.0005,
+    volatility: float = 0.02,
+    jump_probability: float = 0.01,
+    jump_scale: float = 0.08,
+    trend_strength: float = 0.0,
+    noise_std: float = 0.0,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, float, float, float, float]]:
+    """Generate a one-dimensional simulated stock price series.
+
+    The stock price is generated using a geometric random walk with optional
+    jump events and a deterministic trend component, which can imitate common
+    characteristics of stock price fluctuations.
+
+    :param seq_length: Length of the time series.
+    :param initial_price: Initial stock price.
+    :param drift: Average log-return drift per time step.
+    :param volatility: Standard deviation of the random log-return component.
+    :param jump_probability: Probability of a jump event at each time step.
+    :param jump_scale: Standard deviation of jump magnitudes in log-return space.
+    :param trend_strength: Additional deterministic linear trend strength applied to returns.
+    :param noise_std: Standard deviation of additive Gaussian observation noise.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional stock price series. If return_params is True,
+             also returns the initial price, drift, volatility, and jump probability.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if initial_price <= 0:
+        raise ValueError("initial_price must be positive")
+    if volatility < 0:
+        raise ValueError("volatility must be non-negative")
+    if not 0 <= jump_probability <= 1:
+        raise ValueError("jump_probability must be in [0, 1]")
+    if jump_scale < 0:
+        raise ValueError("jump_scale must be non-negative")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    prices = np.zeros(seq_length, dtype=float)
+    prices[0] = initial_price
+
+    trend_component = np.linspace(0, trend_strength, seq_length)
+    random_returns = np.random.normal(drift, volatility, seq_length - 1)
+    jump_flags = np.random.rand(seq_length - 1) < jump_probability
+    jump_returns = np.random.normal(0, jump_scale, seq_length - 1) * jump_flags
+    total_returns = random_returns + jump_returns + trend_component[1:]
+
+    for i in range(1, seq_length):
+        prices[i] = prices[i - 1] * np.exp(total_returns[i - 1])
+
+    if noise_std > 0:
+        prices = prices + np.random.normal(0, noise_std, seq_length)
+        prices = np.maximum(prices, 1e-8)
+
+    # Return generated sample and parameters
+    if return_params:
+        return prices, initial_price, drift, volatility, jump_probability
+    return prices
 
 
 def generate_electrocardiogram():
@@ -942,14 +1004,15 @@ if __name__ == "__main__":
     # sample = generate_exponential_signal(
     #     1000, growth_rate=0.1, sample_rate=100, amp=1.5, offset=0.5, decay=True
     # )
-    sample = generate_logarithmic_signal(
-        1000,
-        sample_rate=10,
-        amp=4,
-        offset=0.5,
-        log_base=10,
-        growth_rate=1,
-        noise_std=0.05,
-    )
+    # sample = generate_logarithmic_signal(
+    #     1000,
+    #     sample_rate=10,
+    #     amp=4,
+    #     offset=0.5,
+    #     log_base=10,
+    #     growth_rate=1,
+    #     noise_std=0.05,
+    # )
+    sample = generate_stock_price(1000)
     plt.plot(sample)
     plt.show()
