@@ -16,6 +16,7 @@ __all__ = [
     "generate_damped_oscillation",
     "generate_chirp_signal",
     "generate_impulse_signal",
+    "generate_step_signal",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -624,8 +625,73 @@ def generate_impulse_signal(
     return impulse_sample
 
 
-def generate_step_signal():
-    pass
+def generate_step_signal(
+    seq_length: int,
+    step_position: Union[float, Sequence[float]] = 0.5,
+    step_height: Union[float, Sequence[float]] = 1.0,
+    base_value: float = 0.0,
+    noise_std: float = 0.05,
+    flip: bool = False,
+    return_params: bool = False,
+) -> Union[np.ndarray, Tuple[np.ndarray, Sequence[float], Sequence[float]]]:
+    """Generate a one-dimensional step signal.
+
+    :param seq_length: Length of the time series.
+    :param step_position: Relative step position or positions in [0, 1].
+                          For example, 0.5 places a step near the middle,
+                          and [0.2, 0.5, 0.8] creates multiple step changes.
+    :param step_height: Height change applied at each step position. A scalar
+                        applies the same step height to all positions.
+    :param base_value: Initial background value before any step occurs.
+    :param noise_std: Standard deviation of the Gaussian noise added to the signal.
+    :param flip: Whether to flip the step signal so the step height increases over time.
+    :param return_params: Whether to return the parameters used for generation.
+
+    :return: Generated one-dimensional step signal. If return_params is True,
+             also returns the step positions and step heights.
+    """
+    if seq_length <= 0:
+        raise ValueError("seq_length must be a positive integer")
+    if isinstance(step_position, (int, float)):
+        step_positions = [float(step_position)]
+    else:
+        step_positions = list(step_position)
+    if len(step_positions) == 0:
+        raise ValueError("step_position must contain at least one position")
+    if any(not 0 <= position <= 1 for position in step_positions):
+        raise ValueError("each value in step_position must be in [0, 1]")
+    if noise_std < 0:
+        raise ValueError("noise_std must be non-negative")
+
+    if isinstance(step_height, (int, float)):
+        step_heights = [float(step_height)] * len(step_positions)
+    else:
+        step_heights = list(step_height)
+    if len(step_heights) != len(step_positions):
+        raise ValueError("step_position and step_height must have the same length")
+
+    step_sample = np.full(seq_length, base_value, dtype=float)
+    sorted_steps = sorted(zip(step_positions, step_heights), key=lambda item: item[0])
+
+    for position, height in sorted_steps:
+        step_idx = int(round(position * (seq_length - 1)))
+        step_sample[step_idx:] += height
+
+    # Add small noise to make generated sample more realistic
+    noise = np.random.normal(0, noise_std, seq_length)
+    step_sample = step_sample + noise
+
+    if flip:
+        step_sample = np.flip(step_sample)
+
+    # Return generated sample and parameters
+    if return_params:
+        return (
+            step_sample,
+            [item[0] for item in sorted_steps],
+            [item[1] for item in sorted_steps],
+        )
+    return step_sample
 
 
 def generate_ramp_signal():
@@ -638,6 +704,6 @@ if __name__ == "__main__":
     a = np.array([1, 2, 3])
     print(a[::-1])
 
-    sample = generate_impulse_signal(1000, [0.1, 0.5, 0.7])
+    sample = generate_step_signal(1000, [0.1, 0.5], flip=True, step_height=[1, -10])
     plt.plot(sample)
     plt.show()
