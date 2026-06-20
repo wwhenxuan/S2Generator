@@ -5,6 +5,7 @@ Created on 2025/08/14 20:47:25
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 import functools
 
 import numpy as np

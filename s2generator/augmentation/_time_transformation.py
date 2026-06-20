@@ -5,6 +5,7 @@ Created on 2026/03/05 16:19:59
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 __all__ = ["add_linear_trend", "value_flipping", "time_series_mixup"]
 
 import numpy as np

@@ -4,6 +4,7 @@ Created on 2025/08/13 21:48:34
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
 """
+
 import numpy as np
 from typing import Optional, Dict
 from s2generator.excitation.base_excitation import BaseExcitation

@@ -5,6 +5,7 @@ Created on 2025/09/16 19:21:36
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.linalg import lstsq
@@ -18,7 +19,6 @@ from s2generator.utils import (
 )
 
 from typing import Optional, Literal, Tuple, List
-
 
 __all__ = ["MovingDecomp", "STLResult", "STL"]
 

@@ -10,6 +10,7 @@ Created on 2025/08/14 11:01:12
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 import numpy as np
 from scipy.stats import special_ortho_group
 from pysdkit.utils import max_min_normalization

@@ -24,6 +24,7 @@ Finally we randomly generate the weights of each distribution to mix them with w
  
 Below we will give a specific code example for excitation generation.
 """
+
 # %%
 
 import sys

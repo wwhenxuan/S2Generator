@@ -11,6 +11,7 @@ Created on 2025/08/3 00:01:56
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
 """
+
 __all__ = [
     "symbol_to_markdown",
     "z_score_normalization",

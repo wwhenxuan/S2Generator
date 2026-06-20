@@ -9,6 +9,7 @@ Created on 2025/08/22 11:20:58
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 import numpy as np
 from numpy import signedinteger
 import matplotlib.pyplot as plt

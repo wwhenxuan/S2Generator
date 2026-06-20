@@ -58,8 +58,8 @@ def plot_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
     """
 
     # Determine the shape and length of the data
-    (seq_len, input_dim) = x.shape
-    (_, output_dim) = y.shape
+    seq_len, input_dim = x.shape
+    _, output_dim = y.shape
     max_dim = max(input_dim, output_dim)
 
     # Create a matplotlib plotting object

@@ -7,6 +7,7 @@ Created on 2025/01/23 17:37:24
 @email: wwhenxuan@gmail.com, wy3370868155@outlook.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 import time
 import copy
 import numpy as np

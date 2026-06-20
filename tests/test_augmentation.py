@@ -5,6 +5,7 @@ Created on 2026/03/02 16:02:37
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 import unittest
 
 import numpy as np

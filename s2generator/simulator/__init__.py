@@ -6,8 +6,10 @@ Created on 2026/02/13 13:04:42
 @url: https://github.com/wwhenxuan/S2Generator
 """
 
-__all__ = ["ARIMASimulator", "WienerFilterSimulator"]
+__all__ = ["ARIMASimulator", "KalmanFilterSimulator", "WienerFilterSimulator"]
 
 from .arima import ARIMASimulator
+
+from .kalman_filtering import KalmanFilterSimulator
 
 from .wiener_filter import WienerFilterSimulator

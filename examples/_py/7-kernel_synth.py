@@ -44,6 +44,7 @@ In S2Generator, we further integrated and encapsulated this data generation algo
 
 When we create a data generation object instance, we can adjust the parameters, mainly adjusting the minimum and maximum number of specific kernels to use, and whether to use the kernel method mentioned in the above table.
 """
+
 # %%
 
 import numpy as np

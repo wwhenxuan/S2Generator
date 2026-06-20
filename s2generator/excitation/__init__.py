@@ -21,6 +21,7 @@ Created on 2025/08/13 23:47:59
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 __all__ = [
     "MixedDistribution",
     "AutoregressiveMovingAverage",

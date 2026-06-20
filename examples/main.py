@@ -24,6 +24,7 @@ Created on 2025/09/02 20:14:50
 @email: wwhenxuan@gmail.com
 @url: https://github.com/wwhenxuan/S2Generator
 """
+
 import argparse
 import os
 import threading

@@ -9,7 +9,6 @@ Time series data serves as the external manifestation of complex dynamical syste
 **Note: Because the values of the stimulus time series can inflate or fall outside the domain of complex systems, the following examples may not work if your Python version and library version are inconsistent with ours. In this case, please adjust the random seed value in the random number generator.**
 """
 
-
 # %%
 
 import numpy as np
