@@ -18,7 +18,7 @@ This method allows for the unrestricted creation of high-quality time series dat
 
 ### 🔥 News
 
-**[Jun. 2026]** We extend the learnable white-noise-to-signal simulator family with `[KalmanFilterSimulator](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/kalman_filtering.py)` (state-space AR + Kalman filtering) and `[MarkovSwitchingSimulator](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/markov_switching.py)` (Markov-switching autoregression for regime-dependent dynamics).
+**[Jun. 2026]** We extend the learnable white-noise-to-signal simulator family with [KalmanFilterSimulator](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/kalman_filtering.py) (state-space AR + Kalman filtering) and [MarkovSwitchingSimulator](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/markov_switching.py) (Markov-switching autoregression for regime-dependent dynamics).
 
 **[Feb. 2026]** Since all stationary time series can be obtained by exciting a linear time-invariant system with white noise, we propose [a learnable series generation method](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/arima.py) based on the ARIMA model. This method ensures the generated series is highly similar to the inputs in autocorrelation and power spectrum density.
 
