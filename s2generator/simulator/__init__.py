@@ -29,18 +29,22 @@ Available implementations
 - ``KalmanFilterSimulator``: companion state-space AR model with Kalman filtering
 - ``ARIMASimulator``: differencing + ARMA model with maximum-likelihood fitting
 - ``MarkovSwitchingSimulator``: Markov-switching autoregression for piecewise dynamics
+- ``GaussianMixtureSimulator``: Markov-switching Gaussian mixture for segment-like emissions
 
 All simulators expose a unified ``fit`` / ``transform`` interface for downstream use.
 """
 
 __all__ = [
     "ARIMASimulator",
+    "GaussianMixtureSimulator",
     "KalmanFilterSimulator",
     "MarkovSwitchingSimulator",
     "WienerFilterSimulator",
 ]
 
 from .arima import ARIMASimulator
+
+from .gaussia_mixture import GaussianMixtureSimulator
 
 from .kalman_filtering import KalmanFilterSimulator
 
