@@ -106,13 +106,12 @@ For detailed on the data generation process, please refer to our [paper](https:/
 If you find this $S^2$ data generation method helpful, please cite the following paper:
 
 ~~~latex
-@misc{wang2025syntheticseriessymboldatageneration,
-      title={Synthetic Series-Symbol Data Generation for Time Series Foundation Models}, 
-      author={Wenxuan Wang and Kai Wu and Yujian Betterest Li and Dan Wang and Xiaoyu Zhang},
-      year={2025},
-      eprint={2510.08445},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2510.08445}, 
+@inproceedings{
+    wang2026synthetic,
+    title={Synthetic Series-Symbol Data Generation for Time Series Foundation Models},
+    author={Wenxuan Wang and Kai Wu and Yujian Betterest Li and Dan Wang and Xiaoyu Zhang},
+    booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems},
+    year={2026},
+    url={https://openreview.net/forum?id=xB1ZNgq0Xp}
 }
 ~~~
