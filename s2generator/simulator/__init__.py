@@ -30,6 +30,7 @@ Available implementations
 - ``ARIMASimulator``: differencing + ARMA model with maximum-likelihood fitting
 - ``MarkovSwitchingSimulator``: Markov-switching autoregression for piecewise dynamics
 - ``GaussianMixtureSimulator``: Markov-switching Gaussian mixture for segment-like emissions
+- ``MultivariateSimulator``: shared-excitation wrapper for multivariate time series
 
 All simulators expose a unified ``fit`` / ``transform`` interface for downstream use.
 """
@@ -39,15 +40,18 @@ __all__ = [
     "GaussianMixtureSimulator",
     "KalmanFilterSimulator",
     "MarkovSwitchingSimulator",
+    "MultivariateSimulator",
     "WienerFilterSimulator",
 ]
 
 from .arima import ARIMASimulator
 
-from .gaussia_mixture import GaussianMixtureSimulator
+from .gaussian_mixture import GaussianMixtureSimulator
 
 from .kalman_filtering import KalmanFilterSimulator
 
 from .markov_switching import MarkovSwitchingSimulator
+
+from .multivariate_simulator import MultivariateSimulator
 
 from .wiener_filter import WienerFilterSimulator
