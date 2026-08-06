@@ -48,7 +48,7 @@ import pandas as pd
 
 from typing import Optional, Dict, Union, Tuple
 
-from s2generator import Node, NodeList
+from s2generator.symbol.base import Node, NodeList
 
 
 def get_time_now():

@@ -22,8 +22,8 @@ from matplotlib.transforms import Bbox
 from scipy import signal
 from statsmodels.tsa.stattools import acf
 
-from s2generator import Node, NodeList
-from s2generator.utils.print_symbol import symbol_to_markdown
+from s2generator.symbol.base import Node, NodeList
+from s2generator.symbol.print_symbol import symbol_to_markdown
 
 
 def plot_time_series(
@@ -518,7 +518,8 @@ if __name__ == "__main__":
     import numpy as np
 
     # Importing data generators, parameter controllers and visualization functions
-    from s2generator import Generator, Params, plot_series
+    from s2generator.symbol import Generator
+    from s2generator.utils import plot_series
 
     params = Params()  # Adjust the parameters here
     generator = Generator(params)  # Create an instance

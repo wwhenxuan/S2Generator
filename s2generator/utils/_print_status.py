@@ -18,7 +18,8 @@ from os import path
 from colorama import Fore, Style
 from typing import Optional, Union, List, Tuple
 
-from s2generator import SeriesParams, SymbolParams, Node, NodeList
+from s2generator.symbol.params import SeriesParams, SymbolParams
+from s2generator.symbol.base import Node, NodeList
 from s2generator.utils import get_time_now
 
 

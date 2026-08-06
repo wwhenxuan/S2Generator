@@ -36,7 +36,7 @@ import numpy as np
 import torch
 
 from colorama import Fore, Style
-from S2Generator import SeriesParams, SymbolParams, Generator
+from s2generator.symbol import SeriesParams, SymbolParams, Generator
 
 from typing import List, Optional, Any, Union
 

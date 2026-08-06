@@ -13,7 +13,7 @@ import numpy as np
 
 from typing import Optional, Union, List, Dict, Any, Tuple
 
-from s2generator.params import SeriesParams
+from s2generator.symbol.params.series_params import SeriesParams
 from s2generator.excitation import (
     MixedDistribution,
     AutoregressiveMovingAverage,

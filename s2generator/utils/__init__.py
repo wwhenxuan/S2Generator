@@ -66,7 +66,7 @@ __all__ = [
 ]
 
 # Transform the symbol from string to latex
-from .print_symbol import symbol_to_markdown
+from s2generator.symbol.print_symbol import symbol_to_markdown
 
 # The z-score standardization
 from ._tools import z_score_normalization

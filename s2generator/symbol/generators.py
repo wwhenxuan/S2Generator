@@ -15,10 +15,13 @@ from numpy import ndarray
 from numpy.random import RandomState
 from collections import defaultdict
 
-from typing import Optional, Union, Tuple, List
+from typing import Optional, Union, Tuple, List, TYPE_CHECKING
 
-from s2generator.params import SeriesParams, SymbolParams
-from s2generator.base import (
+if TYPE_CHECKING:
+    from s2generator.excitation import Excitation
+
+from s2generator.symbol.params import SeriesParams, SymbolParams
+from s2generator.symbol.base import (
     Node,
     NodeList,
     operators_real,
@@ -26,15 +29,14 @@ from s2generator.base import (
     all_operators,
     SPECIAL_WORDS,
 )
-from s2generator.encoders import GeneralEncoder
-from s2generator.excitation import Excitation
-from s2generator.utils import (
+from s2generator.symbol.encoders import GeneralEncoder
+from s2generator.utils._tools import (
     z_score_normalization,
     max_min_normalization,
-    PrintStatus,
     save_s2data,
     load_s2data,
 )
+from s2generator.utils._print_status import PrintStatus
 
 
 class Generator(object):
@@ -220,13 +222,15 @@ class Generator(object):
 
     def create_excitation(
         self, series_params: Optional[SeriesParams] = None
-    ) -> Excitation:
+    ) -> "Excitation":
         """
         Create the base and general generator for the excitation time series.
 
         :param series_params: The parameters controlling the generation of the stimulus time series
         :return: The general generator for the excitation time series.
         """
+        from s2generator.excitation import Excitation
+
         return Excitation(
             series_params=self.series_params if series_params is None else series_params
         )

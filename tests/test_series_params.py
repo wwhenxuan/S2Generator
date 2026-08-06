@@ -9,7 +9,7 @@ Created on 2025/08/22 18:00:34
 import unittest
 import numpy as np
 
-from s2generator import SeriesParams
+from s2generator.symbol import SeriesParams
 
 
 class TestSeriesParams(unittest.TestCase):

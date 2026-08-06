@@ -3,52 +3,20 @@
 __version__ = "0.0.14"
 
 __all__ = [
-    "Node",
-    "NodeList",
-    "SeriesParams",
-    "SymbolParams",
-    "Generator",
-    "GeneralEncoder",
-    "FloatSequences",
-    "Equation",
-    "plot_series",
-    "plot_symbol",
-    "print_ascii",
-    "print_hello",
+    "augmentation",
     "excitation",
     "simulator",
-    "augmentation",
+    "symbol",
     "utils",
-    "params",
+    "print_ascii",
+    "print_hello",
 ]
 
-# The basic data structure of symbolic expressions
-from .base import Node, NodeList
-
-# Parameter control of S2 data generation
-from .params import SeriesParams, SymbolParams
-
-# S2 Data Generator
-from .generators import Generator
-
-# The encoder for symbol and number
-from .encoders import GeneralEncoder, FloatSequences, Equation
-
-# Generic interface for generating stimulus time series data
-from .excitation import Excitation
-
-# # The simulators for generating time series data
-# from .simulator import ARIMASimulator, WienerFilterSimulator
-
-# Visualize the generated S2 object
-from .utils.visualization import plot_series
-
-# Visualize the symbol expression
-from .utils.visualization import plot_symbol
+from . import symbol, excitation, simulator, augmentation, utils
 
 
 def print_ascii() -> None:
-    print("""
+    print(r"""
    _____   ___     _____                                        _                  
   / ____| |__ \   / ____|                                      | |                 
  | (___      ) | | |  __    ___   _ __     ___   _ __    __ _  | |_    ___    _ __ 

@@ -29,13 +29,14 @@ We only used [`NumPy`](https://numpy.org/), [`Scipy`](https://scipy.org/) and [`
 
 ## ✨ Usage
 
-We provide a unified data generation interface [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/generators.py), two parameter modules [`SeriesParams`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params/series_params.py) and [`SymbolParams`](https://github.com/wwhenxuan/S2Generator/blob/main/S2Generator/params/symbol_params.py), as well as auxiliary modules for the generation of excitation time series and complex system. We first specify the parameters or use the default parameters to create parameter objects, and then pass them into our `Generator` respectively. finally, we can start data generation through the `run` method after instantiation.
+We provide a unified data generation interface [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/generators.py), two parameter modules [`SeriesParams`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/params/series_params.py) and [`SymbolParams`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/params/symbol_params.py), as well as auxiliary modules for the generation of excitation time series and complex system. We first specify the parameters or use the default parameters to create parameter objects, and then pass them into our `Generator` respectively. finally, we can start data generation through the `run` method after instantiation.
 
 ~~~python
 import numpy as np
 
 # Importing data generators object
-from S2Generator import Generator, SeriesParams, SymbolParams, plot_series
+from s2generator.symbol import Generator, SeriesParams, SymbolParams
+from s2generator.utils import plot_series
 
 # Creating a random number object
 rng = np.random.RandomState(0)
