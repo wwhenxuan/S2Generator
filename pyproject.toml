@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=77.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "S2Generator"
+dynamic = ["version"]
+description = "A series-symbol (S2) dual-modality data generation mechanism, enabling the unrestricted creation of high-quality time series data paired with corresponding symbolic representations."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "whenxuan", email = "wwhenxuan@gmail.com" },
+    { name = "johnfan12" },
+    { name = "changewam" },
+]
+keywords = [
+    "Time Series",
+    "Data Generation",
+    "Foundation Datasets",
+    "Symbolic Representations",
+    "Dual-Modality",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "numpy>=1.24.4",
+    "scipy>=1.14.1",
+    "matplotlib>=3.9.2",
+    "scikit-learn>=1.2.2",
+    "statsmodels>=0.14.5",
+    "colorama>=0.4.6",
+    "pandas>=2.3.1",
+    "pysdkit>=0.4.21",
+]
+
+[project.urls]
+Homepage = "https://github.com/wwhenxuan/S2Generator"
+Repository = "https://github.com/wwhenxuan/S2Generator"
+Issues = "https://github.com/wwhenxuan/S2Generator/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "s2generator.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["s2generator*"]
+exclude = ["tests*"]
