@@ -8,8 +8,8 @@ Welcome to S2Generator's documentation!
 .. |license_badge| image:: https://img.shields.io/github/license/wwhenxuan/PySDKit
    :alt: Project License
 
-.. |python_badge| image:: https://img.shields.io/badge/python-3.9+-blue?logo=python
-   :alt: Python 3.9+ compatible
+.. |python_badge| image:: https://img.shields.io/badge/python-3.10+-blue?logo=python
+   :alt: Python 3.10+ compatible
    :target: https://www.python.org/
 
 .. |downloads_badge| image:: https://pepy.tech/badge/s2generator

@@ -4,7 +4,7 @@
 
 <div align="center">
 
-[![PyPI version](https://badge.fury.io/py/s2generator.svg)](https://pypi.org/project/s2generator/)  ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Python](https://img.shields.io/badge/python-3.9+-blue?logo=python)](https://www.python.org/) [![Downloads](https://pepy.tech/badge/s2generator)](https://pepy.tech/project/s2generator) [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![PyPI version](https://badge.fury.io/py/s2generator.svg)](https://pypi.org/project/s2generator/)  ![License](https://img.shields.io/github/license/wwhenxuan/PySDKit) [![Python](https://img.shields.io/badge/python-3.10+-blue?logo=python)](https://www.python.org/) [![Downloads](https://pepy.tech/badge/s2generator)](https://pepy.tech/project/s2generator) [![codestyle](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 [Installation](#Installation) | [Examples](https://github.com/wwhenxuan/S2Generator/tree/main/examples) | [Docs]() | [Acknowledge]() | [Citation](#Citation)
 
