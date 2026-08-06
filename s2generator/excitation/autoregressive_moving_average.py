@@ -36,9 +36,9 @@ def arma_series(
         # Generate q values through a white noise sequence
         q_value = np.dot(rng.randn(len(q_params)), q_params)
 
-        sum_value = p_value + rng.randn(1) + q_value
+        sum_value = float(p_value + rng.randn() + q_value)
         if sum_value > 1024:
-            sum_value = q_value
+            sum_value = float(q_value)
         time_series[index] = sum_value
     return time_series
 
