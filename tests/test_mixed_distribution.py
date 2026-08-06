@@ -784,6 +784,44 @@ class TestOriginalCodeIssues(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.shape, (50, 1))
 
+    def test_generate_once_uses_only_first_dist_type(self):
+        """generate_once returns after the first matched distribution type"""
+        md = MixedDistribution(gaussian=True, uniform=True)
+        calls = {"gaussian": 0, "uniform": 0}
+        original_gaussian = md.generate_gaussian
+        original_uniform = md.generate_uniform
+
+        def wrap_gaussian(*args, **kwargs):
+            calls["gaussian"] += 1
+            return original_gaussian(*args, **kwargs)
+
+        def wrap_uniform(*args, **kwargs):
+            calls["uniform"] += 1
+            return original_uniform(*args, **kwargs)
+
+        with patch.object(md, "generate_gaussian", side_effect=wrap_gaussian), patch.object(
+            md, "generate_uniform", side_effect=wrap_uniform
+        ):
+            out = md.generate_once(np.random.RandomState(0), n_inputs_points=40)
+
+        self.assertEqual(out.shape, (40, 1))
+        self.assertEqual(calls["gaussian"] + calls["uniform"], 1)
+
+    def test_generate_zero_dimension_raises(self):
+        """input_dimension=0 yields an empty stack and should raise"""
+        md = MixedDistribution()
+        with self.assertRaises((ValueError, IndexError)):
+            md.generate(np.random.RandomState(0), n_inputs_points=16, input_dimension=0)
+
+    def test_generate_finite_multichannel(self):
+        """Multi-channel MixedDistribution outputs should be finite"""
+        md = MixedDistribution()
+        out = md.generate(
+            np.random.RandomState(1), n_inputs_points=64, input_dimension=3
+        )
+        self.assertEqual(out.shape, (64, 3))
+        self.assertTrue(np.all(np.isfinite(out)))
+
 
 if __name__ == "__main__":
     unittest.main()

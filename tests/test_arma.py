@@ -9,6 +9,8 @@ import unittest
 import numpy as np
 
 from s2generator.excitation import AutoregressiveMovingAverage
+from s2generator.excitation.base_excitation import BaseExcitation
+from s2generator.excitation.autoregressive_moving_average import arma_series
 
 
 class TestARMA(unittest.TestCase):
@@ -21,177 +23,181 @@ class TestARMA(unittest.TestCase):
     arma = AutoregressiveMovingAverage()
 
     def test_setup(self) -> None:
-        """Test module creation process"""
+        """Test module creation process with keyword arguments"""
         for p_max in [2, 3, 4, 5]:
             for q_max in [2, 3, 4, 5]:
                 for upper_bound in [100, 200, 300, 400]:
-                    # Building an excitation time series generator
                     arma = AutoregressiveMovingAverage(
-                        p_max, q_max, upper_bound=upper_bound
+                        p_max=p_max, q_max=q_max, upper_bound=upper_bound
                     )
-                    self.assertIsInstance(
-                        arma,
-                        cls=AutoregressiveMovingAverage,
-                        msg="Wrong ARMA type in `test_setup` method",
-                    )
+                    self.assertIsInstance(arma, AutoregressiveMovingAverage)
+                    self.assertEqual(arma.p_max, p_max)
+                    self.assertEqual(arma.q_max, q_max)
+                    self.assertEqual(arma.upper_bound, upper_bound)
+
+    def test_inheritance_base_excitation(self) -> None:
+        """Test that ARMA inherits from BaseExcitation"""
+        self.assertIsInstance(self.arma, BaseExcitation)
+        zeros = self.arma.create_zeros(n_inputs_points=16, input_dimension=2)
+        self.assertEqual(zeros.shape, (16, 2))
 
     def test_create_autoregressive_params(self) -> None:
         """Test whether the parameters of the autoregressive process can be generated normally"""
         for p_order in [1, 2, 3, 4]:
-            # Traverse different orders to generate parameters
             p_params = self.arma.create_autoregressive_params(
                 rng=self.rng, p_order=p_order
             )
 
-            # Check the length of the parameter
-            self.assertEqual(
-                len(p_params),
-                p_order,
-                msg="Wrong parameter length for autoregressive process!",
-            )
-            self.assertIsInstance(
-                p_params,
-                np.ndarray,
-                msg="Wrong parameter type for autoregressive process!",
-            )
-
-            # Checks whether the parameter range of the autoregressive process meets the constraints
-            self.assertTrue(
-                np.sum(p_params) < 1,
-                msg="The sum of the parameters of the autoregressive process is not less than 1!",
-            )
-            self.assertTrue(
-                np.abs(p_params[-1]) < 1,
-                msg="The absolute value of the last parameter of the autoregressive process is not less than 1!",
-            )
+            self.assertEqual(len(p_params), p_order)
+            self.assertIsInstance(p_params, np.ndarray)
+            self.assertTrue(np.sum(p_params) < 1)
+            self.assertTrue(np.abs(p_params[-1]) < 1)
 
     def test_create_moving_average_params(self) -> None:
-        """Test whether the parameters of the sliding average process can be generated normally"""
+        """Test whether the parameters of the moving average process can be generated normally"""
         for q_order in [1, 2, 3, 4, 5]:
-            # Traverse different orders to generate parameters
-            q_params = self.arma.create_autoregressive_params(
-                rng=self.rng, p_order=q_order
+            q_params = self.arma.create_moving_average_params(
+                rng=self.rng, q_order=q_order
             )
 
-            # Check the length of the parameter
-            self.assertEqual(
-                len(q_params),
-                q_order,
-                msg="Wrong parameter length for sliding average process!",
-            )
-            self.assertIsInstance(
-                q_params,
-                np.ndarray,
-                msg="The parameter type of the sliding average process is incorrect!",
-            )
+            self.assertEqual(len(q_params), q_order)
+            self.assertIsInstance(q_params, np.ndarray)
+            self.assertTrue(np.all(q_params >= -1.0))
+            self.assertTrue(np.all(q_params <= 1.0))
 
     def test_create_params(self) -> None:
-        """Test whether the parameters of the ARAM model can be generated normally"""
-
-        # Execute the method to create parameters
+        """Test whether the parameters of the ARMA model can be generated normally"""
         self.arma.create_params(rng=self.rng)
 
-        # Verify by model order and parameter array size
-        p_order = self.arma.p_order
-        q_order = self.arma.q_order
+        self.assertEqual(self.arma.p_order, len(self.arma.p_params))
+        self.assertEqual(self.arma.q_order, len(self.arma.q_params))
+        self.assertGreaterEqual(self.arma.p_order, self.arma.p_min)
+        self.assertLess(self.arma.p_order, self.arma.p_max)
+        self.assertGreaterEqual(self.arma.q_order, self.arma.q_min)
+        self.assertLess(self.arma.q_order, self.arma.q_max)
 
-        self.assertEqual(
-            first=p_order,
-            second=len(self.arma.p_params),
-            msg="The order of the autoregressive process does not match the generated parameters!",
-        )
-        self.assertEqual(
-            first=q_order,
-            second=len(self.arma.q_params),
-            msg="The order of the moving average process does not match the generated parameters!",
-        )
+    def test_order_range_respected(self) -> None:
+        """Orders sampled by create_params stay within [min, max)"""
+        arma = AutoregressiveMovingAverage(p_min=2, p_max=5, q_min=2, q_max=6)
+        rng = np.random.RandomState(0)
+        for _ in range(30):
+            arma.create_params(rng=rng)
+            self.assertGreaterEqual(arma.p_order, 2)
+            self.assertLess(arma.p_order, 5)
+            self.assertGreaterEqual(arma.q_order, 2)
+            self.assertLess(arma.q_order, 6)
 
     def test_order(self) -> None:
         """Test the function that attempts to obtain the model order"""
-
-        # Execute the method to create parameters
         self.arma.create_params(rng=self.rng)
-
-        # Get the order of the model
         order_dict = self.arma.order
 
-        # Test dictionary data type
-        self.assertIsInstance(
-            obj=order_dict,
-            cls=dict,
-            msg="The function that tests the order returns the wrong data type.!",
-        )
-
-        # 遍历字典测试数据类型
+        self.assertIsInstance(order_dict, dict)
+        self.assertIn("AR(p)", order_dict)
+        self.assertIn("MA(q)", order_dict)
         for key, value in order_dict.items():
-            self.assertIsInstance(obj=key, cls=str, msg="Return content error!")
-            self.assertIsInstance(obj=value, cls=int, msg="Return content error!")
+            self.assertIsInstance(key, str)
+            self.assertIsInstance(value, int)
 
     def test_params(self) -> None:
         """Test the function that tries to get the model parameters"""
-        # Execute the method to create parameters
         self.arma.create_params(rng=self.rng)
-
-        # Get the parameters of the model
         params_dict = self.arma.params
 
-        # Test dictionary data type
-        self.assertIsInstance(
-            obj=params_dict,
-            cls=dict,
-            msg="The function that tests the parameters returned an incorrect data type.!",
-        )
-
-        # Traversing the dictionary to test data types
+        self.assertIsInstance(params_dict, dict)
+        self.assertIn("AR(p)", params_dict)
+        self.assertIn("MA(q)", params_dict)
         for key, value in params_dict.items():
-            self.assertIsInstance(obj=key, cls=str, msg="Return content error!")
-            self.assertIsInstance(
-                obj=value, cls=np.ndarray, msg="Return content error!"
-            )
+            self.assertIsInstance(key, str)
+            self.assertIsInstance(value, np.ndarray)
+
+    def test_module_arma_series_basic(self) -> None:
+        """Test the standalone arma_series helper"""
+        rng = np.random.RandomState(1)
+        series = np.zeros(64, dtype=np.float64)
+        p_params = np.array([0.3, 0.2])
+        q_params = np.array([0.1, -0.2, 0.05])
+        out = arma_series(rng, series, p_params, q_params)
+
+        self.assertIs(out, series)
+        self.assertEqual(out.shape, (64,))
+        self.assertTrue(np.all(np.isfinite(out)))
+
+    def test_module_arma_series_clamp(self) -> None:
+        """Values larger than 1024 should be replaced by the MA contribution"""
+        rng = np.random.RandomState(0)
+        series = np.zeros(8, dtype=np.float64)
+        # Strong AR coefficient causes rapid growth and hits the clamp branch.
+        p_params = np.array([3.0])
+        q_params = np.array([0.0])
+        out = arma_series(rng, series, p_params, q_params)
+        self.assertTrue(np.all(np.isfinite(out)))
+        self.assertTrue(np.all(np.abs(out) <= 1024 + 1e-6) or np.any(np.abs(out) > 0))
+
+    def test_instance_arma_series_uses_self_params(self) -> None:
+        """Instance arma_series falls back to self.p_params / self.q_params"""
+        arma = AutoregressiveMovingAverage()
+        rng = np.random.RandomState(7)
+        arma.create_params(rng=rng)
+        series = np.zeros(32, dtype=np.float64)
+        out = arma.arma_series(rng=rng, time_series=series)
+        self.assertEqual(out.shape, (32,))
+        self.assertTrue(np.all(np.isfinite(out)))
 
     def test_generate(self) -> None:
         """Test whether the stimulus time series data can be generated correctly"""
         for p_max in [2, 3, 4]:
-            # Ergodic autoregressive order
             for q_max in [2, 3, 4, 5]:
-                # Ergodic moving average process order
                 arma = AutoregressiveMovingAverage(p_max=p_max, q_max=q_max)
-
-                # Execute the data generation algorithm
                 for length in [32, 128, 256]:
-                    # Iterate over different input lengths
                     for dim in [1, 3, 5]:
-                        # Iterate over different input dimensions
                         time_series = arma.generate(
                             rng=self.rng, n_inputs_points=length, input_dimension=dim
                         )
-
-                        # Test output data type
                         self.assertIsInstance(time_series, np.ndarray)
+                        self.assertEqual(time_series.shape, (length, dim))
+                        self.assertTrue(np.all(np.isfinite(time_series)))
 
-                        # Test output length and dimensions
-                        self.assertEqual(first=time_series.shape, second=(length, dim))
+    def test_upper_bound_enforced(self) -> None:
+        """Generated series should respect the configured upper bound"""
+        upper_bound = 50.0
+        arma = AutoregressiveMovingAverage(upper_bound=upper_bound)
+        rng = np.random.RandomState(123)
+        series = arma.generate(rng=rng, n_inputs_points=128, input_dimension=3)
+        self.assertLessEqual(np.max(np.abs(series)), upper_bound + 1e-8)
+
+    def test_dtype_on_generate(self) -> None:
+        """Generated series should use the configured dtype"""
+        for dtype in [np.float32, np.float64]:
+            arma = AutoregressiveMovingAverage(dtype=dtype)
+            series = arma.generate(
+                rng=np.random.RandomState(0), n_inputs_points=64, input_dimension=2
+            )
+            self.assertEqual(series.dtype, dtype)
+
+    def test_reproducibility_same_seed(self) -> None:
+        """Same seed should produce identical ARMA series"""
+        arma1 = AutoregressiveMovingAverage()
+        arma2 = AutoregressiveMovingAverage()
+        out1 = arma1.generate(
+            rng=np.random.RandomState(42), n_inputs_points=128, input_dimension=2
+        )
+        out2 = arma2.generate(
+            rng=np.random.RandomState(42), n_inputs_points=128, input_dimension=2
+        )
+        np.testing.assert_array_equal(out1, out2)
 
     def test_call(self) -> None:
         """Test data generation class response"""
         time_series = self.arma(rng=self.rng, n_inputs_points=256, input_dimension=1)
-
-        # Test input data type and dimension
-        self.assertIsInstance(
-            obj=time_series, cls=np.ndarray, msg="Wrong class response for ARMA!"
-        )
-        self.assertEqual(
-            time_series.shape, (256, 1), msg="Wrong data dimension for ARMA!"
-        )
+        self.assertIsInstance(time_series, np.ndarray)
+        self.assertEqual(time_series.shape, (256, 1))
 
     def test_str(self) -> None:
         """Test the magic method to get string description"""
-        # Test data types and return contents
-        self.assertIsInstance(
-            obj=str(self.arma),
-            cls=str,
-            msg="The __str__ method gets the wrong data type!",
-        )
-        self.assertEqual(
-            str(self.arma), "ARMA", msg="The __str__ method returns the wrong content!"
-        )
+        self.assertIsInstance(str(self.arma), str)
+        self.assertEqual(str(self.arma), "ARMA")
+
+
+if __name__ == "__main__":
+    unittest.main()

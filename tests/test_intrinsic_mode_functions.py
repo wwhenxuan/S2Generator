@@ -618,6 +618,87 @@ class TestIntrinsicModeFunction(unittest.TestCase):
             # If it fails, that's also a valid test result
             self.assertIsInstance(e, Exception)
 
+    def test_adjust_upper_energy_scales(self):
+        """adjust_upper_energy should produce energy near a random fraction of upper_energy"""
+        imf = IntrinsicModeFunction(upper_energy=16.0)
+        signal = np.ones(128, dtype=np.float64) * 10.0
+        adjusted = imf.adjust_upper_energy(signal, rng=np.random.RandomState(0))
+        energy = float(np.mean(adjusted**2))
+        # Target energy is (U(0,1)+0.05)*upper_energy ∈ (0.05, 1.05]*16
+        self.assertGreater(energy, 0.0)
+        self.assertLessEqual(energy, 16.0 * 1.05 + 1e-6)
+
+    def test_adjust_upper_energy_uses_global_numpy_rng(self):
+        """
+        Documented behavior: adjust_upper_energy samples with np.random.rand(),
+        not the provided RandomState, so global seed changes the output.
+        """
+        imf = IntrinsicModeFunction(upper_energy=8.0)
+        signal = np.linspace(0.1, 1.0, 64)
+        rng = np.random.RandomState(123)
+
+        np.random.seed(1)
+        out1 = imf.adjust_upper_energy(signal.copy(), rng=rng)
+        np.random.seed(2)
+        out2 = imf.adjust_upper_energy(signal.copy(), rng=rng)
+
+        self.assertFalse(np.allclose(out1, out2))
+
+    def test_max_choice_imfs_is_exclusive(self):
+        """rng.randint(high=max_choice_imfs) never returns max_choice_imfs"""
+        imf = IntrinsicModeFunction(min_choice_imfs=1, max_choice_imfs=3)
+        counts = set()
+        rng = np.random.RandomState(0)
+        for _ in range(40):
+            base = np.zeros(32, dtype=np.float64)
+            component = imf.get_choice_imfs(
+                imfs=base, rng=rng, n_inputs_points=32
+            )
+            counts.add(rng.randint(low=imf.min_choice_imfs, high=imf.max_choice_imfs))
+            self.assertEqual(component.shape[0], 32)
+        self.assertTrue(all(c < imf.max_choice_imfs for c in counts))
+        self.assertNotIn(imf.max_choice_imfs, counts)
+
+    def test_amplitude_energy_ordering(self):
+        """Larger amplitude settings produce larger energy when energy scaling is disabled"""
+        from unittest.mock import patch
+
+        rng_small = np.random.RandomState(7)
+        rng_large = np.random.RandomState(7)
+        prob = {"generate_sin_signal": 0.7, "generate_cos_signal": 0.3}
+        imf_small = IntrinsicModeFunction(
+            min_amplitude=0.01,
+            max_amplitude=0.02,
+            noise_level=0.0,
+            min_base_imfs=1,
+            max_base_imfs=1,
+            min_choice_imfs=1,
+            max_choice_imfs=2,
+            probability_dict=prob,
+        )
+        imf_large = IntrinsicModeFunction(
+            min_amplitude=5.0,
+            max_amplitude=6.0,
+            noise_level=0.0,
+            min_base_imfs=1,
+            max_base_imfs=1,
+            min_choice_imfs=1,
+            max_choice_imfs=2,
+            probability_dict=prob,
+        )
+        with patch.object(
+            IntrinsicModeFunction,
+            "adjust_upper_energy",
+            side_effect=lambda signal, rng=None: signal,
+        ):
+            small = imf_small.generate(
+                rng_small, n_inputs_points=128, input_dimension=1
+            )
+            large = imf_large.generate(
+                rng_large, n_inputs_points=128, input_dimension=1
+            )
+        self.assertLess(_get_energy(small.flatten()), _get_energy(large.flatten()))
+
 
 if __name__ == "__main__":
     unittest.main()

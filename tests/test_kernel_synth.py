@@ -669,6 +669,57 @@ class TestKernelSynthIntegration(unittest.TestCase):
         self.assertEqual(zeros.shape, (10, 2))
         np.testing.assert_array_equal(zeros, np.zeros((10, 2), dtype=ks.dtype))
 
+    def test_generate_finite_values(self):
+        """KernelSynth outputs should be finite"""
+        ks = KernelSynth()
+        result = ks.generate(
+            np.random.RandomState(0), n_inputs_points=64, input_dimension=2
+        )
+        self.assertEqual(result.shape, (64, 2))
+        self.assertTrue(np.all(np.isfinite(result)))
+
+    def test_random_binary_map_uses_global_rng(self):
+        """random_binary_map currently samples operators via global np.random"""
+        from s2generator.excitation.kernel_synth import random_binary_map
+        from sklearn.gaussian_process.kernels import RBF, WhiteKernel
+
+        a, b = RBF(), WhiteKernel()
+        np.random.seed(1)
+        k1 = random_binary_map(a, b)
+        np.random.seed(1)
+        k1_again = random_binary_map(a, b)
+        np.random.seed(2)
+        k2 = random_binary_map(a, b)
+        self.assertEqual(str(k1), str(k1_again))
+        # With enough trials different seeds often differ; at least ensure both are valid kernels.
+        self.assertTrue(hasattr(k1, "diag"))
+        self.assertTrue(hasattr(k2, "diag"))
+
+    def test_bank_list_cached_at_init(self):
+        """Kernel bank flags are resolved once at init into bank_list"""
+        ks = KernelSynth(
+            rbf=True,
+            white_kernel=False,
+            constant_kernel=False,
+            exp_sine_squared=False,
+            dot_product=False,
+            rational_quadratic=False,
+        )
+        before = len(ks.bank_list)
+        ks.rbf = False
+        # Mutating the flag after init should not rebuild bank_list automatically
+        self.assertEqual(len(ks.bank_list), before)
+        self.assertEqual(before, 1)
+
+    def test_sample_from_gp_prior_rejects_3d(self):
+        """GP prior sampler should reject time axes that are not 1D/2D"""
+        from s2generator.excitation.kernel_synth import sample_from_gp_prior
+        from sklearn.gaussian_process.kernels import RBF
+
+        time_series = np.zeros((4, 1, 1))
+        with self.assertRaises(AssertionError):
+            sample_from_gp_prior(RBF(), time_series, random_seed=0)
+
 
 if __name__ == "__main__":
     unittest.main()

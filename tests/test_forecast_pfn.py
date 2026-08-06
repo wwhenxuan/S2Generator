@@ -675,6 +675,72 @@ class TestForecastPFN(unittest.TestCase):
         # (though this is not guaranteed, it's very likely)
         self.assertFalse(np.array_equal(result_transition, result_no_transition))
 
+    def test_exp_trend_false_disables_exp_component(self):
+        """exp_trend=False should disable the exponential trend term"""
+        fpfn = ForecastPFN(exp_trend=False, random_walk=False)
+        result = fpfn.generate_series(
+            rng=self.rng,
+            length=64,
+            freq_index=0,
+            start=pd.Timestamp("2021-01-01"),
+            random_walk=False,
+        )
+        self.assertIsNone(fpfn.scale_config.exp)
+        self.assertEqual(len(result["values"]), 64)
+        self.assertTrue(np.all(np.isfinite(result["values"])))
+
+    def test_generate_random_walk_true(self):
+        """random_walk=True path should still return finite series"""
+        fpfn = ForecastPFN(random_walk=False)
+        result = fpfn.generate(
+            rng=np.random.RandomState(3),
+            n_inputs_points=64,
+            input_dimension=1,
+            random_walk=True,
+        )
+        self.assertEqual(result.shape, (64, 1))
+        self.assertTrue(np.all(np.isfinite(result)))
+        # generate() currently mutates the instance flag when override is provided
+        self.assertTrue(fpfn.random_walk)
+
+    def test_generate_nan_retry(self):
+        """generate() should retry when an intermediate series contains NaN"""
+        fpfn = ForecastPFN(random_walk=False)
+        call_count = {"n": 0}
+        original = fpfn._select_ndarray_from_dict
+
+        def flaky_select(*args, **kwargs):
+            call_count["n"] += 1
+            values = np.asarray(original(*args, **kwargs), dtype=float).copy()
+            if call_count["n"] == 1:
+                values[0] = np.nan
+            return values
+
+        with patch.object(fpfn, "_select_ndarray_from_dict", side_effect=flaky_select):
+            result = fpfn.generate(
+                rng=np.random.RandomState(5), n_inputs_points=48, input_dimension=1
+            )
+
+        self.assertGreaterEqual(call_count["n"], 2)
+        self.assertEqual(result.shape, (48, 1))
+        self.assertTrue(np.all(np.isfinite(result)))
+
+    def test_set_freq_variables_none_keeps_sub_day_config(self):
+        """Passing None to set_freq_variables should keep the class is_sub_day setting"""
+        fpfn = ForecastPFN(is_sub_day=True)
+        before = len(fpfn.frequencies)
+        fpfn.set_freq_variables(None)
+        self.assertEqual(len(fpfn.frequencies), before)
+        self.assertEqual(len(fpfn.frequencies), 5)
+
+    def test_generated_values_are_finite(self):
+        """All generated ForecastPFN values should be finite"""
+        fpfn = ForecastPFN()
+        result = fpfn.generate(
+            rng=np.random.RandomState(11), n_inputs_points=128, input_dimension=2
+        )
+        self.assertTrue(np.all(np.isfinite(result)))
+
 
 if __name__ == "__main__":
     unittest.main()
