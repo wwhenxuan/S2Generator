@@ -25,6 +25,7 @@ from s2generator.symbol.symbol_errors import (
     SymbolTypeError,
     UnbalancedParenthesesError,
     UnrecognizedTokenError,
+    UnexpectedTokenError,
     UnexpectedEndError,
     TrailingTokensError,
     EmptySegmentError,
@@ -63,9 +64,6 @@ __all__ = [
     "allowed_operators",
 ]
 
-# Re-export UnexpectedTokenError for a stable public surface
-from s2generator.symbol.symbol_errors import UnexpectedTokenError  # noqa: E402
-
 _ASCII_OP_HINTS = {
     "+": "use the word operator 'add' inside parentheses, e.g. '(x_0 add 1)'",
     "-": "use the word operator 'sub' inside parentheses, e.g. '(x_0 sub 1)'",
@@ -98,7 +96,9 @@ def check_symbol(
 
     if isinstance(symbol, (Node, NodeList)):
         trees = parse_symbol(symbol, params)
-        _check_semantics(trees, expression=str(symbol), require_variable=require_variable)
+        _check_semantics(
+            trees, expression=str(symbol), require_variable=require_variable
+        )
         return trees
 
     if isinstance(symbol, list):
@@ -396,9 +396,7 @@ def _validate_prefix_arity(
         return 1
 
     suggestion = _suggest_token(str(head))
-    hint = (
-        f"did you mean {suggestion!r}? " if suggestion else ""
-    ) + (
+    hint = (f"did you mean {suggestion!r}? " if suggestion else "") + (
         "allowed leaves: x_i / numbers / rand / e / pi; "
         f"operators: {sorted(all_operators)}"
     )

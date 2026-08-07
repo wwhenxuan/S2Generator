@@ -103,7 +103,9 @@ def parse_symbol(
     if isinstance(symbol, Node):
         return NodeList([symbol])
     if isinstance(symbol, list):
-        return _parse_prefix_tokens(symbol, params, expression=",".join(map(str, symbol)))
+        return _parse_prefix_tokens(
+            symbol, params, expression=",".join(map(str, symbol))
+        )
     if not isinstance(symbol, str):
         raise SymbolTypeError(
             "Unsupported symbol type.",
@@ -175,8 +177,10 @@ def _parse_prefix_tokens(
         node, consumed = _decode_prefix_node(group, params, expression=expression)
         if node is None or consumed != len(group):
             bad = group[consumed] if consumed < len(group) else group[0]
-            if bad not in all_operators and not str(bad).startswith("x_") and not _is_number(
-                str(bad)
+            if (
+                bad not in all_operators
+                and not str(bad).startswith("x_")
+                and not _is_number(str(bad))
             ):
                 raise UnknownOperatorError(
                     f"Unknown prefix token {bad!r}.",
@@ -389,7 +393,9 @@ class _InfixParser:
                 "Unexpected end of symbolic expression.",
                 expression=self.expression,
                 hint=(
-                    f"expected {expected!r}" if expected is not None else "expression is incomplete"
+                    f"expected {expected!r}"
+                    if expected is not None
+                    else "expression is incomplete"
                 ),
             )
         if expected is not None and tok != expected:
