@@ -29,13 +29,15 @@ We only used [`NumPy`](https://numpy.org/), [`Scipy`](https://scipy.org/) and [`
 
 ## ✨ Usage
 
-We provide a unified data generation interface [`Generator`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/generators.py), two parameter modules [`SeriesParams`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/params/series_params.py) and [`SymbolParams`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/params/symbol_params.py), as well as auxiliary modules for the generation of excitation time series and complex system. We first specify the parameters or use the default parameters to create parameter objects, and then pass them into our `Generator` respectively. finally, we can start data generation through the `run` method after instantiation.
+We provide a unified data generation interface [`SeriesSymbolGenerator`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/generators.py), two parameter modules [`SeriesParams`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/params/series_params.py) and [`SymbolParams`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/params/symbol_params.py), as well as auxiliary modules for the generation of excitation time series and complex system. We first specify the parameters or use the default parameters to create parameter objects, and then pass them into our `SeriesSymbolGenerator` respectively. finally, we can start data generation through the `run` method after instantiation.
+
+For a user-specified symbolic expression, use [`CustomSymbolGenerator`](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/symbol/generators.py).
 
 ~~~python
 import numpy as np
 
 # Importing data generators object
-from s2generator.symbol import Generator, SeriesParams, SymbolParams
+from s2generator.symbol import SeriesSymbolGenerator, SeriesParams, SymbolParams
 from s2generator.utils import plot_series
 
 # Creating a random number object
@@ -46,7 +48,7 @@ series_params = SeriesParams()
 symbol_params = SymbolParams()  # specify specific parameters here or use the default parameters
 
 # Create an instance
-generator = Generator(series_params=series_params, symbol_params=symbol_params)
+generator = SeriesSymbolGenerator(series_params=series_params, symbol_params=symbol_params)
 
 # Start generating symbolic expressions, sampling and generating series
 symbols, inputs, outputs = generator.run(
@@ -57,6 +59,13 @@ symbols, inputs, outputs = generator.run(
 print(symbols)
 # Visualize the time series
 fig = plot_series(inputs, outputs)
+~~~
+
+~~~python
+from s2generator.symbol import CustomSymbolGenerator
+
+custom = CustomSymbolGenerator("(x_0 add sin(x_0))")
+symbols, inputs, outputs = custom.run(rng, n_inputs_points=256)
 ~~~
 
 > (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))

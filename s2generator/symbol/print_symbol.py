@@ -365,10 +365,9 @@ def symbol_to_markdown(symbol: Union[str, Node, NodeList]) -> List[str]:
 #     import numpy as np
 #
 #     # Importing data generators, parameter controllers and visualization functions
-#     from S2Generator import Generator, Params, plot_series
+#     from s2generator.symbol import SeriesSymbolGenerator
 #
-#     params = Params()  # Adjust the parameters here
-#     generator = Generator(params)  # Create an instance
+#     generator = SeriesSymbolGenerator()  # Create an instance
 #
 #     rng = np.random.RandomState(0)  # Creating a random number object
 #     # Start generating symbolic expressions, sampling and generating series

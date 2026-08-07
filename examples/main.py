@@ -36,7 +36,7 @@ import numpy as np
 import torch
 
 from colorama import Fore, Style
-from s2generator.symbol import SeriesParams, SymbolParams, Generator
+from s2generator.symbol import SeriesParams, SymbolParams, SeriesSymbolGenerator
 
 from typing import List, Optional, Any, Union
 
@@ -55,7 +55,7 @@ args = parser.parse_args()
 series_params = SeriesParams()
 symbol_params = SymbolParams(max_trials=64)
 
-generator = Generator(series_params, symbol_params)
+generator = SeriesSymbolGenerator(series_params, symbol_params)
 
 
 def process_item(item: int) -> str:
