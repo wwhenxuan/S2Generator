@@ -28,6 +28,17 @@ from s2generator.symbol.base import (
     all_operators,
 )
 from s2generator.symbol.params import SymbolParams
+from s2generator.symbol.symbol_errors import (
+    EmptySymbolError,
+    SymbolTypeError,
+    UnrecognizedTokenError,
+    UnexpectedTokenError,
+    UnexpectedEndError,
+    TrailingTokensError,
+    EmptySegmentError,
+    UnknownOperatorError,
+    PrefixArityError,
+)
 
 # Binary operators that appear as infix words: (left op right)
 _BINARY_OPS = {
@@ -92,23 +103,33 @@ def parse_symbol(
     if isinstance(symbol, Node):
         return NodeList([symbol])
     if isinstance(symbol, list):
-        return _parse_prefix_tokens(symbol, params)
+        return _parse_prefix_tokens(symbol, params, expression=",".join(map(str, symbol)))
     if not isinstance(symbol, str):
-        raise TypeError(
-            "symbol must be str, Node, NodeList, or a list of prefix tokens, "
-            f"got {type(symbol)!r}"
+        raise SymbolTypeError(
+            "Unsupported symbol type.",
+            expression=repr(symbol),
+            hint=(
+                "pass a str (infix/prefix), Node, NodeList, or list of prefix tokens; "
+                f"got {type(symbol).__name__}"
+            ),
         )
 
+    expression = symbol
     text = symbol.strip()
     if not text:
-        raise ValueError("Empty symbolic expression.")
+        raise EmptySymbolError(
+            "Symbolic expression is empty.",
+            expression=expression,
+            hint="provide an infix string like '(x_0 add sin(x_0))' "
+            "or a prefix string like 'add,x_0,sin,x_0'",
+        )
 
     # Prefix form is comma-separated (optionally with ",|," for multi-output).
     if _looks_like_prefix(text):
         tokens = [tok for tok in text.split(",") if tok != ""]
-        return _parse_prefix_tokens(tokens, params)
+        return _parse_prefix_tokens(tokens, params, expression=expression)
 
-    return _parse_infix(text, params)
+    return _parse_infix(text, params, expression=expression)
 
 
 def _looks_like_prefix(text: str) -> bool:
@@ -119,10 +140,20 @@ def _looks_like_prefix(text: str) -> bool:
     return " " not in text.replace(",", "")
 
 
-def _parse_prefix_tokens(tokens: List[str], params: SymbolParams) -> NodeList:
+def _parse_prefix_tokens(
+    tokens: List[str],
+    params: SymbolParams,
+    *,
+    expression: Optional[str] = None,
+) -> NodeList:
     """Decode a prefix token list into a NodeList (supports ``|`` separators)."""
+    expression = expression if expression is not None else ",".join(map(str, tokens))
     if not tokens:
-        raise ValueError("Empty prefix token list.")
+        raise EmptySymbolError(
+            "Prefix token list is empty.",
+            expression=expression,
+            hint="example prefix: 'add,x_0,sin,x_0'",
+        )
 
     # Split multi-output expressions at "|"
     groups: List[List[str]] = [[]]
@@ -133,21 +164,45 @@ def _parse_prefix_tokens(tokens: List[str], params: SymbolParams) -> NodeList:
             groups[-1].append(tok)
 
     nodes = []
-    for group in groups:
+    for g_idx, group in enumerate(groups):
         if not group:
-            raise ValueError("Empty expression segment in prefix tokens.")
-        node, consumed = _decode_prefix_node(group, params)
+            raise EmptySegmentError(
+                f"Empty prefix segment at output index {g_idx}.",
+                expression=expression,
+                hint="do not place '|' at the ends or consecutively, "
+                "e.g. 'add,x_0,1,|,sin,x_1'",
+            )
+        node, consumed = _decode_prefix_node(group, params, expression=expression)
         if node is None or consumed != len(group):
-            raise ValueError(
-                f"Failed to parse prefix tokens: {group!r} "
-                f"(consumed={consumed}, length={len(group)})"
+            bad = group[consumed] if consumed < len(group) else group[0]
+            if bad not in all_operators and not str(bad).startswith("x_") and not _is_number(
+                str(bad)
+            ):
+                raise UnknownOperatorError(
+                    f"Unknown prefix token {bad!r}.",
+                    expression=expression,
+                    token=str(bad),
+                    hint=(
+                        "allowed leaves: x_i / numbers / rand / e / pi; "
+                        f"operators: {sorted(all_operators)}"
+                    ),
+                )
+            raise PrefixArityError(
+                f"Failed to parse prefix segment {g_idx}: {group!r} "
+                f"(consumed={consumed}, length={len(group)}).",
+                expression=expression,
+                token=str(bad),
+                hint="check operator arity: binary ops need 2 args, unary ops need 1",
             )
         nodes.append(node)
     return NodeList(nodes)
 
 
 def _decode_prefix_node(
-    tokens: List[str], params: SymbolParams
+    tokens: List[str],
+    params: SymbolParams,
+    *,
+    expression: Optional[str] = None,
 ) -> Tuple[Optional[Node], int]:
     """Recursively decode one prefix expression into a Node."""
     if not tokens:
@@ -158,20 +213,40 @@ def _decode_prefix_node(
         node = Node(head, params)
         arity = all_operators[head]
         pos = 1
-        for _ in range(arity):
-            child, length = _decode_prefix_node(tokens[pos:], params)
+        for arg_i in range(arity):
+            if pos >= len(tokens):
+                raise PrefixArityError(
+                    f"Operator {head!r} expects {arity} argument(s), "
+                    f"but argument #{arg_i + 1} is missing.",
+                    expression=expression,
+                    token=str(head),
+                    hint=(
+                        f"binary form: '{head},x_0,x_1'; unary form: '{head},x_0'"
+                        if arity == 2
+                        else f"unary form: '{head},x_0' or infix '{head}(x_0)'"
+                    ),
+                )
+            child, length = _decode_prefix_node(
+                tokens[pos:], params, expression=expression
+            )
             if child is None:
-                return None, pos
+                bad = tokens[pos]
+                raise UnknownOperatorError(
+                    f"Cannot parse argument of operator {head!r}: {bad!r}.",
+                    expression=expression,
+                    token=str(bad),
+                    hint=f"operators: {sorted(all_operators)}; leaves: x_i / numbers / rand",
+                )
             node.push_child(child)
             pos += length
         return node, pos
 
     # Leaf: variable, named constant, or numeric literal
     if (
-        head.startswith("x_")
+        str(head).startswith("x_")
         or head in _LEAF_CONSTANTS
         or _is_number(head)
-        or head.startswith("CONSTANT")
+        or str(head).startswith("CONSTANT")
     ):
         return Node(head, params), 1
 
@@ -186,21 +261,64 @@ def _is_number(token: str) -> bool:
         return False
 
 
-def _tokenize(text: str) -> List[str]:
+def _tokenize(text: str, *, expression: Optional[str] = None) -> List[str]:
+    expression = expression if expression is not None else text
     tokens = [m.group(1) for m in _TOKEN_RE.finditer(text)]
     if not tokens:
-        raise ValueError(f"Unable to tokenize symbolic expression: {text!r}")
+        raise UnrecognizedTokenError(
+            "Unable to tokenize symbolic expression.",
+            expression=expression,
+            hint="example: '(x_0 add sin(x_0))'",
+        )
     # Ensure the whole string was consumed (aside from whitespace)
     consumed = "".join(tokens)
     compact_src = re.sub(r"\s+", "", text)
     compact_tok = re.sub(r"\s+", "", consumed)
     if compact_src != compact_tok:
-        raise ValueError(f"Unrecognized tokens in symbolic expression: {text!r}")
+        # Locate first mismatch for a precise position
+        pos = 0
+        for ch in text:
+            if ch.isspace():
+                pos += 1
+                continue
+            break
+        # Fallback scan
+        scan = 0
+        built = ""
+        while scan < len(text):
+            if text[scan].isspace():
+                scan += 1
+                continue
+            m = _TOKEN_RE.match(text, scan)
+            if m is None:
+                raise UnrecognizedTokenError(
+                    f"Unrecognized character {text[scan]!r} in symbolic expression.",
+                    expression=expression,
+                    position=scan,
+                    token=text[scan],
+                    hint=(
+                        "allowed tokens: x_i, numbers, '(', ')', '|', '**2'/'**3', "
+                        f"operators {sorted(_BINARY_OPS | _UNARY_OPS)}"
+                    ),
+                )
+            built += m.group(1)
+            scan = m.end()
+        raise UnrecognizedTokenError(
+            "Unrecognized tokens in symbolic expression.",
+            expression=expression,
+            hint="check for illegal characters or malformed numbers",
+        )
     return tokens
 
 
-def _parse_infix(text: str, params: SymbolParams) -> NodeList:
+def _parse_infix(
+    text: str,
+    params: SymbolParams,
+    *,
+    expression: Optional[str] = None,
+) -> NodeList:
     """Parse one or more infix expressions separated by ``|``."""
+    expression = expression if expression is not None else text
     # Split top-level multi-output expressions on "|"
     segments: List[str] = []
     depth = 0
@@ -216,10 +334,15 @@ def _parse_infix(text: str, params: SymbolParams) -> NodeList:
     segments.append(text[start:].strip())
 
     nodes = []
-    for segment in segments:
+    for idx, segment in enumerate(segments):
         if not segment:
-            raise ValueError("Empty expression segment in infix string.")
-        parser = _InfixParser(segment, params)
+            raise EmptySegmentError(
+                f"Empty infix segment at output index {idx}.",
+                expression=expression,
+                hint="multi-output expressions use '|' between non-empty parts, "
+                "e.g. '(x_0 add 1) | sin(x_1)'",
+            )
+        parser = _InfixParser(segment, params, expression=expression)
         nodes.append(parser.parse())
     return NodeList(nodes)
 
@@ -227,16 +350,30 @@ def _parse_infix(text: str, params: SymbolParams) -> NodeList:
 class _InfixParser:
     """Recursive-descent parser for the project's infix symbolic format."""
 
-    def __init__(self, text: str, params: SymbolParams) -> None:
-        self.tokens = _tokenize(text)
+    def __init__(
+        self,
+        text: str,
+        params: SymbolParams,
+        *,
+        expression: Optional[str] = None,
+    ) -> None:
+        self.expression = expression if expression is not None else text
+        self.tokens = _tokenize(text, expression=self.expression)
         self.pos = 0
         self.params = params
 
     def parse(self) -> Node:
         node = self._parse_expr()
         if self.pos != len(self.tokens):
-            raise ValueError(
-                f"Unexpected trailing tokens starting at {self.tokens[self.pos]!r}"
+            raise TrailingTokensError(
+                "Unexpected trailing tokens after a complete expression.",
+                expression=self.expression,
+                token=self.tokens[self.pos],
+                hint=(
+                    "binary operators must be written as '(left op right)'; "
+                    "for example write '((x_0 mul 2) add sin(x_0))' "
+                    "instead of '(x_0 mul 2) add sin(x_0)'"
+                ),
             )
         return node
 
@@ -248,9 +385,20 @@ class _InfixParser:
     def _consume(self, expected: Optional[str] = None) -> str:
         tok = self._peek()
         if tok is None:
-            raise ValueError("Unexpected end of symbolic expression.")
+            raise UnexpectedEndError(
+                "Unexpected end of symbolic expression.",
+                expression=self.expression,
+                hint=(
+                    f"expected {expected!r}" if expected is not None else "expression is incomplete"
+                ),
+            )
         if expected is not None and tok != expected:
-            raise ValueError(f"Expected {expected!r}, got {tok!r}")
+            raise UnexpectedTokenError(
+                f"Expected {expected!r}, got {tok!r}.",
+                expression=self.expression,
+                token=tok,
+                hint=f"check parentheses and operator placement near {tok!r}",
+            )
         self.pos += 1
         return tok
 
@@ -267,7 +415,11 @@ class _InfixParser:
     def _parse_primary(self) -> Node:
         tok = self._peek()
         if tok is None:
-            raise ValueError("Unexpected end of symbolic expression.")
+            raise UnexpectedEndError(
+                "Unexpected end of symbolic expression.",
+                expression=self.expression,
+                hint="expression is incomplete",
+            )
 
         # Parenthesized binary expression or grouped sub-expression:
         # (left op right)  or  (expr)
@@ -301,4 +453,22 @@ class _InfixParser:
         if tok.startswith("x_") or tok in _LEAF_CONSTANTS or _is_number(tok):
             return Node(self._consume(), self.params)
 
-        raise ValueError(f"Unexpected token in symbolic expression: {tok!r}")
+        # Unknown identifier: maybe a mistyped operator
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", tok):
+            raise UnknownOperatorError(
+                f"Unknown operator or leaf {tok!r}.",
+                expression=self.expression,
+                token=tok,
+                hint=(
+                    f"binary operators: {sorted(_BINARY_OPS)}; "
+                    f"unary operators: {sorted(_UNARY_OPS)}; "
+                    "leaves: x_i / numbers / rand / e / pi"
+                ),
+            )
+
+        raise UnexpectedTokenError(
+            f"Unexpected token in symbolic expression: {tok!r}.",
+            expression=self.expression,
+            token=tok,
+            hint="check parentheses and operator words such as add/mul/sin",
+        )

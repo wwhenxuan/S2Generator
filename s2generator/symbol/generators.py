@@ -34,6 +34,7 @@ from s2generator.symbol.parse_symbol import (
     infer_input_dimension,
     infer_output_dimension,
 )
+from s2generator.symbol.check_symbol import check_symbol
 from s2generator.utils._tools import (
     z_score_normalization,
     max_min_normalization,
@@ -1158,7 +1159,12 @@ class CustomSymbolGenerator(object):
             logging_path=logging_path,
             special_words=special_words,
         )
-        self.symbol = self._generator.parse_symbol(symbol)
+        # Validate with precise exceptions before binding the expression.
+        self.symbol = check_symbol(
+            symbol,
+            symbol_params=self._generator.symbol_params,
+            require_variable=True,
+        )
         self.input_dimension = infer_input_dimension(self.symbol)
         self.output_dimension = infer_output_dimension(self.symbol)
 

@@ -4,7 +4,7 @@ Symbolic expression (complex system) generation for S2 (Series-Symbol) data.
 
 This subpackage contains the original Series-Symbol core:
 expression trees, encoders, SeriesSymbolGenerator / CustomSymbolGenerator,
-and parameters.
+parsing / validation helpers, and parameters.
 """
 
 __all__ = [
@@ -27,6 +27,24 @@ __all__ = [
     "parse_symbol",
     "infer_input_dimension",
     "infer_output_dimension",
+    "check_symbol",
+    "is_valid_symbol",
+    "explain_symbol_error",
+    "suggest_fix",
+    "allowed_operators",
+    "SymbolExpressionError",
+    "EmptySymbolError",
+    "SymbolTypeError",
+    "UnbalancedParenthesesError",
+    "UnrecognizedTokenError",
+    "UnexpectedTokenError",
+    "UnexpectedEndError",
+    "TrailingTokensError",
+    "EmptySegmentError",
+    "UnknownOperatorError",
+    "PrefixArityError",
+    "MissingVariableError",
+    "InvalidBinaryFormError",
     "symbol_to_markdown",
     "params",
 ]
@@ -51,6 +69,26 @@ from .parse_symbol import (
     parse_symbol,
     infer_input_dimension,
     infer_output_dimension,
+)
+from .check_symbol import (
+    check_symbol,
+    is_valid_symbol,
+    explain_symbol_error,
+    suggest_fix,
+    allowed_operators,
+    SymbolExpressionError,
+    EmptySymbolError,
+    SymbolTypeError,
+    UnbalancedParenthesesError,
+    UnrecognizedTokenError,
+    UnexpectedTokenError,
+    UnexpectedEndError,
+    TrailingTokensError,
+    EmptySegmentError,
+    UnknownOperatorError,
+    PrefixArityError,
+    MissingVariableError,
+    InvalidBinaryFormError,
 )
 from .print_symbol import symbol_to_markdown
 from . import params
