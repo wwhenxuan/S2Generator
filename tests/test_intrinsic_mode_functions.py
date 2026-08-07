@@ -651,9 +651,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         rng = np.random.RandomState(0)
         for _ in range(40):
             base = np.zeros(32, dtype=np.float64)
-            component = imf.get_choice_imfs(
-                imfs=base, rng=rng, n_inputs_points=32
-            )
+            component = imf.get_choice_imfs(imfs=base, rng=rng, n_inputs_points=32)
             counts.add(rng.randint(low=imf.min_choice_imfs, high=imf.max_choice_imfs))
             self.assertEqual(component.shape[0], 32)
         self.assertTrue(all(c < imf.max_choice_imfs for c in counts))

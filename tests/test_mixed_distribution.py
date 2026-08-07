@@ -799,8 +799,9 @@ class TestOriginalCodeIssues(unittest.TestCase):
             calls["uniform"] += 1
             return original_uniform(*args, **kwargs)
 
-        with patch.object(md, "generate_gaussian", side_effect=wrap_gaussian), patch.object(
-            md, "generate_uniform", side_effect=wrap_uniform
+        with (
+            patch.object(md, "generate_gaussian", side_effect=wrap_gaussian),
+            patch.object(md, "generate_uniform", side_effect=wrap_uniform),
         ):
             out = md.generate_once(np.random.RandomState(0), n_inputs_points=40)
 
