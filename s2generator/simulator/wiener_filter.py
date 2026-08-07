@@ -6,7 +6,7 @@ Created on 2026/02/18 14:28:15
 @url: https://github.com/wwhenxuan/S2Generator
 """
 
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import numpy as np
 from scipy import signal
@@ -14,6 +14,10 @@ from scipy.linalg import toeplitz
 from statsmodels.tsa.stattools import acf
 
 from s2generator.utils._tools import yule_walker
+from s2generator.simulator.low_pass_filter import (
+    maybe_attach_lowpass,
+    maybe_apply_lowpass,
+)
 
 
 class WienerFilterSimulator(object):
@@ -54,11 +58,15 @@ class WienerFilterSimulator(object):
         filter_order: int = 6,
         revin: Optional[bool] = True,
         random_state: Optional[int] = 42,
+        lowpass: bool = False,
+        lowpass_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         :param filter_order: The order of the Wiener filter (including a0=1).
         :param revin: Whether to perform reversible normalization (keep the variance of the input sequence unchanged).
         :param random_state: The random seed for reproducibility.
+        :param lowpass: Whether to apply low-pass post-processing after ``transform``.
+        :param lowpass_kwargs: Optional kwargs forwarded to ``LowPassFilter``.
 
         :return: None
         """
@@ -87,6 +95,11 @@ class WienerFilterSimulator(object):
         # Record the currently used random seed and create a random number generator.
         self.random_state = random_state
         self.rng = np.random.RandomState(seed=random_state)
+
+        # Optional low-pass post-processing of generated series
+        self.lowpass = lowpass
+        self.lowpass_kwargs = lowpass_kwargs
+        self._lowpass_filter = None
 
         # Record the original time series of input
         self.time_series = None
@@ -137,6 +150,14 @@ class WienerFilterSimulator(object):
         )
         self.residuals = time_series - self.invoke(white_noise=white_noise)
 
+        # Fit optional low-pass post-filter on the original-scale reference series
+        maybe_attach_lowpass(
+            self,
+            enabled=self.lowpass,
+            kwargs=self.lowpass_kwargs,
+            reference=self.time_series,
+        )
+
     def transform(
         self, num_samples: int, seq_len: int, random_state: Optional[int] = None
     ) -> np.ndarray:
@@ -185,6 +206,7 @@ class WienerFilterSimulator(object):
         else:
             self.simulated_series = simulated_series
 
+        self.simulated_series = maybe_apply_lowpass(self, self.simulated_series)
         return self.simulated_series
 
     def invoke(self, white_noise: np.ndarray) -> np.ndarray:

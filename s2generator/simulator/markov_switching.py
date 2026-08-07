@@ -6,7 +6,7 @@ Created on 2026/06/21 12:01:43
 @url: https://github.com/wwhenxuan/S2Generator
 """
 
-from typing import Union, Optional, Tuple, List
+from typing import Union, Optional, Tuple, List, Dict, Any
 
 import numpy as np
 import pandas as pd
@@ -14,6 +14,10 @@ from statsmodels.tsa.regime_switching.markov_autoregression import (
     MarkovAutoregression,
 )
 from statsmodels.stats.diagnostic import acorr_ljungbox
+from s2generator.simulator.low_pass_filter import (
+    maybe_attach_lowpass,
+    maybe_apply_lowpass,
+)
 
 import warnings
 
@@ -59,6 +63,8 @@ class MarkovSwitchingSimulator(object):
         revin: bool = True,
         random_state: Optional[int] = 42,
         maxiter: int = 200,
+        lowpass: bool = False,
+        lowpass_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         :param max_k_regimes: Maximum number of latent regimes to consider when fitting or searching orders.
@@ -72,6 +78,8 @@ class MarkovSwitchingSimulator(object):
         :param revin: Whether to apply reversible normalization before fitting and inverse transform after generation.
         :param random_state: Random seed for reproducible simulation.
         :param maxiter: Maximum number of iterations for the statsmodels MLE optimizer.
+        :param lowpass: Whether to apply low-pass post-processing after ``transform``.
+        :param lowpass_kwargs: Optional kwargs forwarded to ``LowPassFilter``.
 
         :return: None
         """
@@ -86,6 +94,10 @@ class MarkovSwitchingSimulator(object):
         self.revin = revin
         self.random_state = random_state
         self.maxiter = maxiter
+
+        self.lowpass = lowpass
+        self.lowpass_kwargs = lowpass_kwargs
+        self._lowpass_filter = None
 
         # Normalization statistics for reversible scaling
         self.mean, self.std = None, None
@@ -104,6 +116,7 @@ class MarkovSwitchingSimulator(object):
 
         # Generated samples from the latest transform call
         self.simulated_series = None
+        self.time_series = None
 
     def fit(
         self, time_series: np.ndarray, select_order: Optional[bool] = False
@@ -119,6 +132,7 @@ class MarkovSwitchingSimulator(object):
         # Validate and flatten the input sequence
         time_series = self.check_inputs(time_series=time_series)
         endog = np.asarray(time_series, dtype=np.float64)
+        self.time_series = endog.copy()
 
         # Optionally normalize the series while recording mean and std for inverse transform
         if self.revin:
@@ -160,6 +174,13 @@ class MarkovSwitchingSimulator(object):
                 "please re-evaluate the regime count or autoregressive order."
             )
 
+        maybe_attach_lowpass(
+            self,
+            enabled=self.lowpass,
+            kwargs=self.lowpass_kwargs,
+            reference=self.time_series,
+        )
+
     def transform(
         self, num_samples: int, seq_len: int, random_state: Optional[int] = None
     ) -> np.ndarray:
@@ -196,6 +217,7 @@ class MarkovSwitchingSimulator(object):
         else:
             self.simulated_series = simulated_series
 
+        self.simulated_series = maybe_apply_lowpass(self, self.simulated_series)
         return self.simulated_series
 
     def select_msar_order(self, endog: np.ndarray) -> Tuple[int, int]:

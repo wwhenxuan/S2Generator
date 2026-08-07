@@ -39,9 +39,11 @@ __all__ = [
     "ARIMASimulator",
     "GaussianMixtureSimulator",
     "KalmanFilterSimulator",
+    "LowPassFilter",
     "MarkovSwitchingSimulator",
     "MultivariateSimulator",
     "WienerFilterSimulator",
+    "apply_lowpass",
 ]
 
 from .arima import ARIMASimulator
@@ -49,6 +51,8 @@ from .arima import ARIMASimulator
 from .gaussian_mixture import GaussianMixtureSimulator
 
 from .kalman_filtering import KalmanFilterSimulator
+
+from .low_pass_filter import LowPassFilter, apply_lowpass
 
 from .markov_switching import MarkovSwitchingSimulator
 

@@ -19,6 +19,7 @@ from s2generator.simulator.markov_switching import MarkovSwitchingSimulator
 from s2generator.simulator.kalman_filtering import KalmanFilterSimulator
 from s2generator.simulator.wiener_filter import WienerFilterSimulator
 from s2generator.simulator.gaussian_mixture import GaussianMixtureSimulator
+from s2generator.simulator.low_pass_filter import maybe_apply_lowpass
 
 SimulatorType = Union[
     WienerFilterSimulator,
@@ -227,6 +228,8 @@ class MultivariateSimulator(object):
                     channel_noise = shared_noise[-(seq_len + padding) :]
                     channel_series = simulator.invoke(white_noise=channel_noise)
                     channel_series = _apply_revin(simulator, channel_series)
+                    # Shared-excitation path bypasses transform(); apply low-pass here.
+                    channel_series = maybe_apply_lowpass(simulator, channel_series)
                 else:
                     channel_seed = (
                         None

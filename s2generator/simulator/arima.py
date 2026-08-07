@@ -5,7 +5,7 @@ Created on 2026/02/12 12:53:15
 @email: wwhenxuan@gmail.com
 """
 
-from typing import Union, Optional, Tuple, List, Dict
+from typing import Union, Optional, Tuple, List, Dict, Any
 
 import numpy as np
 import pandas as pd
@@ -18,6 +18,10 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from s2generator.utils._tools import eacf_rlike
 from s2generator.utils.visualization import plot_shapiro_wilk
+from s2generator.simulator.low_pass_filter import (
+    maybe_attach_lowpass,
+    maybe_apply_lowpass,
+)
 
 import warnings
 
@@ -56,6 +60,8 @@ class ARIMASimulator(object):
         not_white_alarm: bool = True,
         revin: bool = True,
         random_state: Optional[int] = 42,
+        lowpass: bool = False,
+        lowpass_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         :param max_p: Maximum AR order (p) to consider when fitting the ARIMA model.
@@ -65,6 +71,8 @@ class ARIMASimulator(object):
         :param not_white_alarm: Whether to issue a warning when the residuals of the fitted model are not white noise.
         :param revin: Should reversible normalization be performed on time series data?
         :param random_state: Random state for reproducibility when generating new time series data.
+        :param lowpass: Whether to apply low-pass post-processing after ``transform``.
+        :param lowpass_kwargs: Optional kwargs forwarded to ``LowPassFilter``.
         """
         self.max_p = max_p
         self.max_d = max_d
@@ -94,6 +102,11 @@ class ARIMASimulator(object):
         # The random state for reproducibility
         self.random_state = random_state
 
+        self.lowpass = lowpass
+        self.lowpass_kwargs = lowpass_kwargs
+        self._lowpass_filter = None
+        self.time_series = None
+
     def fit(
         self, time_series: np.ndarray, select_order: Optional[bool] = False
     ) -> None:
@@ -107,6 +120,7 @@ class ARIMASimulator(object):
         """
         # Check the input time series data
         time_series = self.check_inputs(time_series=time_series)
+        self.time_series = np.asarray(time_series, dtype=np.float64)
 
         # Optionally reverse the time series data to generate data in reverse order
         if self.revin:
@@ -142,6 +156,13 @@ class ARIMASimulator(object):
                 f"Warning: Model residuals may not be white noise (mean p-value={mean_p_value:.4f} < significance level={self.signif}), please re-evaluate the model order or parameters."
             )
 
+        maybe_attach_lowpass(
+            self,
+            enabled=self.lowpass,
+            kwargs=self.lowpass_kwargs,
+            reference=self.time_series,
+        )
+
     def transform(
         self, num_samples: int, seq_len: int, random_state: Optional[int] = None
     ) -> np.ndarray:
@@ -154,7 +175,7 @@ class ARIMASimulator(object):
         :return: Transformed time series data with shape (num_samples, seq_len).
         """
         # Check if the model has been fitted
-        if not hasattr(self, "model"):
+        if not hasattr(self, "model") or self.model is None:
             raise ValueError("The model must be fitted before calling transform.")
 
         # Generate new time series data
@@ -166,11 +187,12 @@ class ARIMASimulator(object):
             ),
         )
 
-        return (
+        simulated = (
             generated_series.values.T * self.std + self.mean
             if self.revin
             else generated_series.values.T
         )
+        return maybe_apply_lowpass(self, simulated)
 
     @property
     def param_names(self) -> List[str]:

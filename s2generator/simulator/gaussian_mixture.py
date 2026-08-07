@@ -6,12 +6,16 @@ Created on 2026/06/21 23:00:00
 @url: https://github.com/wwhenxuan/S2Generator
 """
 
-from typing import Optional, Tuple, List, Union
+from typing import Optional, Tuple, List, Union, Dict, Any
 
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.regime_switching.markov_regression import MarkovRegression
 from statsmodels.stats.diagnostic import acorr_ljungbox
+from s2generator.simulator.low_pass_filter import (
+    maybe_attach_lowpass,
+    maybe_apply_lowpass,
+)
 
 import warnings
 
@@ -58,6 +62,8 @@ class GaussianMixtureSimulator(object):
         signif: float = 0.05,
         not_white_alarm: bool = False,
         revin: bool = True,
+        lowpass: bool = False,
+        lowpass_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         :param n_components: Number of Gaussian mixture components / latent regimes.
@@ -78,6 +84,8 @@ class GaussianMixtureSimulator(object):
         :param not_white_alarm: Whether to raise when residuals fail the white-noise test.
         :param revin: Whether to apply reversible normalization before fitting and after
             generation.
+        :param lowpass: Whether to apply low-pass post-processing after ``transform``.
+        :param lowpass_kwargs: Optional kwargs forwarded to ``LowPassFilter``.
 
         :return: None
         """
@@ -111,6 +119,10 @@ class GaussianMixtureSimulator(object):
         self.not_white_alarm = not_white_alarm
         self.revin = revin
 
+        self.lowpass = lowpass
+        self.lowpass_kwargs = lowpass_kwargs
+        self._lowpass_filter = None
+
         self.input_mean, self.input_std = None, None
         self.k_regimes = None
 
@@ -119,6 +131,7 @@ class GaussianMixtureSimulator(object):
         self.residuals = None
         self.smoothed_probabilities = None
         self.simulated_series = None
+        self.time_series = None
 
         self.rng = np.random.RandomState(seed=random_state)
 
@@ -135,6 +148,7 @@ class GaussianMixtureSimulator(object):
         """
         time_series = self.check_inputs(time_series=time_series)
         endog = np.asarray(time_series, dtype=np.float64)
+        self.time_series = endog.copy()
 
         if self.revin:
             self.input_mean = np.mean(endog)
@@ -160,6 +174,13 @@ class GaussianMixtureSimulator(object):
                 f"(mean p-value={mean_p_value:.4f} < significance level={self.signif}), "
                 "please re-evaluate the number of mixture components."
             )
+
+        maybe_attach_lowpass(
+            self,
+            enabled=self.lowpass,
+            kwargs=self.lowpass_kwargs,
+            reference=self.time_series,
+        )
 
     def transform(
         self, num_samples: int, seq_len: int, random_state: Optional[int] = None
@@ -192,6 +213,7 @@ class GaussianMixtureSimulator(object):
         else:
             self.simulated_series = simulated_series
 
+        self.simulated_series = maybe_apply_lowpass(self, self.simulated_series)
         return self.simulated_series
 
     def select_n_components(self, endog: np.ndarray) -> int:

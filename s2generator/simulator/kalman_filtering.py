@@ -6,7 +6,7 @@ Created on 2026/06/21 01:34:30
 @url: https://github.com/wwhenxuan/S2Generator
 """
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 
 import sys
 from pathlib import Path
@@ -19,6 +19,10 @@ from scipy.linalg import toeplitz
 from statsmodels.tsa.stattools import acf
 
 from s2generator.utils._tools import yule_walker
+from s2generator.simulator.low_pass_filter import (
+    maybe_attach_lowpass,
+    maybe_apply_lowpass,
+)
 
 
 class KalmanFilterSimulator(object):
@@ -53,6 +57,8 @@ class KalmanFilterSimulator(object):
         revin: Optional[bool] = True,
         random_state: Optional[int] = 42,
         observation_noise: float = 1e-8,
+        lowpass: bool = False,
+        lowpass_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         :param state_order: Length of the AR coefficient vector (including ``a₀ = 1``),
@@ -62,6 +68,8 @@ class KalmanFilterSimulator(object):
         :param random_state: The random seed for reproducibility.
         :param observation_noise: Diagonal observation-noise variance R used in the Kalman update during fitting.
                                   A tiny positive value avoids numerical singularity when R = 0.
+        :param lowpass: Whether to apply low-pass post-processing after ``transform``.
+        :param lowpass_kwargs: Optional kwargs forwarded to ``LowPassFilter``.
 
         :return: None
         """
@@ -87,6 +95,10 @@ class KalmanFilterSimulator(object):
         self.rng = np.random.RandomState(seed=random_state)
 
         self.observation_noise = observation_noise
+
+        self.lowpass = lowpass
+        self.lowpass_kwargs = lowpass_kwargs
+        self._lowpass_filter = None
 
         self.time_series = None
         self.time_series_trimmed = None
@@ -133,6 +145,13 @@ class KalmanFilterSimulator(object):
         reconstructed = self.invoke(white_noise=white_noise)
         self.residuals = time_series - reconstructed
 
+        maybe_attach_lowpass(
+            self,
+            enabled=self.lowpass,
+            kwargs=self.lowpass_kwargs,
+            reference=self.time_series,
+        )
+
     def transform(
         self, num_samples: int, seq_len: int, random_state: Optional[int] = None
     ) -> np.ndarray:
@@ -170,6 +189,7 @@ class KalmanFilterSimulator(object):
         else:
             self.simulated_series = simulated_series
 
+        self.simulated_series = maybe_apply_lowpass(self, self.simulated_series)
         return self.simulated_series
 
     def invoke(self, white_noise: np.ndarray) -> np.ndarray:
