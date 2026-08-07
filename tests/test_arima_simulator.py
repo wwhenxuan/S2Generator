@@ -245,8 +245,8 @@ class TestARIMASimulator(unittest.TestCase):
 
         simulator = self._make_simulator()
 
-        # model is initialized as None, so simulate should not be callable yet
-        with self.assertRaises(AttributeError):
+        # transform must refuse to run before fit
+        with self.assertRaises(ValueError):
             simulator.transform(num_samples=1, seq_len=50)
 
     def test_adf_test(self) -> None:
