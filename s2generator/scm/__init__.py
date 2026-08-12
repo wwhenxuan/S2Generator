@@ -21,17 +21,18 @@ This module implements the dataset construction methods from three papers:
    - 5-step pipeline: kernel sampling → composition → GP generation →
      activation sampling → causal graph propagation
 
-3. **TabPFN-3 Synthetic Prior** (Prior Labs Team, 2026)
+2. **TiRex-3 pipeline** (generalized SCM)
    - Expanded DAG generation algorithms (chain, fork, collider, random,
      scale-free, bipartite)
    - Rich combiner mechanisms (linear, MLP, polynomial, multiplicative,
      periodic, maxmin)
    - Temporal noise processes (iid, random walk, AR(1), periodic, OU)
+   - Extended activation bank with high-frequency oscillators
    - Dynamic SCM: time-evolving causal graph propagation
    - Post-processing (outliers, missing values, scale-shift)
 
 The module provides both individual coupling mechanisms and unified pipeline
-interfaces (`CouplingPipeline`, `CaukerPipeline`, `TabPFNSCMPipeline`)
+interfaces (`CouplingPipeline`, `CaukerPipeline`, `TiRex3Pipeline`)
 for end-to-end dataset construction.
 
 References:
@@ -39,8 +40,6 @@ References:
       Data and Streaming. arXiv:2607.01204v1.
     - Xie, S., et al. (2025). CAUKER: Classification Time Series Foundation
       Models Can Be Pretrained on Synthetic Data Only. arXiv:2508.02879v3.
-    - Prior Labs Team (2026). TabPFN-3: Technical Report.
-      arXiv:2605.13986v2.
 
 Created on 2026/08/12
 @author: Ruizhe Wang
@@ -69,8 +68,8 @@ __all__ = [
     "time_discretization",
     # CAUKER pipeline
     "CaukerPipeline",
-    # TabPFN-3 pipeline
-    "TabPFNSCMPipeline",
+    # TiRex-3 pipeline
+    "TiRex3Pipeline",
     # Unified interfaces
     "CouplingPipeline",
 ]
@@ -116,8 +115,5 @@ except ImportError:
 # --- CAUKER pipeline (Xie et al., 2025) ---
 from s2generator.scm.cauker import CaukerPipeline
 
-# --- TabPFN-3 pipeline (Prior Labs Team, 2026) (optional) ---
-try:
-    from s2generator.scm.tabpfn_scm import TabPFNSCMPipeline
-except ImportError:
-    TabPFNSCMPipeline = None  # type: ignore[assignment]
+# --- TiRex-3 pipeline (SCM evolution) ---
+from s2generator.scm.tirex3 import TiRex3Pipeline
