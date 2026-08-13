@@ -32,9 +32,7 @@ class TestLowPassFilter(unittest.TestCase):
         self.assertAlmostEqual(lpf.cutoff_, 0.2, places=6)
 
     def test_high_frequency_power_decreases(self) -> None:
-        filtered = LowPassFilter(cutoff=0.15).fit_transform(
-            self.reference, self.noisy
-        )
+        filtered = LowPassFilter(cutoff=0.15).fit_transform(self.reference, self.noisy)
         freqs = np.fft.rfftfreq(len(self.noisy))
         high_band = freqs > 0.25
         raw_power = np.mean(np.abs(np.fft.rfft(self.noisy))[high_band] ** 2)
@@ -65,7 +63,9 @@ class TestLowPassFilter(unittest.TestCase):
 
     def test_maybe_attach_and_apply(self) -> None:
         owner = type("Owner", (), {})()
-        maybe_attach_lowpass(owner, enabled=False, kwargs=None, reference=self.reference)
+        maybe_attach_lowpass(
+            owner, enabled=False, kwargs=None, reference=self.reference
+        )
         self.assertIsNone(owner._lowpass_filter)
         unchanged = maybe_apply_lowpass(owner, self.noisy)
         np.testing.assert_array_equal(unchanged, self.noisy)

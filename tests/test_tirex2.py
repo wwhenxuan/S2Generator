@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Test suite for TiRex-3 Synthetic Prior SCM pipeline.
+Test suite for TiRex-2 Synthetic Prior SCM pipeline.
 
 Covers all components from Prior Labs Team (2026), Section 2.5.
 
@@ -12,7 +12,7 @@ Created on 2026/08/12
 import unittest
 import numpy as np
 
-from s2generator.scm.tirex3 import (
+from s2generator.scm.tirex2 import (
     # DAG generators
     _dag_chain,
     _dag_fork,
@@ -51,7 +51,7 @@ from s2generator.scm.tirex3 import (
     _postprocess_add_missing,
     _postprocess_scale_shift,
     # Pipeline
-    TiRex3Pipeline,
+    TiRex2Pipeline,
 )
 
 
@@ -144,9 +144,10 @@ class TestDAGGenerators(unittest.TestCase):
         self.assertEqual(len(roots), 5)
 
     def test_dag_all_registered(self):
-        self.assertEqual(set(DAG_GENERATORS.keys()),
-                         {"chain", "fork", "collider", "random",
-                          "scale_free", "bipartite"})
+        self.assertEqual(
+            set(DAG_GENERATORS.keys()),
+            {"chain", "fork", "collider", "random", "scale_free", "bipartite"},
+        )
 
     def test_dag_small_graphs(self):
         """All DAG generators should handle V=2."""
@@ -191,8 +192,8 @@ class TestNoiseProcesses(unittest.TestCase):
         x = _noise_random_walk(self.rng, self.L)
         self._check_noise(x, self.L)
         # Random walk should have growing variance over time
-        first_half_std = np.std(x[:self.L // 2])
-        second_half_std = np.std(x[self.L // 2:])
+        first_half_std = np.std(x[: self.L // 2])
+        second_half_std = np.std(x[self.L // 2 :])
         self.assertGreater(second_half_std, first_half_std * 0.5)
 
     def test_noise_ar1(self):
@@ -217,8 +218,9 @@ class TestNoiseProcesses(unittest.TestCase):
         self.assertLess(abs(np.mean(x) - np.median(x)), 2.0)
 
     def test_noise_processes_registered(self):
-        self.assertEqual(set(NOISE_PROCESSES.keys()),
-                         {"iid", "random_walk", "ar1", "periodic", "ou"})
+        self.assertEqual(
+            set(NOISE_PROCESSES.keys()), {"iid", "random_walk", "ar1", "periodic", "ou"}
+        )
 
     def test_noise_custom_params(self):
         """Test noise processes accept custom parameters."""
@@ -302,9 +304,10 @@ class TestCombiners(unittest.TestCase):
         self.assertEqual(out, 7.0)
 
     def test_combiners_registered(self):
-        self.assertEqual(set(COMBINERS.keys()),
-                         {"linear", "mlp", "polynomial", "multiplicative",
-                          "periodic", "maxmin"})
+        self.assertEqual(
+            set(COMBINERS.keys()),
+            {"linear", "mlp", "polynomial", "multiplicative", "periodic", "maxmin"},
+        )
 
     def test_all_combiners_different_outputs(self):
         """Different combiners should give different outputs for same input."""
@@ -312,7 +315,7 @@ class TestCombiners(unittest.TestCase):
         outputs = []
         for name, fn in COMBINERS.items():
             o = fn(self.rng, pv)
-            outputs.append(float(o) if hasattr(o, 'item') else float(o))
+            outputs.append(float(o) if hasattr(o, "item") else float(o))
         # Not all should be identical (probabilistically)
         self.assertGreater(np.std(outputs), 0.0)
 
@@ -343,8 +346,7 @@ class TestActivations(unittest.TestCase):
                 out = fn(self.x, self.rng)
             else:
                 out = fn(self.x)
-            self.assertTrue(np.all(np.isfinite(out)),
-                            msg=f"Non-finite output: {name}")
+            self.assertTrue(np.all(np.isfinite(out)), msg=f"Non-finite output: {name}")
 
     def test_relu(self):
         out = _activation_relu(self.x)
@@ -411,8 +413,9 @@ class TestPostProcessing(unittest.TestCase):
         self.x = np.random.RandomState(0).normal(0, 1, (3, 64))
 
     def test_add_outliers(self):
-        out = _postprocess_add_outliers(self.rng, self.x,
-                                        outlier_prob=0.1, outlier_scale=5.0)
+        out = _postprocess_add_outliers(
+            self.rng, self.x, outlier_prob=0.1, outlier_scale=5.0
+        )
         self.assertEqual(out.shape, self.x.shape)
         # Some values should differ
         n_changed = np.sum(np.abs(out - self.x) > 1e-8)
@@ -451,15 +454,15 @@ class TestPostProcessing(unittest.TestCase):
 
 
 # ===========================================================================
-# TiRex3Pipeline Init Tests
+# TiRex2Pipeline Init Tests
 # ===========================================================================
 
 
-class TestTiRex3PipelineInit(unittest.TestCase):
+class TestTiRex2PipelineInit(unittest.TestCase):
     """Test pipeline initialization and properties."""
 
     def test_default_init(self):
-        pipe = TiRex3Pipeline()
+        pipe = TiRex2Pipeline()
         self.assertEqual(pipe._Vmin, 3)
         self.assertEqual(pipe._Vmax, 20)
         self.assertEqual(pipe._Pmax, 4)
@@ -467,8 +470,11 @@ class TestTiRex3PipelineInit(unittest.TestCase):
         self.assertEqual(pipe._dtype, np.float64)
 
     def test_custom_init(self):
-        pipe = TiRex3Pipeline(
-            Vmin=5, Vmax=15, Pmax=3, apply_postprocessing=False,
+        pipe = TiRex2Pipeline(
+            Vmin=5,
+            Vmax=15,
+            Pmax=3,
+            apply_postprocessing=False,
             dtype=np.float32,
         )
         self.assertEqual(pipe._Vmin, 5)
@@ -478,19 +484,25 @@ class TestTiRex3PipelineInit(unittest.TestCase):
         self.assertEqual(pipe._dtype, np.float32)
 
     def test_str_method(self):
-        self.assertEqual(str(TiRex3Pipeline()), "TiRex3Pipeline")
+        self.assertEqual(str(TiRex2Pipeline()), "TiRex2Pipeline")
 
     def test_properties(self):
-        pipe = TiRex3Pipeline()
+        pipe = TiRex2Pipeline()
         self.assertEqual(len(pipe.dag_algorithms), 6)
         self.assertEqual(len(pipe.combiner_mechanisms), 6)
         self.assertEqual(len(pipe.noise_processes), 5)
         self.assertEqual(len(pipe.activations), 8)
 
     def test_custom_weights(self):
-        pipe = TiRex3Pipeline(
-            dag_weights={"chain": 1.0, "fork": 0.0, "collider": 0.0,
-                         "random": 0.0, "scale_free": 0.0, "bipartite": 0.0},
+        pipe = TiRex2Pipeline(
+            dag_weights={
+                "chain": 1.0,
+                "fork": 0.0,
+                "collider": 0.0,
+                "random": 0.0,
+                "scale_free": 0.0,
+                "bipartite": 0.0,
+            },
         )
         # All generated DAGs should be chains
         rng = np.random.RandomState(0)
@@ -504,15 +516,15 @@ class TestTiRex3PipelineInit(unittest.TestCase):
 
 
 # ===========================================================================
-# TiRex3Pipeline Generate Tests
+# TiRex2Pipeline Generate Tests
 # ===========================================================================
 
 
-class TestTiRex3PipelineGenerate(unittest.TestCase):
+class TestTiRex2PipelineGenerate(unittest.TestCase):
     """Test the main generate() method."""
 
     def setUp(self):
-        self.pipe = TiRex3Pipeline(Vmin=3, Vmax=10, Pmax=2)
+        self.pipe = TiRex2Pipeline(Vmin=3, Vmax=10, Pmax=2)
         self.rng = np.random.RandomState(42)
 
     def test_generate_default(self):
@@ -524,8 +536,7 @@ class TestTiRex3PipelineGenerate(unittest.TestCase):
 
     def test_generate_specific_dimension(self):
         # Ensure Vmin >= max d to avoid "larger sample than population" error
-        pipe = TiRex3Pipeline(Vmin=5, Vmax=12, Pmax=2,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=5, Vmax=12, Pmax=2, apply_postprocessing=False)
         for d in [1, 3, 5]:
             x = pipe.generate(self.rng, n_inputs_points=64, input_dimension=d)
             self.assertEqual(x.shape, (d, 64))
@@ -536,8 +547,16 @@ class TestTiRex3PipelineGenerate(unittest.TestCase):
         )
         self.assertIsInstance(x, np.ndarray)
         self.assertIsInstance(meta, dict)
-        for key in ["n_nodes", "n_observed", "n_roots", "n_edges",
-                     "sequence_length", "observed_nodes", "root_nodes", "edge_list"]:
+        for key in [
+            "n_nodes",
+            "n_observed",
+            "n_roots",
+            "n_edges",
+            "sequence_length",
+            "observed_nodes",
+            "root_nodes",
+            "edge_list",
+        ]:
             self.assertIn(key, meta)
         self.assertEqual(meta["n_observed"], 2)
         self.assertGreaterEqual(meta["n_roots"], 1)
@@ -557,8 +576,7 @@ class TestTiRex3PipelineGenerate(unittest.TestCase):
 
     def test_generate_not_all_constant(self):
         # Use no post-processing to avoid NaN interference
-        pipe = TiRex3Pipeline(Vmin=3, Vmax=10, Pmax=2,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False)
         x = pipe.generate(self.rng, n_inputs_points=128, input_dimension=3)
         stds = [np.nanstd(x[i]) for i in range(x.shape[0])]
         self.assertGreater(np.nanmax(stds), 1e-8)
@@ -569,14 +587,14 @@ class TestTiRex3PipelineGenerate(unittest.TestCase):
             self.assertEqual(x.shape, (2, L))
 
     def test_generate_dtype_float32(self):
-        pipe = TiRex3Pipeline(Vmin=3, Vmax=8, Pmax=2, dtype=np.float32)
-        x = pipe.generate(np.random.RandomState(0),
-                          n_inputs_points=64, input_dimension=2)
+        pipe = TiRex2Pipeline(Vmin=3, Vmax=8, Pmax=2, dtype=np.float32)
+        x = pipe.generate(
+            np.random.RandomState(0), n_inputs_points=64, input_dimension=2
+        )
         self.assertEqual(x.dtype, np.float32)
 
     def test_generate_no_postprocessing(self):
-        pipe = TiRex3Pipeline(Vmin=3, Vmax=8, Pmax=2,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=3, Vmax=8, Pmax=2, apply_postprocessing=False)
         x = pipe.generate(self.rng, n_inputs_points=64, input_dimension=2)
         # With no post-processing, there should be no NaN values
         self.assertTrue(np.isfinite(x).all())
@@ -598,27 +616,27 @@ class TestTiRex3PipelineGenerate(unittest.TestCase):
 
     def test_generate_all_dag_types_coverage(self):
         """Generate many samples to ensure all DAG types can be hit."""
-        pipe = TiRex3Pipeline(Vmin=5, Vmax=15, Pmax=3,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=5, Vmax=15, Pmax=3, apply_postprocessing=False)
         for i in range(30):
             _, meta = pipe.generate(
-                np.random.RandomState(i), n_inputs_points=64,
-                input_dimension=2, return_metadata=True,
+                np.random.RandomState(i),
+                n_inputs_points=64,
+                input_dimension=2,
+                return_metadata=True,
             )
             self.assertGreaterEqual(meta["n_roots"], 1)
 
 
 # ===========================================================================
-# TiRex3Pipeline Batch Tests
+# TiRex2Pipeline Batch Tests
 # ===========================================================================
 
 
-class TestTiRex3PipelineBatch(unittest.TestCase):
+class TestTiRex2PipelineBatch(unittest.TestCase):
     """Test batch generation."""
 
     def setUp(self):
-        self.pipe = TiRex3Pipeline(Vmin=3, Vmax=10, Pmax=2,
-                                      apply_postprocessing=False)
+        self.pipe = TiRex2Pipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False)
         self.rng = np.random.RandomState(42)
 
     def test_batch_basic(self):
@@ -644,9 +662,7 @@ class TestTiRex3PipelineBatch(unittest.TestCase):
         self.assertEqual(len(dataset), 50)
 
     def test_batch_without_input_dimension(self):
-        dataset = self.pipe.generate_batch(
-            self.rng, n_samples=3, n_inputs_points=64
-        )
+        dataset = self.pipe.generate_batch(self.rng, n_samples=3, n_inputs_points=64)
         self.assertEqual(len(dataset), 3)
 
 
@@ -655,17 +671,22 @@ class TestTiRex3PipelineBatch(unittest.TestCase):
 # ===========================================================================
 
 
-class TestTiRex3Integration(unittest.TestCase):
+class TestTiRex2Integration(unittest.TestCase):
     """End-to-end workflow tests."""
 
     def test_full_pipeline_workflow(self):
         rng = np.random.RandomState(42)
-        pipe = TiRex3Pipeline(
-            Vmin=5, Vmax=20, Pmax=4,
+        pipe = TiRex2Pipeline(
+            Vmin=5,
+            Vmax=20,
+            Pmax=4,
             apply_postprocessing=True,
         )
         dataset = pipe.generate_batch(
-            rng=rng, n_samples=50, n_inputs_points=128, input_dimension=1,
+            rng=rng,
+            n_samples=50,
+            n_inputs_points=128,
+            input_dimension=1,
         )
         self.assertEqual(len(dataset), 50)
         for x in dataset:
@@ -676,39 +697,40 @@ class TestTiRex3Integration(unittest.TestCase):
         self.assertGreater(np.nanstd(means), 0.0)
 
     def test_multivariate_output(self):
-        pipe = TiRex3Pipeline(Vmin=3, Vmax=12, Pmax=3,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=3, Vmax=12, Pmax=3, apply_postprocessing=False)
         rng = np.random.RandomState(123)
         x, meta = pipe.generate(
-            rng, n_inputs_points=128, input_dimension=4, return_metadata=True,
+            rng,
+            n_inputs_points=128,
+            input_dimension=4,
+            return_metadata=True,
         )
         self.assertEqual(x.shape, (4, 128))
         self.assertEqual(meta["n_observed"], 4)
 
     def test_reproducibility_across_pipelines(self):
         rng1, rng2 = np.random.RandomState(42), np.random.RandomState(42)
-        pipe1 = TiRex3Pipeline(Vmin=3, Vmax=10, Pmax=2,
-                                  apply_postprocessing=False)
-        pipe2 = TiRex3Pipeline(Vmin=3, Vmax=10, Pmax=2,
-                                  apply_postprocessing=False)
+        pipe1 = TiRex2Pipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False)
+        pipe2 = TiRex2Pipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False)
         x1 = pipe1.generate(rng1, n_inputs_points=64, input_dimension=2)
         x2 = pipe2.generate(rng2, n_inputs_points=64, input_dimension=2)
         np.testing.assert_array_equal(x1, x2)
 
     def test_scale_up(self):
-        pipe = TiRex3Pipeline(Vmin=5, Vmax=20, Pmax=4,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=5, Vmax=20, Pmax=4, apply_postprocessing=False)
         rng = np.random.RandomState(0)
         scales = [10, 30, 50]
         for n in scales:
             dataset = pipe.generate_batch(
-                rng=rng, n_samples=n, n_inputs_points=128, input_dimension=1,
+                rng=rng,
+                n_samples=n,
+                n_inputs_points=128,
+                input_dimension=1,
             )
             self.assertEqual(len(dataset), n)
 
     def test_with_postprocessing_has_nan_or_outliers(self):
-        pipe = TiRex3Pipeline(Vmin=3, Vmax=10, Pmax=2,
-                                 apply_postprocessing=True)
+        pipe = TiRex2Pipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=True)
         rng = np.random.RandomState(0)
         # Generate many samples; at least some should have NaN or outliers
         has_feature = False
@@ -719,8 +741,7 @@ class TestTiRex3Integration(unittest.TestCase):
             if np.any(np.isnan(x)) or np.any(np.abs(x) > 5):
                 has_feature = True
                 break
-        self.assertTrue(has_feature,
-                        "Post-processing should introduce NaN or outliers")
+        self.assertTrue(has_feature, "Post-processing should introduce NaN or outliers")
 
 
 # ===========================================================================
@@ -728,44 +749,42 @@ class TestTiRex3Integration(unittest.TestCase):
 # ===========================================================================
 
 
-class TestTiRex3EdgeCases(unittest.TestCase):
+class TestTiRex2EdgeCases(unittest.TestCase):
     """Test boundary conditions."""
 
     def setUp(self):
         self.rng = np.random.RandomState(42)
 
     def test_minimal_config(self):
-        pipe = TiRex3Pipeline(Vmin=2, Vmax=2, Pmax=1,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=2, Vmax=2, Pmax=1, apply_postprocessing=False)
         x = pipe.generate(self.rng, n_inputs_points=32, input_dimension=1)
         self.assertEqual(x.shape, (1, 32))
 
     def test_very_short_sequence(self):
-        pipe = TiRex3Pipeline(Vmin=2, Vmax=5, Pmax=1,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=2, Vmax=5, Pmax=1, apply_postprocessing=False)
         x = pipe.generate(self.rng, n_inputs_points=4, input_dimension=1)
         self.assertEqual(x.shape, (1, 4))
 
     def test_very_long_sequence(self):
-        pipe = TiRex3Pipeline(Vmin=2, Vmax=5, Pmax=1,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=2, Vmax=5, Pmax=1, apply_postprocessing=False)
         x = pipe.generate(self.rng, n_inputs_points=2048, input_dimension=1)
         self.assertEqual(x.shape, (1, 2048))
         self.assertTrue(np.isfinite(x).all())
 
     def test_large_vmax_small_observed(self):
-        pipe = TiRex3Pipeline(Vmin=5, Vmax=30, Pmax=5,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=5, Vmax=30, Pmax=5, apply_postprocessing=False)
         x, meta = pipe.generate(
-            self.rng, n_inputs_points=64, input_dimension=2, return_metadata=True,
+            self.rng,
+            n_inputs_points=64,
+            input_dimension=2,
+            return_metadata=True,
         )
         self.assertEqual(x.shape, (2, 64))
         self.assertGreaterEqual(meta["n_nodes"], 2)
 
     def test_all_noise_types_coverage(self):
         """Generate many root nodes to ensure all noise types can be hit."""
-        pipe = TiRex3Pipeline(Vmin=10, Vmax=20, Pmax=3,
-                                 apply_postprocessing=False)
+        pipe = TiRex2Pipeline(Vmin=10, Vmax=20, Pmax=3, apply_postprocessing=False)
         for i in range(20):
             x = pipe.generate(
                 np.random.RandomState(i), n_inputs_points=64, input_dimension=3

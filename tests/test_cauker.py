@@ -79,19 +79,22 @@ class TestKernelBank(unittest.TestCase):
     # --- Covariance function correctness ---
 
     def test_cov_exp_sine_squared_shape(self):
-        K = _cov_exp_sine_squared(self.t_grid, self.t_grid,
-                                  {"periodicity": 20.0, "length_scale": 10.0})
+        K = _cov_exp_sine_squared(
+            self.t_grid, self.t_grid, {"periodicity": 20.0, "length_scale": 10.0}
+        )
         self.assertEqual(K.shape, (64, 64))
 
     def test_cov_exp_sine_squared_symmetry(self):
-        K = _cov_exp_sine_squared(self.t_grid, self.t_grid,
-                                  {"periodicity": 20.0, "length_scale": 10.0})
+        K = _cov_exp_sine_squared(
+            self.t_grid, self.t_grid, {"periodicity": 20.0, "length_scale": 10.0}
+        )
         np.testing.assert_allclose(K, K.T, atol=1e-10)
 
     def test_cov_exp_sine_squared_periodic(self):
         """Values at distance equal to periodicity should have covariance ≈ 1."""
-        K = _cov_exp_sine_squared(self.t_grid, self.t_grid,
-                                  {"periodicity": 0.5, "length_scale": 10.0})
+        K = _cov_exp_sine_squared(
+            self.t_grid, self.t_grid, {"periodicity": 0.5, "length_scale": 10.0}
+        )
         # At dt=0, k=1; at dt=periodicity, sin(pi)=0, so k ≈ 1 (exp(-0))
         self.assertTrue(np.all(np.diag(K) > 0.99))
 
@@ -115,8 +118,9 @@ class TestKernelBank(unittest.TestCase):
         self.assertGreater(K[0, 0], K[0, 10])
 
     def test_cov_rational_quadratic_diagonal_one(self):
-        K = _cov_rational_quadratic(self.t_grid, self.t_grid,
-                                    {"length_scale": 1.0, "alpha": 1.0})
+        K = _cov_rational_quadratic(
+            self.t_grid, self.t_grid, {"length_scale": 1.0, "alpha": 1.0}
+        )
         np.testing.assert_allclose(np.diag(K), 1.0, atol=1e-10)
 
     def test_cov_white_diagonal_only(self):
@@ -211,7 +215,9 @@ class TestMeanBank(unittest.TestCase):
         for m in self.mean_bank:
             r1 = m["generate"](rng1, t_grid)
             r2 = m["generate"](rng2, t_grid)
-            np.testing.assert_array_equal(r1, r2, err_msg=f"Non-deterministic: {m['name']}")
+            np.testing.assert_array_equal(
+                r1, r2, err_msg=f"Non-deterministic: {m['name']}"
+            )
 
 
 # ===========================================================================
@@ -290,7 +296,9 @@ class TestActivationBank(unittest.TestCase):
     def test_all_activations_return_finite(self):
         for a in self.act_bank:
             out = a["apply"](self.x)
-            self.assertTrue(np.all(np.isfinite(out)), msg=f"{a['name']} produced non-finite values")
+            self.assertTrue(
+                np.all(np.isfinite(out)), msg=f"{a['name']} produced non-finite values"
+            )
 
 
 # ===========================================================================
@@ -359,10 +367,12 @@ class TestGPSampling(unittest.TestCase):
         """Sample should be centered around the provided mean."""
         mean = np.ones(128) * 5.0
         cov_fn = _sample_composite_kernel(self.rng, self.kernel_bank, Kmax=2)
-        samples = np.stack([
-            _sample_gp(np.random.RandomState(i), mean, cov_fn, self.t_grid)
-            for i in range(20)
-        ])
+        samples = np.stack(
+            [
+                _sample_gp(np.random.RandomState(i), mean, cov_fn, self.t_grid)
+                for i in range(20)
+            ]
+        )
         grand_mean = samples.mean(axis=0)
         # Average over samples should be close to the mean function
         np.testing.assert_allclose(grand_mean, mean, atol=2.0)
@@ -370,8 +380,9 @@ class TestGPSampling(unittest.TestCase):
     def test_sample_gp_deterministic(self):
         mean = np.zeros(64)
         t_grid = np.linspace(0, 1, 64)
-        cov_fn = _sample_composite_kernel(np.random.RandomState(7),
-                                          self.kernel_bank, Kmax=3)
+        cov_fn = _sample_composite_kernel(
+            np.random.RandomState(7), self.kernel_bank, Kmax=3
+        )
         rng1 = np.random.RandomState(42)
         rng2 = np.random.RandomState(42)
         s1 = _sample_gp(rng1, mean, cov_fn, t_grid)
@@ -428,8 +439,11 @@ class TestDAGGeneration(unittest.TestCase):
                     in_degree[child] -= 1
                     if in_degree[child] == 0:
                         queue.append(child)
-        self.assertEqual(len(visited), len(parents),
-                         "DAG has a cycle: not all nodes visited in topological order")
+        self.assertEqual(
+            len(visited),
+            len(parents),
+            "DAG has a cycle: not all nodes visited in topological order",
+        )
 
     def test_root_nodes_have_no_parents(self):
         parents, roots, _ = _generate_random_dag(self.rng, V=10, Pmax=3)
@@ -533,9 +547,7 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
 
     def test_generate_specific_dimension(self):
         for d in [1, 3, 5]:
-            x = self.pipe.generate(
-                self.rng, n_inputs_points=64, input_dimension=d
-            )
+            x = self.pipe.generate(self.rng, n_inputs_points=64, input_dimension=d)
             self.assertEqual(x.shape, (d, 64))
 
     def test_generate_all_values_finite(self):
@@ -578,8 +590,9 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         x = self.pipe.generate(self.rng, n_inputs_points=128, input_dimension=3)
         # At least one channel should have meaningful variation
         stds = [np.std(x[i]) for i in range(x.shape[0])]
-        self.assertGreater(max(stds), 1e-8,
-                           msg=f"All channels have near-zero variance: {stds}")
+        self.assertGreater(
+            max(stds), 1e-8, msg=f"All channels have near-zero variance: {stds}"
+        )
 
     def test_generate_different_lengths(self):
         for L in [32, 64, 128, 256, 512]:
@@ -588,7 +601,9 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
 
     def test_generate_dtype_float32(self):
         pipe = CaukerPipeline(Kmax=3, Vmax=8, Pmax=2, dtype=np.float32)
-        x = pipe.generate(np.random.RandomState(0), n_inputs_points=64, input_dimension=2)
+        x = pipe.generate(
+            np.random.RandomState(0), n_inputs_points=64, input_dimension=2
+        )
         self.assertEqual(x.dtype, np.float32)
 
     def test_generate_observed_nodes_unique(self):
@@ -648,9 +663,7 @@ class TestCaukerPipelineBatch(unittest.TestCase):
         self.assertGreater(variances, 0.0)
 
     def test_batch_without_input_dimension(self):
-        dataset = self.pipe.generate_batch(
-            self.rng, n_samples=3, n_inputs_points=64
-        )
+        dataset = self.pipe.generate_batch(self.rng, n_samples=3, n_inputs_points=64)
         self.assertEqual(len(dataset), 3)
         # Each sample may have different d (randomly sampled)
 
@@ -668,10 +681,10 @@ class TestCaukerIntegration(unittest.TestCase):
 
         rng = np.random.RandomState(42)
         pipe = CaukerPipeline(
-            Kmax=5,            # paper default
-            Vmax=20,           # paper default
-            Pmax=4,            # paper default
-            target_length=512, # Mantis/MOMENT input length
+            Kmax=5,  # paper default
+            Vmax=20,  # paper default
+            Pmax=4,  # paper default
+            target_length=512,  # Mantis/MOMENT input length
         )
 
         # Generate 100 samples (paper uses 100K-10M)
@@ -702,9 +715,9 @@ class TestCaukerIntegration(unittest.TestCase):
         self.assertEqual(x.shape, (4, 128))
         self.assertEqual(meta["n_observed"], 4)
         # Observed nodes must be a subset of total nodes
-        self.assertTrue(set(meta["observed_nodes"]).issubset(
-            set(range(meta["n_total_nodes"]))
-        ))
+        self.assertTrue(
+            set(meta["observed_nodes"]).issubset(set(range(meta["n_total_nodes"])))
+        )
 
     def test_reproducibility_across_pipelines(self):
         """Two pipelines with same params + same seed = same output."""
