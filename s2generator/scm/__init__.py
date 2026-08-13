@@ -21,7 +21,7 @@ This module implements the dataset construction methods from three papers:
    - 5-step pipeline: kernel sampling → composition → GP generation →
      activation sampling → causal graph propagation
 
-2. **TiRex-3 pipeline** (generalized SCM)
+3. **TiRex-2 SCM Synthetic Prior pipeline** (Podest et al., 2026, Section 2.5)
    - Expanded DAG generation algorithms (chain, fork, collider, random,
      scale-free, bipartite)
    - Rich combiner mechanisms (linear, MLP, polynomial, multiplicative,
@@ -32,7 +32,7 @@ This module implements the dataset construction methods from three papers:
    - Post-processing (outliers, missing values, scale-shift)
 
 The module provides both individual coupling mechanisms and unified pipeline
-interfaces (`CouplingPipeline`, `CaukerPipeline`, `TiRex3Pipeline`)
+interfaces (`CouplingPipeline`, `CaukerPipeline`, `TiRex2Pipeline`)
 for end-to-end dataset construction.
 
 References:
@@ -68,15 +68,15 @@ __all__ = [
     "time_discretization",
     # CAUKER pipeline
     "CaukerPipeline",
-    # TiRex-3 pipeline
-    "TiRex3Pipeline",
+    # TiRex-2 SCM Synthetic Prior pipeline
+    "TiRex2Pipeline",
     # Unified interfaces
     "CouplingPipeline",
 ]
 
-# --- TiRex-2 coupling mechanisms (optional) ---
+# --- Optional coupling mechanisms (Identity / LinearSCM / ...) ---
 try:
-    from s2generator.scm.tirex2 import (
+    from s2generator.scm.coupling import (
         BaseCoupling,
         IdentityCoupling,
         UnivariatePassThrough,
@@ -115,5 +115,5 @@ except ImportError:
 # --- CAUKER pipeline (Xie et al., 2025) ---
 from s2generator.scm.cauker import CaukerPipeline
 
-# --- TiRex-3 pipeline (SCM evolution) ---
-from s2generator.scm.tirex3 import TiRex3Pipeline
+# --- TiRex-2 SCM Synthetic Prior pipeline ---
+from s2generator.scm.tirex2 import TiRex2Pipeline

@@ -1,29 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-TiRex-3: Generalized Structural Causal Model for time series generation.
+TiRex-2: Structural Causal Model (SCM) Synthetic Prior for time series.
 
-This module implements the third-generation SCM prior for synthetic time series,
-extending the TiRex-2 framework (Podest et al., 2026) with:
+This module implements the TiRex-2 SCM prior (Podest et al., 2026, Section 2.5)
+for generating causally structured multivariate synthetic time series:
 
-1. **Sample hyperparameters**: number of features, rows, classes
+1. **Sample hyperparameters**: number of nodes, graph type, etc.
 2. **Sample DAG**: generate a directed acyclic graph using various algorithms
-3. **Compute SCM**: propagated values through the DAG using combiner mechanisms
-4. **Extract dataset**: choose features and targets from SCM nodes
+3. **Compute Dynamic SCM**: propagate values through the DAG with temporal
+   noise processes as exogenous inputs to root nodes
+4. **Extract dataset**: choose observed variables from SCM nodes
 5. **Post-processing**: apply observational transforms
 
-For time series, we extend this into a **Dynamic SCM**:
-the SCM is evaluated at each time step with temporal noise processes as
-exogenous inputs to root nodes. This yields causally structured multivariate
-time series suitable for pre-training time series foundation models.
-
-Key enhancements over TiRex-2:
-- Expanded DAG sampling algorithms (chain, fork, collider, random, scale-free,
-  bipartite)
-- Rich combiner mechanisms (linear, MLP, polynomial, multiplicative, periodic,
-  maxmin)
+Components:
+- DAG sampling algorithms (chain, fork, collider, random, scale-free, bipartite)
+- Combiner mechanisms (linear, MLP, polynomial, multiplicative, periodic, maxmin)
 - Temporal noise processes (iid, random walk, AR(1), periodic, OU)
-- Extended activation bank (ReLU, GELU, softplus, high-frequency sin)
-- High-frequency oscillators via sinusoidal activations
+- Activation bank (ReLU, GELU, softplus, high-frequency sin, ...)
+- Post-processing (outliers, missing values, scale-shift)
 
 Reference:
     Podest, P., et al. (2026). TiRex-2: Generalizing TiRex to Multivariate
@@ -40,16 +34,14 @@ import numpy as np
 
 
 # ===========================================================================
-# DAG Generation Algorithms (TiRex-3 Section 2.5, item 1)
+# DAG Generation Algorithms (TiRex-2 Section 2.5, item 1)
 # ===========================================================================
 # Multiple algorithms for sampling directed acyclic graphs with diverse
 # structural properties: chains, forks, colliders, random, and scale-free-like.
 # ===========================================================================
 
 
-def _dag_chain(
-    rng: np.random.RandomState, V: int
-) -> Tuple[List[List[int]], List[int]]:
+def _dag_chain(rng: np.random.RandomState, V: int) -> Tuple[List[List[int]], List[int]]:
     """Generate a chain DAG: 1 → 2 → 3 → ... → V.
 
     Each node has exactly one parent (the previous node), except node 0
@@ -66,9 +58,7 @@ def _dag_chain(
     return parents, roots
 
 
-def _dag_fork(
-    rng: np.random.RandomState, V: int
-) -> Tuple[List[List[int]], List[int]]:
+def _dag_fork(rng: np.random.RandomState, V: int) -> Tuple[List[List[int]], List[int]]:
     """Generate a fork DAG: root → all other nodes.
 
     One root node is parent to all other nodes.
@@ -163,9 +153,7 @@ def _dag_scale_free(
         weights = weights / weights.sum()
 
         n_p = rng.randint(1, min(Pmax, len(possible)) + 1)
-        selected = rng.choice(
-            possible, size=n_p, replace=False, p=weights
-        )
+        selected = rng.choice(possible, size=n_p, replace=False, p=weights)
         parents[node] = sorted(selected.tolist())
         for p in selected:
             out_degree[p] += 1
@@ -212,15 +200,13 @@ DAG_GENERATORS: Dict[str, Callable] = {
 
 
 # ===========================================================================
-# Noise Processes for Root Nodes (TiRex-3 Section 2.5)
+# Noise Processes for Root Nodes (TiRex-2 Section 2.5)
 # ===========================================================================
 # Generate temporal noise sequences for exogenous (root) variables.
 # ===========================================================================
 
 
-def _noise_iid(
-    rng: np.random.RandomState, L: int, **kwargs
-) -> np.ndarray:
+def _noise_iid(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
     """IID Gaussian noise: ε_t ~ N(0, σ²).
 
     :param rng: Random number generator.
@@ -232,9 +218,7 @@ def _noise_iid(
     return rng.normal(0, scale, L).astype(np.float64)
 
 
-def _noise_random_walk(
-    rng: np.random.RandomState, L: int, **kwargs
-) -> np.ndarray:
+def _noise_random_walk(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
     """Random walk noise: x_t = x_{t-1} + ε_t, ε_t ~ N(0, σ²).
 
     :param rng: Random number generator.
@@ -247,9 +231,7 @@ def _noise_random_walk(
     return np.cumsum(innovations).astype(np.float64)
 
 
-def _noise_ar1(
-    rng: np.random.RandomState, L: int, **kwargs
-) -> np.ndarray:
+def _noise_ar1(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
     """AR(1) process: x_t = φ·x_{t-1} + ε_t, ε_t ~ N(0, σ²).
 
     :param rng: Random number generator.
@@ -267,9 +249,7 @@ def _noise_ar1(
     return x
 
 
-def _noise_periodic(
-    rng: np.random.RandomState, L: int, **kwargs
-) -> np.ndarray:
+def _noise_periodic(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
     """Periodic/sinusoidal noise: x_t = A·sin(2π·f·t/L + φ) + noise.
 
     :param rng: Random number generator.
@@ -291,9 +271,7 @@ def _noise_periodic(
     return signal.astype(np.float64)
 
 
-def _noise_ou(
-    rng: np.random.RandomState, L: int, **kwargs
-) -> np.ndarray:
+def _noise_ou(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
     """Ornstein-Uhlenbeck process (mean-reverting): dx = θ·(μ - x)·dt + σ·dW.
 
     Discrete approximation: x_t = x_{t-1} + θ·(μ - x_{t-1})·Δt + σ·√Δt·ε_t
@@ -329,7 +307,7 @@ NOISE_PROCESSES: Dict[str, Callable] = {
 
 
 # ===========================================================================
-# Combiner Mechanisms (TiRex-3 Section 2.5, item 2)
+# Combiner Mechanisms (TiRex-2 Section 2.5, item 2)
 # ===========================================================================
 # Functions that aggregate parent node values into a scalar for the child node.
 # Each combiner maps (parent_values, rng) -> scalar output.
@@ -431,7 +409,7 @@ def _combiner_multiplicative(
     eps = 1e-8
     alphas = rng.uniform(0.5, 1.5, n)
     abs_vals = np.abs(parent_values) + eps
-    product = np.prod(abs_vals ** alphas)
+    product = np.prod(abs_vals**alphas)
 
     # Use sign of majority
     sign = np.sign(np.sum(parent_values))
@@ -521,9 +499,7 @@ def _activation_sin(x: np.ndarray) -> np.ndarray:
 
 def _activation_gelu(x: np.ndarray) -> np.ndarray:
     """GELU activation (approximation)."""
-    return 0.5 * x * (1.0 + np.tanh(
-        np.sqrt(2.0 / np.pi) * (x + 0.044715 * x ** 3)
-    ))
+    return 0.5 * x * (1.0 + np.tanh(np.sqrt(2.0 / np.pi) * (x + 0.044715 * x**3)))
 
 
 def _activation_softplus(x: np.ndarray) -> np.ndarray:
@@ -539,7 +515,7 @@ def _activation_identity(x: np.ndarray) -> np.ndarray:
 def _activation_high_freq_sin(
     x: np.ndarray, rng: Optional[np.random.RandomState] = None
 ) -> np.ndarray:
-    """High-frequency sinusoidal activation (TiRex-3, item 4).
+    """High-frequency sinusoidal activation (TiRex-2, item 4).
 
     sin(ω·x) with ω sampled for high-frequency behavior.
 
@@ -568,7 +544,7 @@ ACTIVATIONS: Dict[str, Callable] = {
 
 
 # ===========================================================================
-# Post-Processing for TiRex-3
+# Post-Processing for TiRex-2
 # ===========================================================================
 
 
@@ -632,14 +608,14 @@ def _postprocess_scale_shift(
 
 
 # ===========================================================================
-# TiRex3 SCM Pipeline
+# TiRex-2 SCM Pipeline
 # ===========================================================================
 
 
-class TiRex3Pipeline:
-    """TiRex-3 Synthetic Prior pipeline for time series generation.
+class TiRex2Pipeline:
+    """TiRex-2 Synthetic Prior pipeline for time series generation.
 
-    Implements the SCM prior described in TiRex-3 (Section 2.5) extended
+    Implements the SCM prior described in TiRex-2 (Section 2.5) extended
     with temporal dynamics (Dynamic SCM, item 7) for generating causally
     structured multivariate time series.
 
@@ -667,7 +643,7 @@ class TiRex3Pipeline:
         apply_postprocessing: bool = True,
         dtype: np.dtype = np.float64,
     ) -> None:
-        """Initialize the TiRex-3 SCM pipeline.
+        """Initialize the TiRex-2 SCM pipeline.
 
         :param Vmin: Minimum number of nodes in the DAG.
         :param Vmax: Maximum number of nodes.
@@ -714,7 +690,7 @@ class TiRex3Pipeline:
         }
 
     def __str__(self) -> str:
-        return "TiRex3Pipeline"
+        return "TiRex2Pipeline"
 
     def _sample_dag(
         self, rng: np.random.RandomState, V: int
@@ -765,22 +741,16 @@ class TiRex3Pipeline:
         name = rng.choice(self._noise_names, p=self._get_probs(self._noise_probs))
         return NOISE_PROCESSES[name](rng, L)
 
-    def _sample_combiner(
-        self, rng: np.random.RandomState
-    ) -> Callable:
+    def _sample_combiner(self, rng: np.random.RandomState) -> Callable:
         """Sample a combiner mechanism.
 
         :param rng: Random number generator.
         :return: Combiner function (parent_values, rng) -> scalar.
         """
-        name = rng.choice(
-            self._combiner_names, p=self._get_probs(self._combiner_probs)
-        )
+        name = rng.choice(self._combiner_names, p=self._get_probs(self._combiner_probs))
         return COMBINERS[name]
 
-    def _sample_activation(
-        self, rng: np.random.RandomState
-    ) -> Callable:
+    def _sample_activation(self, rng: np.random.RandomState) -> Callable:
         """Sample an activation function.
 
         :param rng: Random number generator.
@@ -888,7 +858,9 @@ class TiRex3Pipeline:
         # Step 4: Extract dataset - select d observed nodes
         all_nodes = list(range(V))
         observed = rng.choice(all_nodes, size=d, replace=False)
-        observed = sorted(observed.tolist() if hasattr(observed, 'tolist') else list(observed))
+        observed = sorted(
+            observed.tolist() if hasattr(observed, "tolist") else list(observed)
+        )
 
         # Stack into output: shape (d, T)
         x = np.stack([node_series[v] for v in observed], axis=0)
@@ -898,13 +870,15 @@ class TiRex3Pipeline:
             # Randomly apply post-processing transforms
             if rng.random() < 0.3:
                 x = _postprocess_add_outliers(
-                    rng, x,
+                    rng,
+                    x,
                     outlier_prob=rng.uniform(0.005, 0.05),
                     outlier_scale=rng.uniform(2.0, 10.0),
                 )
             if rng.random() < 0.3:
                 x = _postprocess_add_missing(
-                    rng, x,
+                    rng,
+                    x,
                     missing_prob=rng.uniform(0.01, 0.1),
                 )
             if rng.random() < 0.5:

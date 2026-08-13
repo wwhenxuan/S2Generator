@@ -26,7 +26,7 @@ Key design choices (Section 3.2):
 Reference:
     Xie, S., et al. (2025). CAUKER. arXiv:2508.02879v3, Algorithm 1 & Appendix C.
 
-Created on 2026/08/10   
+Created on 2026/08/10
 @author: Ruizhe Wang
 @email: changewam6@gmail.com
 """
@@ -68,61 +68,74 @@ def _build_kernel_bank() -> List[Dict[str, Any]]:
     periodicities = [5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0]
     for i, period in enumerate(periodicities):
         length_scale = period * np.random.RandomState(i).uniform(0.5, 2.0)
-        kernels.append({
-            "name": f"ExpSineSquared_p{period:.0f}",
-            "params": {"periodicity": period, "length_scale": length_scale},
-            "covariance_fn": _cov_exp_sine_squared,
-        })
+        kernels.append(
+            {
+                "name": f"ExpSineSquared_p{period:.0f}",
+                "params": {"periodicity": period, "length_scale": length_scale},
+                "covariance_fn": _cov_exp_sine_squared,
+            }
+        )
 
     # --- DotProduct: 4 variants ---
     for i, sigma_0 in enumerate([0.1, 1.0, 5.0, 10.0]):
-        kernels.append({
-            "name": f"DotProduct_s{sigma_0}",
-            "params": {"sigma_0": sigma_0},
-            "covariance_fn": _cov_dot_product,
-        })
+        kernels.append(
+            {
+                "name": f"DotProduct_s{sigma_0}",
+                "params": {"sigma_0": sigma_0},
+                "covariance_fn": _cov_dot_product,
+            }
+        )
 
     # --- RBF: 8 variants ---
     length_scales_rbf = [0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0, 50.0]
     for i, ls in enumerate(length_scales_rbf):
-        kernels.append({
-            "name": f"RBF_ls{ls}",
-            "params": {"length_scale": ls},
-            "covariance_fn": _cov_rbf,
-        })
+        kernels.append(
+            {
+                "name": f"RBF_ls{ls}",
+                "params": {"length_scale": ls},
+                "covariance_fn": _cov_rbf,
+            }
+        )
 
     # --- RationalQuadratic: 6 variants ---
     ls_rq = [0.1, 0.5, 1.0, 5.0, 10.0, 50.0]
     alphas = [0.1, 0.5, 1.0, 2.0, 5.0, 10.0]
     for i, (ls, alpha) in enumerate(zip(ls_rq, alphas)):
-        kernels.append({
-            "name": f"RationalQuadratic_ls{ls}_a{alpha}",
-            "params": {"length_scale": ls, "alpha": alpha},
-            "covariance_fn": _cov_rational_quadratic,
-        })
+        kernels.append(
+            {
+                "name": f"RationalQuadratic_ls{ls}_a{alpha}",
+                "params": {"length_scale": ls, "alpha": alpha},
+                "covariance_fn": _cov_rational_quadratic,
+            }
+        )
 
     # --- WhiteKernel: 5 variants ---
     noise_levels = [0.001, 0.01, 0.05, 0.1, 0.5]
     for i, nl in enumerate(noise_levels):
-        kernels.append({
-            "name": f"WhiteKernel_n{nl}",
-            "params": {"noise_level": nl},
-            "covariance_fn": _cov_white,
-        })
+        kernels.append(
+            {
+                "name": f"WhiteKernel_n{nl}",
+                "params": {"noise_level": nl},
+                "covariance_fn": _cov_white,
+            }
+        )
 
     # --- ConstantKernel: 5 variants ---
     constant_values = [0.1, 0.5, 1.0, 2.0, 5.0]
     for i, cv in enumerate(constant_values):
-        kernels.append({
-            "name": f"ConstantKernel_v{cv}",
-            "params": {"constant_value": cv},
-            "covariance_fn": _cov_constant,
-        })
+        kernels.append(
+            {
+                "name": f"ConstantKernel_v{cv}",
+                "params": {"constant_value": cv},
+                "covariance_fn": _cov_constant,
+            }
+        )
 
     return kernels
 
 
 # --- Covariance functions ---
+
 
 def _cov_exp_sine_squared(
     t1: np.ndarray, t2: np.ndarray, params: Dict[str, float]
@@ -139,7 +152,7 @@ def _cov_exp_sine_squared(
     p = params["periodicity"]
     l = params["length_scale"]
     dt = np.abs(t1[:, None] - t2[None, :])
-    return np.exp(-2.0 * np.sin(np.pi * dt / p) ** 2 / l ** 2)
+    return np.exp(-2.0 * np.sin(np.pi * dt / p) ** 2 / l**2)
 
 
 def _cov_dot_product(
@@ -155,12 +168,10 @@ def _cov_dot_product(
     :return: Covariance matrix of shape (n1, n2).
     """
     s0 = params["sigma_0"]
-    return s0 ** 2 + t1[:, None] * t2[None, :]
+    return s0**2 + t1[:, None] * t2[None, :]
 
 
-def _cov_rbf(
-    t1: np.ndarray, t2: np.ndarray, params: Dict[str, float]
-) -> np.ndarray:
+def _cov_rbf(t1: np.ndarray, t2: np.ndarray, params: Dict[str, float]) -> np.ndarray:
     """Radial Basis Function (squared-exponential) kernel.
 
     k(t, t') = exp(-0.5 * |t - t'|^2 / l^2)
@@ -172,7 +183,7 @@ def _cov_rbf(
     """
     l = params["length_scale"]
     dt = t1[:, None] - t2[None, :]
-    return np.exp(-0.5 * dt ** 2 / l ** 2)
+    return np.exp(-0.5 * dt**2 / l**2)
 
 
 def _cov_rational_quadratic(
@@ -190,12 +201,10 @@ def _cov_rational_quadratic(
     l = params["length_scale"]
     alpha = params["alpha"]
     dt = t1[:, None] - t2[None, :]
-    return (1.0 + dt ** 2 / (2.0 * alpha * l ** 2)) ** (-alpha)
+    return (1.0 + dt**2 / (2.0 * alpha * l**2)) ** (-alpha)
 
 
-def _cov_white(
-    t1: np.ndarray, t2: np.ndarray, params: Dict[str, float]
-) -> np.ndarray:
+def _cov_white(t1: np.ndarray, t2: np.ndarray, params: Dict[str, float]) -> np.ndarray:
     """White noise kernel.
 
     k(t, t') = noise_level * delta(t, t')
@@ -253,9 +262,7 @@ def _build_mean_bank() -> List[Dict[str, Any]]:
     ]
 
 
-def _mean_zero(
-    rng: np.random.RandomState, t_grid: np.ndarray
-) -> np.ndarray:
+def _mean_zero(rng: np.random.RandomState, t_grid: np.ndarray) -> np.ndarray:
     """Zero mean function: μ(t) = 0.
 
     :param rng: Random number generator (unused, kept for interface consistency).
@@ -265,9 +272,7 @@ def _mean_zero(
     return np.zeros(len(t_grid), dtype=np.float64)
 
 
-def _mean_linear(
-    rng: np.random.RandomState, t_grid: np.ndarray
-) -> np.ndarray:
+def _mean_linear(rng: np.random.RandomState, t_grid: np.ndarray) -> np.ndarray:
     """Linear mean function: μ(t) = a·t + b.
 
     a ~ U(-2, 2), b ~ U(-5, 5).
@@ -281,9 +286,7 @@ def _mean_linear(
     return (a * t_grid + b).astype(np.float64)
 
 
-def _mean_exponential(
-    rng: np.random.RandomState, t_grid: np.ndarray
-) -> np.ndarray:
+def _mean_exponential(rng: np.random.RandomState, t_grid: np.ndarray) -> np.ndarray:
     """Exponential mean function: μ(t) = a·exp(b·t).
 
     a ~ U(-3, 3), b ~ U(-2, 2).
@@ -379,7 +382,8 @@ def _build_activation_bank(
             "name": "leaky_relu",
             "params": {"alpha": rng.uniform(0.01, 0.3)},
             "apply": lambda x, alpha=None: np.where(
-                x > 0, x,
+                x > 0,
+                x,
                 (alpha if alpha is not None else rng.uniform(0.01, 0.3)) * x,
             ),
         },
@@ -418,8 +422,10 @@ def _sample_composite_kernel(
     ops = [rng.choice(["add", "mul"]) for _ in range(K - 1)]
 
     def composite_kernel(
-        t1: np.ndarray, t2: np.ndarray,
-        sel=selected, ops=ops,
+        t1: np.ndarray,
+        t2: np.ndarray,
+        sel=selected,
+        ops=ops,
     ) -> np.ndarray:
         K_mat = sel[0]["covariance_fn"](t1, t2, sel[0]["params"])
         for i, op in enumerate(ops):
@@ -532,9 +538,7 @@ def _generate_random_dag(
             continue
         n_parents = rng.randint(0, min(Pmax, len(possible_parents)) + 1)
         if n_parents > 0:
-            selected = rng.choice(
-                possible_parents, size=n_parents, replace=False
-            )
+            selected = rng.choice(possible_parents, size=n_parents, replace=False)
             parents[node] = sorted(selected.tolist())
 
     # Identify root nodes (in-degree 0)
@@ -650,9 +654,7 @@ class CaukerPipeline:
             # Remove incoming edges to node 0
             for child in range(V):
                 parents[child] = [p for p in parents[child] if p != child]
-            edges = [
-                (p, c) for c in range(V) for p in parents[c]
-            ]
+            edges = [(p, c) for c in range(V) for p in parents[c]]
 
         # Step 4: Sample activation functions for each edge
         activation_bank = _build_activation_bank(rng)
@@ -753,7 +755,9 @@ class CaukerPipeline:
         # Select d observed nodes (Algorithm 1, line 36)
         all_nodes = list(range(V))
         observed = rng.choice(all_nodes, size=d, replace=False)
-        observed = sorted(observed.tolist() if hasattr(observed, 'tolist') else list(observed))
+        observed = sorted(
+            observed.tolist() if hasattr(observed, "tolist") else list(observed)
+        )
 
         # Stack selected node values into output: shape (d, L)
         x = np.stack([node_values[v] for v in observed], axis=0)
