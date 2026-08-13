@@ -6,13 +6,14 @@ __all__ = [
     "augmentation",
     "excitation",
     "simulator",
+    "scm",
     "symbol",
     "utils",
     "print_ascii",
     "print_hello",
 ]
 
-from . import symbol, excitation, simulator, augmentation, utils
+from . import symbol, excitation, simulator, scm, augmentation, utils
 
 
 def print_ascii() -> None:
