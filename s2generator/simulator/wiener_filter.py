@@ -225,7 +225,9 @@ class WienerFilterSimulator(object):
 
         # Implemented using linear filtering:
         # New sequence = White noise * Wiener filter (convolution)
-        simulated_series = signal.lfilter(a=self._coeffs, b=1.0, x=white_noise)
+        simulated_series = signal.lfilter(
+            a=self._coeffs, b=np.array([1.0]), x=white_noise
+        )
 
         # Remove edge effects after filtering (first filter_order points)
         return simulated_series[self.filter_order :]
