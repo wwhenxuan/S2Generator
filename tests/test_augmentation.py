@@ -18,6 +18,7 @@ from s2generator.augmentation import (
     wiener_filter,
     add_linear_trend,
     time_series_mixup,
+    spike_injection,
 )
 
 from s2generator.augmentation._frequency_perturbation import sample_random_perturbation
@@ -258,6 +259,60 @@ class TestDataAugmentation(unittest.TestCase):
             np.array_equal(filtered_series, series),
             msg="Filtered series is identical to original series in `test_wiener_filter` method",
         )
+
+
+class TestSpikeInjection(unittest.TestCase):
+    """Test the synthetic spike injection augmentation (TiRex-2 Stage 1)."""
+
+    def setUp(self):
+        self.rng = np.random.RandomState(42)
+        self.series = np.zeros(100)
+
+    def test_shape(self):
+        out = spike_injection(self.series, rng=self.rng)
+        self.assertEqual(out.shape, self.series.shape)
+
+    def test_output_finite(self):
+        out = spike_injection(self.series, num_spikes=5, rng=self.rng)
+        self.assertTrue(np.all(np.isfinite(out)))
+
+    def test_changes_input(self):
+        out = spike_injection(self.series, num_spikes=3, rng=self.rng)
+        self.assertFalse(np.allclose(out, self.series))
+
+    def test_does_not_mutate_input(self):
+        series = self.series.copy()
+        spike_injection(series, num_spikes=3, rng=self.rng)
+        np.testing.assert_array_equal(series, self.series)
+
+    def test_all_kernels(self):
+        for k in ["gaussian", "triangular", "rectangular"]:
+            out = spike_injection(
+                self.series, num_spikes=2, kernel=k, rng=self.rng
+            )
+            self.assertEqual(out.shape, self.series.shape)
+            self.assertTrue(np.all(np.isfinite(out)))
+
+    def test_invalid_kernel_raises(self):
+        with self.assertRaises(ValueError):
+            spike_injection(self.series, kernel="unknown", rng=self.rng)
+
+    def test_invalid_ndim_raises(self):
+        with self.assertRaises(ValueError):
+            spike_injection(np.zeros((10, 2)), rng=self.rng)
+
+    def test_deterministic_with_seed(self):
+        r1, r2 = np.random.RandomState(7), np.random.RandomState(7)
+        np.testing.assert_array_equal(
+            spike_injection(self.series, num_spikes=3, rng=r1),
+            spike_injection(self.series, num_spikes=3, rng=r2),
+        )
+
+    def test_different_seeds_differ(self):
+        r1, r2 = np.random.RandomState(1), np.random.RandomState(2)
+        o1 = spike_injection(self.series, num_spikes=3, rng=r1)
+        o2 = spike_injection(self.series, num_spikes=3, rng=r2)
+        self.assertFalse(np.allclose(o1, o2))
 
 
 if __name__ == "__main__":

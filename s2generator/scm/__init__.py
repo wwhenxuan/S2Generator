@@ -21,18 +21,19 @@ This module implements the dataset construction methods from three papers:
    - 5-step pipeline: kernel sampling → composition → GP generation →
      activation sampling → causal graph propagation
 
-3. **TiRex-2 SCM Synthetic Prior pipeline** (Podest et al., 2026, Section 2.5)
+3. **SCM prior pipeline** (TabPFN-3, Prior Labs Team, 2026, Section 2.5)
    - Expanded DAG generation algorithms (chain, fork, collider, random,
      scale-free, bipartite)
    - Rich combiner mechanisms (linear, MLP, polynomial, multiplicative,
      periodic, maxmin)
-   - Temporal noise processes (iid, random walk, AR(1), periodic, OU)
+   - IID Gaussian noise for exogenous (root) nodes
    - Extended activation bank with high-frequency oscillators
-   - Dynamic SCM: time-evolving causal graph propagation
+   - Categorical variables (quantile binning of feature columns)
+   - Many-class target (quantile binning of a target node)
    - Post-processing (outliers, missing values, scale-shift)
 
 The module provides both individual coupling mechanisms and unified pipeline
-interfaces (`CouplingPipeline`, `CaukerPipeline`, `TiRex2Pipeline`)
+interfaces (`CouplingPipeline`, `CaukerPipeline`, `ScmPriorPipeline`)
 for end-to-end dataset construction.
 
 References:
@@ -40,6 +41,8 @@ References:
       Data and Streaming. arXiv:2607.01204v1.
     - Xie, S., et al. (2025). CAUKER: Classification Time Series Foundation
       Models Can Be Pretrained on Synthetic Data Only. arXiv:2508.02879v3.
+    - Prior Labs Team (2026). TabPFN-3: Technical Report.
+      arXiv:2605.13986v2.
 
 Created on 2026/08/12
 @author: Ruizhe Wang
@@ -68,8 +71,8 @@ __all__ = [
     "time_discretization",
     # CAUKER pipeline
     "CaukerPipeline",
-    # TiRex-2 SCM Synthetic Prior pipeline
-    "TiRex2Pipeline",
+    # SCM prior pipeline (TabPFN-3)
+    "ScmPriorPipeline",
     # Unified interfaces
     "CouplingPipeline",
 ]
@@ -115,5 +118,5 @@ except ImportError:
 # --- CAUKER pipeline (Xie et al., 2025) ---
 from s2generator.scm.cauker import CaukerPipeline
 
-# --- TiRex-2 SCM Synthetic Prior pipeline ---
-from s2generator.scm.tirex2 import TiRex2Pipeline
+# --- SCM prior pipeline (TabPFN-3) ---
+from s2generator.scm.scm_prior import ScmPriorPipeline

@@ -1,40 +1,45 @@
 # -*- coding: utf-8 -*-
 """
-TiRex-2: Structural Causal Model (SCM) Synthetic Prior for time series.
+Structural Causal Model (SCM) Synthetic Prior for tabular data.
 
-This module implements the TiRex-2 SCM prior (Podest et al., 2026, Section 2.5)
-for generating causally structured multivariate synthetic time series:
+This module implements the TabPFN-3 SCM prior (Prior Labs Team, 2026, Section 2.5)
+for generating causally structured synthetic **tabular** datasets
+(``N`` rows x ``P`` features + optional categorical target ``y``):
 
-1. **Sample hyperparameters**: number of nodes, graph type, etc.
+1. **Sample hyperparameters**: number of rows/features/classes, graph type, etc.
 2. **Sample DAG**: generate a directed acyclic graph using various algorithms
-3. **Compute Dynamic SCM**: propagate values through the DAG with temporal
-   noise processes as exogenous inputs to root nodes
-4. **Extract dataset**: choose observed variables from SCM nodes
+3. **Compute SCM**: propagate values through the DAG in topological order with
+   i.i.d. noise samples per node as exogenous inputs to root nodes
+4. **Extract dataset**: choose observed features (X) and a target (Y) from SCM nodes
 5. **Post-processing**: apply observational transforms
 
 Components:
 - DAG sampling algorithms (chain, fork, collider, random, scale-free, bipartite)
 - Combiner mechanisms (linear, MLP, polynomial, multiplicative, periodic, maxmin)
-- Temporal noise processes (iid, random walk, AR(1), periodic, OU)
+- IID Gaussian noise for exogenous (root) nodes
 - Activation bank (ReLU, GELU, softplus, high-frequency sin, ...)
+- Categorical variables (quantile binning of feature columns)
+- Many-class target (quantile binning of a target node)
 - Post-processing (outliers, missing values, scale-shift)
 
 Reference:
-    Podest, P., et al. (2026). TiRex-2: Generalizing TiRex to Multivariate
-    Data and Streaming. arXiv:2607.01204v1.
+    Prior Labs Team (2026). TabPFN-3: Technical Report.
+    arXiv:2605.13986v2.
 
 Created on 2026/08/11
 @author: Ruizhe Wang
 @email: changewam6@gmail.com
 """
 
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
+from ..utils._dag import adjacency_to_dag
+
 
 # ===========================================================================
-# DAG Generation Algorithms (TiRex-2 Section 2.5, item 1)
+# DAG Generation Algorithms (TabPFN-3 Section 2.5, item 1)
 # ===========================================================================
 # Multiple algorithms for sampling directed acyclic graphs with diverse
 # structural properties: chains, forks, colliders, random, and scale-free-like.
@@ -200,114 +205,27 @@ DAG_GENERATORS: Dict[str, Callable] = {
 
 
 # ===========================================================================
-# Noise Processes for Root Nodes (TiRex-2 Section 2.5)
+# Noise for Root Nodes (TabPFN-3 Section 2.5, Figure 9)
 # ===========================================================================
-# Generate temporal noise sequences for exogenous (root) variables.
+# An i.i.d. noise sample ε_i is drawn per node; root (exogenous) nodes are
+# filled directly with such i.i.d. Gaussian samples over the N rows.
 # ===========================================================================
 
 
 def _noise_iid(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
-    """IID Gaussian noise: ε_t ~ N(0, σ²).
+    """IID Gaussian noise: ε_n ~ N(0, σ²), one draw per row.
 
     :param rng: Random number generator.
-    :param L: Sequence length.
+    :param L: Number of samples (rows) to generate.
     :param kwargs: Optional 'scale' (default: sampled from U(0.1, 2.0)).
-    :return: Noise sequence of shape (L,).
+    :return: Noise array of shape (L,).
     """
     scale = kwargs.get("scale", rng.uniform(0.1, 2.0))
     return rng.normal(0, scale, L).astype(np.float64)
 
 
-def _noise_random_walk(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
-    """Random walk noise: x_t = x_{t-1} + ε_t, ε_t ~ N(0, σ²).
-
-    :param rng: Random number generator.
-    :param L: Sequence length.
-    :param kwargs: Optional 'scale' (default: sampled from U(0.01, 0.2)).
-    :return: Noise sequence of shape (L,).
-    """
-    scale = kwargs.get("scale", rng.uniform(0.01, 0.2))
-    innovations = rng.normal(0, scale, L)
-    return np.cumsum(innovations).astype(np.float64)
-
-
-def _noise_ar1(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
-    """AR(1) process: x_t = φ·x_{t-1} + ε_t, ε_t ~ N(0, σ²).
-
-    :param rng: Random number generator.
-    :param L: Sequence length.
-    :param kwargs: Optional 'phi' (default: U(-0.9, 0.9)),
-                   'scale' (default: U(0.05, 0.5)).
-    :return: Noise sequence of shape (L,).
-    """
-    phi = kwargs.get("phi", rng.uniform(-0.9, 0.9))
-    scale = kwargs.get("scale", rng.uniform(0.05, 0.5))
-    x = np.zeros(L, dtype=np.float64)
-    noise = rng.normal(0, scale, L)
-    for t in range(1, L):
-        x[t] = phi * x[t - 1] + noise[t]
-    return x
-
-
-def _noise_periodic(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
-    """Periodic/sinusoidal noise: x_t = A·sin(2π·f·t/L + φ) + noise.
-
-    :param rng: Random number generator.
-    :param L: Sequence length.
-    :param kwargs: Optional 'amplitude' (default: U(0.5, 3.0)),
-                   'freq' (default: U(1, 10)),
-                   'phase' (default: U(0, 2π)),
-                   'noise_scale' (default: U(0.01, 0.2)).
-    :return: Noise sequence of shape (L,).
-    """
-    amp = kwargs.get("amplitude", rng.uniform(0.5, 3.0))
-    freq = kwargs.get("freq", rng.uniform(1.0, 10.0))
-    phase = kwargs.get("phase", rng.uniform(0, 2 * np.pi))
-    noise_scale = kwargs.get("noise_scale", rng.uniform(0.01, 0.2))
-
-    t = np.arange(L, dtype=np.float64)
-    signal = amp * np.sin(2 * np.pi * freq * t / L + phase)
-    signal += rng.normal(0, noise_scale, L)
-    return signal.astype(np.float64)
-
-
-def _noise_ou(rng: np.random.RandomState, L: int, **kwargs) -> np.ndarray:
-    """Ornstein-Uhlenbeck process (mean-reverting): dx = θ·(μ - x)·dt + σ·dW.
-
-    Discrete approximation: x_t = x_{t-1} + θ·(μ - x_{t-1})·Δt + σ·√Δt·ε_t
-
-    :param rng: Random number generator.
-    :param L: Sequence length.
-    :param kwargs: Optional 'theta' (default: U(0.1, 2.0)),
-                   'mu' (default: U(-1, 1)),
-                   'sigma' (default: U(0.05, 0.5)).
-    :return: Noise sequence of shape (L,).
-    """
-    theta = kwargs.get("theta", rng.uniform(0.1, 2.0))
-    mu = kwargs.get("mu", rng.uniform(-1.0, 1.0))
-    sigma = kwargs.get("sigma", rng.uniform(0.05, 0.5))
-    dt = 1.0 / L
-
-    x = np.zeros(L, dtype=np.float64)
-    x[0] = mu + rng.normal(0, sigma)
-    for t in range(1, L):
-        dx = theta * (mu - x[t - 1]) * dt + sigma * np.sqrt(dt) * rng.normal(0, 1)
-        x[t] = x[t - 1] + dx
-    return x
-
-
-# Map of noise process names to functions
-NOISE_PROCESSES: Dict[str, Callable] = {
-    "iid": _noise_iid,
-    "random_walk": _noise_random_walk,
-    "ar1": _noise_ar1,
-    "periodic": _noise_periodic,
-    "ou": _noise_ou,
-}
-
-
 # ===========================================================================
-# Combiner Mechanisms (TiRex-2 Section 2.5, item 2)
+# Combiner Mechanisms (TabPFN-3 Section 2.5, item 2)
 # ===========================================================================
 # Functions that aggregate parent node values into a scalar for the child node.
 # Each combiner maps (parent_values, rng) -> scalar output.
@@ -513,20 +431,23 @@ def _activation_identity(x: np.ndarray) -> np.ndarray:
 
 
 def _activation_high_freq_sin(
-    x: np.ndarray, rng: Optional[np.random.RandomState] = None
+    x: np.ndarray,
+    rng: Optional[np.random.RandomState] = None,
+    omega: Optional[float] = None,
 ) -> np.ndarray:
-    """High-frequency sinusoidal activation (TiRex-2, item 4).
+    """High-frequency sinusoidal activation (TabPFN-3, item 4).
 
     sin(ω·x) with ω sampled for high-frequency behavior.
 
     :param x: Input array.
-    :param rng: Random number generator for sampling frequency.
+    :param rng: Random number generator for sampling frequency (used only when
+                ``omega`` is not given).
+    :param omega: Fixed angular frequency. If None, one is sampled (5.0 when
+                  ``rng`` is also None, otherwise U(3, 20)).
     :return: Transformed array.
     """
-    if rng is None:
-        omega = 5.0
-    else:
-        omega = rng.uniform(3.0, 20.0)
+    if omega is None:
+        omega = rng.uniform(3.0, 20.0) if rng is not None else 5.0
     return np.sin(omega * x)
 
 
@@ -544,25 +465,25 @@ ACTIVATIONS: Dict[str, Callable] = {
 
 
 # ===========================================================================
-# Post-Processing for TiRex-2
+# Post-Processing
 # ===========================================================================
 
 
 def _postprocess_add_outliers(
     rng: np.random.RandomState,
-    series: np.ndarray,
+    matrix: np.ndarray,
     outlier_prob: float = 0.02,
     outlier_scale: float = 5.0,
 ) -> np.ndarray:
-    """Add random outliers to the series.
+    """Add random outliers to the feature matrix.
 
     :param rng: Random number generator.
-    :param series: Input series of shape (T, Q) or (Q, T).
+    :param matrix: Input matrix of shape (N, P).
     :param outlier_prob: Probability of a value being an outlier.
     :param outlier_scale: Scale of outlier magnitude.
-    :return: Series with outliers.
+    :return: Matrix with outliers.
     """
-    result = series.copy()
+    result = matrix.copy()
     mask = rng.random(result.shape) < outlier_prob
     outliers = rng.normal(0, outlier_scale, result.shape)
     result[mask] = result[mask] + outliers[mask]
@@ -571,17 +492,17 @@ def _postprocess_add_outliers(
 
 def _postprocess_add_missing(
     rng: np.random.RandomState,
-    series: np.ndarray,
+    matrix: np.ndarray,
     missing_prob: float = 0.05,
 ) -> np.ndarray:
-    """Add missing values (NaN) to the series.
+    """Add missing values (NaN) to the feature matrix.
 
     :param rng: Random number generator.
-    :param series: Input series.
+    :param matrix: Input matrix of shape (N, P).
     :param missing_prob: Probability of a value being missing.
-    :return: Series with NaN values.
+    :return: Matrix with NaN values.
     """
-    result = series.copy()
+    result = matrix.copy()
     mask = rng.random(result.shape) < missing_prob
     result[mask] = np.nan
     return result
@@ -589,45 +510,103 @@ def _postprocess_add_missing(
 
 def _postprocess_scale_shift(
     rng: np.random.RandomState,
-    series: np.ndarray,
+    matrix: np.ndarray,
 ) -> np.ndarray:
-    """Apply random scaling and shifting per variate.
+    """Apply random scaling and shifting per feature (column).
 
     :param rng: Random number generator.
-    :param series: Input series of shape (Q, T).
-    :return: Transformed series.
+    :param matrix: Input matrix of shape (N, P).
+    :return: Transformed matrix.
     """
-    Q = series.shape[0]
-    result = series.copy()
-    for q in range(Q):
+    P = matrix.shape[1]
+    result = matrix.copy()
+    for p in range(P):
         scale = rng.uniform(0.5, 2.0)
         shift = rng.uniform(-2.0, 2.0)
-        valid = ~np.isnan(result[q])
-        result[q, valid] = result[q, valid] * scale + shift
+        valid = ~np.isnan(result[:, p])
+        result[valid, p] = result[valid, p] * scale + shift
     return result
 
 
 # ===========================================================================
-# TiRex-2 SCM Pipeline
+# Target Discretization and Categorical Binning
 # ===========================================================================
 
 
-class TiRex2Pipeline:
-    """TiRex-2 Synthetic Prior pipeline for time series generation.
+def _discretize_target(
+    z: np.ndarray,
+    C: int,
+    rng: np.random.RandomState,
+) -> np.ndarray:
+    """Discretize a continuous target node into C classes via quantile binning.
 
-    Implements the SCM prior described in TiRex-2 (Section 2.5) extended
-    with temporal dynamics (Dynamic SCM, item 7) for generating causally
-    structured multivariate time series.
+    This is the many-class target mechanism (TabPFN-3, item 6): a continuous
+    SCM node is cut at its ``1/C, ..., (C-1)/C`` quantiles, yielding naturally
+    balanced classes whose decision boundaries are inherited from the causal
+    structure of the node (cf. Figure 25).
+
+    :param z: Continuous target values of shape (N,).
+    :param C: Number of classes (>= 2).
+    :param rng: Random number generator (unused; kept for a uniform signature).
+    :return: Integer class labels of shape (N,), values in [0, C-1].
+    """
+    z = np.asarray(z, dtype=np.float64)
+    qs = np.quantile(z, np.arange(1, C) / C)
+    y = np.digitize(z, qs)
+    return np.clip(y, 0, C - 1).astype(np.int64)
+
+
+def _bin_categorical(
+    values: np.ndarray,
+    k: int,
+    rng: np.random.RandomState,
+) -> np.ndarray:
+    """Bin a continuous feature column into k ordered categorical levels.
+
+    NaN values are preserved as NaN. This implements the base version of the
+    categorical-variable treatment (TabPFN-3, item 3).
+
+    :param values: Continuous feature values of shape (N,).
+    :param k: Number of categorical levels (>= 2).
+    :param rng: Random number generator (unused; kept for a uniform signature).
+    :return: Integer-valued column of shape (N,) with NaN preserved.
+    """
+    values = np.asarray(values, dtype=np.float64)
+    result = np.full(values.shape, np.nan, dtype=np.float64)
+    valid = ~np.isnan(values)
+    if valid.sum() == 0:
+        return result
+    v = values[valid]
+    qs = np.quantile(v, np.arange(1, k) / k)
+    bins = np.digitize(v, qs)
+    result[valid] = np.clip(bins, 0, k - 1)
+    return result
+
+
+# ===========================================================================
+# SCM Prior Pipeline
+# ===========================================================================
+
+
+class ScmPriorPipeline:
+    """TabPFN-3 SCM prior pipeline for tabular data generation.
+
+    Implements the SCM prior described in TabPFN-3 (Section 2.5) for
+    generating causally structured synthetic tabular datasets: a feature
+    matrix ``X`` of shape ``(N, P)`` and, optionally, a categorical target
+    ``y`` of shape ``(N,)``.
 
     The pipeline proceeds in 5 steps (Figure 9):
 
-    1. **Sample hyperparameters**: number of nodes, graph type, etc.
+    1. **Sample hyperparameters**: number of rows/features/classes, graph type.
     2. **Sample DAG**: generate a DAG using one of several algorithms
        (chain, fork, collider, random, scale-free, bipartite).
-    3. **Compute Dynamic SCM**: for each time step, generate root node
-       values from noise processes, then propagate through the DAG using
-       combiner mechanisms and activation functions.
-    4. **Extract dataset**: select observed variables from SCM nodes.
+    3. **Compute SCM**: fill root nodes with i.i.d. Gaussian noise samples,
+       then propagate through the DAG in topological order using combiner
+       mechanisms, activations, and a per-node additive noise ε_v per the
+       structural equation X_v = f_v(pa(X_v)) + ε_v.
+    4. **Extract dataset**: choose observed features (X) and a target (Y)
+       from the SCM nodes; the target is discretized into C classes.
     5. **Post-processing**: add outliers, missing values, scaling.
     """
 
@@ -636,44 +615,55 @@ class TiRex2Pipeline:
         Vmin: int = 3,
         Vmax: int = 20,
         Pmax: int = 4,
+        Nmin: int = 32,
+        Nmax: int = 512,
         dag_weights: Optional[Dict[str, float]] = None,
         combiner_weights: Optional[Dict[str, float]] = None,
-        noise_weights: Optional[Dict[str, float]] = None,
         activation_weights: Optional[Dict[str, float]] = None,
         apply_postprocessing: bool = True,
         dtype: np.dtype = np.float64,
+        noise_std: float = 0.1,
+        categorical_prob: float = 0.3,
     ) -> None:
-        """Initialize the TiRex-2 SCM pipeline.
+        """Initialize the SCM prior pipeline.
 
         :param Vmin: Minimum number of nodes in the DAG.
         :param Vmax: Maximum number of nodes.
         :param Pmax: Maximum parents per node.
+        :param Nmin: Minimum number of rows when n_samples is not specified.
+        :param Nmax: Maximum number of rows when n_samples is not specified.
         :param dag_weights: Sampling weights for DAG algorithms.
                            Default: uniform over all algorithms.
         :param combiner_weights: Sampling weights for combiner mechanisms.
                                 Default: uniform.
-        :param noise_weights: Sampling weights for noise processes.
-                             Default: uniform.
         :param activation_weights: Sampling weights for activations.
                                   Default: uniform.
         :param apply_postprocessing: Whether to apply post-processing.
-        :param dtype: The numpy data type.
+        :param dtype: The numpy data type for the feature matrix.
+        :param noise_std: Standard deviation of the per-node additive noise ε_v
+                          in the structural equation X_v = f_v(pa(X_v)) + ε_v
+                          (TabPFN-3 Section 2.5, Figure 9). Set to 0.0 to
+                          disable and recover deterministic non-root nodes.
+        :param categorical_prob: Probability that an extracted feature column
+                                 is binned into categorical levels.
         """
         self._Vmin = Vmin
         self._Vmax = Vmax
         self._Pmax = Pmax
+        self._Nmin = Nmin
+        self._Nmax = Nmax
         self._apply_postprocessing = apply_postprocessing
         self._dtype = dtype
+        self._noise_std = noise_std
+        self._categorical_prob = categorical_prob
 
         # Default weights: uniform over all options
         self._dag_names = list(DAG_GENERATORS.keys())
         self._combiner_names = list(COMBINERS.keys())
-        self._noise_names = list(NOISE_PROCESSES.keys())
         self._activation_names = list(ACTIVATIONS.keys())
 
         n_dags = len(self._dag_names)
         n_combiners = len(self._combiner_names)
-        n_noises = len(self._noise_names)
         n_activations = len(self._activation_names)
 
         self._dag_probs = dag_weights or {
@@ -682,15 +672,12 @@ class TiRex2Pipeline:
         self._combiner_probs = combiner_weights or {
             name: 1.0 / n_combiners for name in self._combiner_names
         }
-        self._noise_probs = noise_weights or {
-            name: 1.0 / n_noises for name in self._noise_names
-        }
         self._activation_probs = activation_weights or {
             name: 1.0 / n_activations for name in self._activation_names
         }
 
     def __str__(self) -> str:
-        return "TiRex2Pipeline"
+        return "ScmPriorPipeline"
 
     def _sample_dag(
         self, rng: np.random.RandomState, V: int
@@ -701,7 +688,9 @@ class TiRex2Pipeline:
         :param V: Number of nodes.
         :return: Tuple of (parents_list, roots_list, edge_list).
         """
-        dag_name = rng.choice(self._dag_names, p=self._get_probs(self._dag_probs))
+        dag_name = rng.choice(
+            self._dag_names, p=self._get_probs(self._dag_probs, self._dag_names)
+        )
         gen_fn = DAG_GENERATORS[dag_name]
 
         if dag_name in ("chain", "fork", "collider", "bipartite"):
@@ -717,29 +706,20 @@ class TiRex2Pipeline:
 
         return parents, roots, edges
 
-    def _get_probs(self, prob_dict: Dict[str, float]) -> np.ndarray:
-        """Get normalized probability array from dict.
+    def _get_probs(self, prob_dict: Dict[str, float], names: List[str]) -> np.ndarray:
+        """Get normalized probability array from a weight dict.
 
-        :param prob_dict: Dict mapping name -> probability weight.
-        :return: Normalized probability array (same order as dict keys).
+        :param prob_dict: Dict mapping name -> probability weight. Names absent
+                          from the dict are assigned weight 0.
+        :param names: Canonical ordering of names (the full option list).
+        :return: Normalized probability array aligned with ``names``.
+        :raises ValueError: If the total weight is not positive.
         """
-        names = list(prob_dict.keys())
-        probs = np.array([prob_dict[n] for n in names], dtype=float)
-        return probs / probs.sum()
-
-    def _generate_noise(
-        self,
-        rng: np.random.RandomState,
-        L: int,
-    ) -> np.ndarray:
-        """Generate a noise sequence using a randomly chosen process.
-
-        :param rng: Random number generator.
-        :param L: Sequence length.
-        :return: Noise sequence of shape (L,).
-        """
-        name = rng.choice(self._noise_names, p=self._get_probs(self._noise_probs))
-        return NOISE_PROCESSES[name](rng, L)
+        probs = np.array([prob_dict.get(n, 0.0) for n in names], dtype=float)
+        total = probs.sum()
+        if total <= 0.0:
+            raise ValueError("sampling weights must sum to a positive value")
+        return probs / total
 
     def _sample_combiner(self, rng: np.random.RandomState) -> Callable:
         """Sample a combiner mechanism.
@@ -747,7 +727,10 @@ class TiRex2Pipeline:
         :param rng: Random number generator.
         :return: Combiner function (parent_values, rng) -> scalar.
         """
-        name = rng.choice(self._combiner_names, p=self._get_probs(self._combiner_probs))
+        name = rng.choice(
+            self._combiner_names,
+            p=self._get_probs(self._combiner_probs, self._combiner_names),
+        )
         return COMBINERS[name]
 
     def _sample_activation(self, rng: np.random.RandomState) -> Callable:
@@ -758,58 +741,89 @@ class TiRex2Pipeline:
         """
         name = rng.choice(
             self._activation_names,
-            p=self._get_probs(self._activation_probs),
+            p=self._get_probs(self._activation_probs, self._activation_names),
         )
         act_fn = ACTIVATIONS[name]
         if name == "high_freq_sin":
-            # Wrap to pass rng
-            return lambda x, r=rng: act_fn(x, r)
+            # Sample omega once per node so the activation is a deterministic
+            # function of its input. Resampling per row would break the causal
+            # semantics and silently consume extra RNG draws.
+            omega = rng.uniform(3.0, 20.0)
+            return lambda x, o=omega: act_fn(x, omega=o)
         return act_fn
 
     def generate(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
-        input_dimension: Optional[int] = None,
+        n_samples: Optional[int] = None,
+        n_features: Optional[int] = None,
+        n_classes: Optional[int] = None,
+        adjacency: Optional[np.ndarray] = None,
         return_metadata: bool = False,
-    ) -> Any:
-        """Generate a causally structured multivariate time series.
+    ) -> Union[
+        np.ndarray,
+        Tuple[np.ndarray, np.ndarray],
+        Tuple[np.ndarray, Dict[str, Any]],
+        Tuple[np.ndarray, np.ndarray, Dict[str, Any]],
+    ]:
+        """Generate a causally structured synthetic tabular dataset.
 
         :param rng: The random number generator with fixed seed.
-        :param n_inputs_points: Length T of the time series.
-        :param input_dimension: Number of observed variates d.
-                               If None, randomly sampled.
-        :param return_metadata: If True, also return metadata.
-        :return: Generated time series of shape (d, T), or (d, T) plus
-                 metadata dict if return_metadata is True.
+        :param n_samples: Number of rows N. If None, sampled from
+                          [Nmin, Nmax].
+        :param n_features: Number of features P. If None, randomly sampled.
+        :param n_classes: Number of target classes C. If None, no target is
+                          generated and only the feature matrix X is returned.
+        :param adjacency: Optional binary adjacency matrix of shape (V, V)
+                          describing a DAG. If provided, it is used instead of
+                          sampling a DAG, and V is its number of nodes.
+        :param return_metadata: If True, also return a metadata dictionary.
+        :return: If n_classes is None, X of shape (N, P); otherwise (X, y).
+                 Appends a metadata dict when return_metadata is True.
         """
-        T = n_inputs_points
-
-        # Step 1: Sample hyperparameters
-        V = rng.randint(self._Vmin, self._Vmax + 1)
-        if input_dimension is None:
-            d = rng.randint(1, min(13, V))
+        # Step 1: Sample hyperparameters and DAG
+        if adjacency is not None:
+            V = adjacency.shape[0]
+            parents, roots, edges = adjacency_to_dag(adjacency)
         else:
-            d = input_dimension
-
-        # Step 2: Sample DAG
-        parents, roots, edges = self._sample_dag(rng, V)
+            V = rng.randint(self._Vmin, self._Vmax + 1)
+            parents, roots, edges = self._sample_dag(rng, V)
         E = len(edges)
+
+        N = n_samples if n_samples is not None else rng.randint(
+            self._Nmin, self._Nmax + 1
+        )
+        C = n_classes
+
+        # Feature count is bounded by the number of available nodes; when a
+        # target is generated, one node is reserved for it.
+        max_P = (V - 1) if C is not None else V
+        if max_P < 1:
+            raise ValueError(
+                "cannot extract any feature: the graph has only V=1 node and a "
+                "target is requested, leaving no feature nodes"
+            )
+        if n_features is None:
+            P = rng.randint(1, min(13, max_P) + 1)
+        else:
+            P = n_features
+        if P > max_P:
+            raise ValueError(
+                f"n_features ({P}) exceeds available nodes ({max_P})"
+            )
 
         # Ensure at least one root
         if len(roots) == 0:
-            # Force node 0 as root
             roots = [0]
             for child in range(V):
                 parents[child] = [p for p in parents[child] if p != 0]
 
-        # Step 3: Compute Dynamic SCM
-        # Each node gets a time series of length T
-        node_series: Dict[int, np.ndarray] = {}
+        # Step 3: Compute SCM (per-row propagation)
+        node_values: Dict[int, np.ndarray] = {}
 
-        # Assign noise processes to root nodes
+        # Fill root nodes with i.i.d. Gaussian noise samples (Figure 9)
         for r in roots:
-            node_series[r] = self._generate_noise(rng, T)
+            node_values[r] = _noise_iid(rng, N)
 
         # Assign combiner + activation to each non-root node
         node_combiners: Dict[int, Callable] = {}
@@ -833,99 +847,135 @@ class TiRex2Pipeline:
                     if in_degree[child] == 0:
                         queue.append(child)
 
-        # Propagate through each time step
+        # Propagate through each row
         for v in topo_order:
-            if v in node_series:
+            if v in node_values:
                 continue  # Root node already generated
 
             Pv = parents[v]
-            node_series[v] = np.zeros(T, dtype=np.float64)
+            node_values[v] = np.zeros(N, dtype=np.float64)
             combiner_fn = node_combiners[v]
             act_fn = node_activations[v]
 
-            for t in range(T):
-                # Gather parent values at time t
-                p_vals = np.array([node_series[u][t] for u in Pv])
+            # Per-node additive noise (TabPFN-3 Section 2.5, Figure 9):
+            # X_v = f_v(pa(X_v)) + ε_v, with an independent ε_v per node.
+            epsilon = rng.normal(0.0, self._noise_std, N)
+
+            for n in range(N):
+                # Gather parent values at row n
+                p_vals = np.array([node_values[u][n] for u in Pv])
                 # Combine
                 combined = combiner_fn(rng, p_vals)
-                # Activate
-                try:
-                    node_series[v][t] = act_fn(combined)
-                except TypeError:
-                    # high_freq_sin or other activations that don't accept rng
-                    node_series[v][t] = act_fn(combined)
+                # Activate and add the node's own noise term
+                node_values[v][n] = act_fn(combined) + epsilon[n]
 
-        # Step 4: Extract dataset - select d observed nodes
+        # Step 4: Extract dataset - choose features and target
         all_nodes = list(range(V))
-        observed = rng.choice(all_nodes, size=d, replace=False)
-        observed = sorted(
-            observed.tolist() if hasattr(observed, "tolist") else list(observed)
+
+        if C is not None:
+            target_node = int(rng.choice(all_nodes))
+            remaining = [v for v in all_nodes if v != target_node]
+        else:
+            target_node = None
+            remaining = all_nodes
+
+        feature_nodes = sorted(
+            rng.choice(remaining, size=P, replace=False).tolist()
         )
 
-        # Stack into output: shape (d, T)
-        x = np.stack([node_series[v] for v in observed], axis=0)
+        # Stack into feature matrix: shape (N, P)
+        X = np.stack([node_values[v] for v in feature_nodes], axis=1)
+
+        y = None
+        if C is not None:
+            y = _discretize_target(node_values[target_node], C, rng)
 
         # Step 5: Post-processing
         if self._apply_postprocessing:
-            # Randomly apply post-processing transforms
             if rng.random() < 0.3:
-                x = _postprocess_add_outliers(
+                X = _postprocess_add_outliers(
                     rng,
-                    x,
+                    X,
                     outlier_prob=rng.uniform(0.005, 0.05),
                     outlier_scale=rng.uniform(2.0, 10.0),
                 )
             if rng.random() < 0.3:
-                x = _postprocess_add_missing(
+                X = _postprocess_add_missing(
                     rng,
-                    x,
+                    X,
                     missing_prob=rng.uniform(0.01, 0.1),
                 )
             if rng.random() < 0.5:
-                x = _postprocess_scale_shift(rng, x)
+                X = _postprocess_scale_shift(rng, X)
+
+        # Categorical variables (TabPFN-3, item 3)
+        categorical_features: List[int] = []
+        if self._categorical_prob > 0.0:
+            for j in range(P):
+                if rng.random() < self._categorical_prob:
+                    k = rng.randint(2, 11)
+                    X[:, j] = _bin_categorical(X[:, j], k, rng)
+                    categorical_features.append(int(feature_nodes[j]))
+
+        X = X.astype(self._dtype)
 
         metadata: Dict[str, Any] = {}
         if return_metadata:
             metadata = {
+                "n_rows": N,
+                "n_features": P,
+                "n_classes": C,
                 "n_nodes": V,
-                "n_observed": d,
-                "n_roots": len(roots),
                 "n_edges": E,
-                "sequence_length": T,
-                "observed_nodes": observed,
+                "n_roots": len(roots),
+                "feature_nodes": feature_nodes,
+                "target_node": target_node,
                 "root_nodes": roots,
                 "edge_list": [(p, c) for p, c in edges],
-                "dag_type": "sampled",  # could track which DAG was used
+                "categorical_features": categorical_features,
+                "graph_source": "custom" if adjacency is not None else "random",
             }
 
+        if C is not None:
+            if return_metadata:
+                return X, y, metadata
+            return X, y
+
         if return_metadata:
-            return x.astype(self._dtype), metadata
-        return x.astype(self._dtype)
+            return X, metadata
+        return X
 
     def generate_batch(
         self,
         rng: np.random.RandomState,
-        n_samples: int,
-        n_inputs_points: int,
-        input_dimension: Optional[int] = None,
-    ) -> List[np.ndarray]:
-        """Generate a batch of N synthetic time series.
+        n_batches: int,
+        n_samples: Optional[int] = None,
+        n_features: Optional[int] = None,
+        n_classes: Optional[int] = None,
+        adjacency: Optional[np.ndarray] = None,
+    ) -> List[Any]:
+        """Generate a batch of N synthetic tabular datasets.
 
         :param rng: The random number generator.
-        :param n_samples: Number of samples to generate.
-        :param n_inputs_points: Length of each time series.
-        :param input_dimension: Number of observed variates per sample.
-        :return: List of generated time series.
+        :param n_batches: Number of datasets to generate.
+        :param n_samples: Number of rows per dataset (see ``generate``).
+        :param n_features: Number of features per dataset (see ``generate``).
+        :param n_classes: Number of target classes per dataset (see ``generate``).
+        :param adjacency: Optional binary adjacency matrix describing a DAG.
+                          If provided, it is reused for every sample.
+        :return: List of generated datasets (each an X array or an (X, y) tuple).
         """
         dataset = []
-        for _ in range(n_samples):
-            x = self.generate(
+        for _ in range(n_batches):
+            out = self.generate(
                 rng=rng,
-                n_inputs_points=n_inputs_points,
-                input_dimension=input_dimension,
+                n_samples=n_samples,
+                n_features=n_features,
+                n_classes=n_classes,
+                adjacency=adjacency,
                 return_metadata=False,
             )
-            dataset.append(x)
+            dataset.append(out)
         return dataset
 
     @property
@@ -937,11 +987,6 @@ class TiRex2Pipeline:
     def combiner_mechanisms(self) -> List[str]:
         """Get the list of combiner mechanism names."""
         return self._combiner_names
-
-    @property
-    def noise_processes(self) -> List[str]:
-        """Get the list of noise process names."""
-        return self._noise_names
 
     @property
     def activations(self) -> List[str]:

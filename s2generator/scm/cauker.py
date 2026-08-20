@@ -35,6 +35,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from ..utils._dag import adjacency_to_dag
+from ..utils._label import discretize_labels, label_single, summarize_series
+
 
 # ===========================================================================
 # Kernel Bank K: 36 kernel variants
@@ -581,6 +584,8 @@ class CaukerPipeline:
         Pmax: int = 4,
         target_length: int = 512,
         dtype: np.dtype = np.float64,
+        standardize_activation_input: bool = True,
+        min_node_std: float = 0.05,
     ) -> None:
         """Initialize the CAUKER pipeline.
 
@@ -592,16 +597,67 @@ class CaukerPipeline:
                      (Algorithm 1, line 21).
         :param target_length: Target length L of each generated time series.
         :param dtype: The numpy data type for generated data.
+        :param standardize_activation_input: If True, center/scale the linear
+                     aggregate z before applying the edge activation (and
+                     rescale afterwards) so that non-linear activations (ReLU,
+                     sigmoid, sin, modulo) operate on a well-scaled signal. This
+                     prevents ReLU from collapsing an all-negative aggregate to
+                     an exactly-zero channel and keeps propagated channels on
+                     their parents' scale. Default True. Set False for the
+                     literal paper behaviour (activation applied directly to
+                     W·z + b, Algorithm 1 line 35), which can emit degenerate
+                     channels.
+        :param min_node_std: Detection threshold for collapsed nodes. Any node
+                     whose standard deviation falls below this value is treated
+                     as degenerate (e.g. a flat GP root, or a collapsed
+                     activation) and jittered with Gaussian noise of meaningful
+                     amplitude so it keeps usable variation while retaining its
+                     mean level. Set to 0.0 to disable. Default 0.05.
         """
         self._Kmax = Kmax
         self._Vmax = Vmax
         self._Pmax = Pmax
         self._target_length = target_length
         self._dtype = dtype
+        self._standardize_activation_input = standardize_activation_input
+        self._min_node_std = min_node_std
 
         # Build kernel and mean banks once
         self._kernel_bank = _build_kernel_bank()
         self._mean_bank = _build_mean_bank()
+
+    def _ensure_variation(
+        self, rng: np.random.RandomState, values: np.ndarray
+    ) -> np.ndarray:
+        """Guard against a collapsed (near-constant) node signal.
+
+        A node can collapse to a flat/zero channel when, e.g., ReLU is applied
+        to an all-negative linear aggregate ``z = W·parent + b``, or a GP draw
+        lands on a constant kernel. Such channels carry no information and show
+        up as dead or duplicate variates in the output. We detect collapse by
+        the signal's standard deviation and inject a small Gaussian jitter so
+        the channel retains meaningful variation.
+
+        Well-behaved signals are returned unchanged and the RNG stream is left
+        untouched, so this only alters degenerate cases and keeps generation
+        deterministic for a fixed seed.
+
+        :param rng: Random number generator.
+        :param values: 1-D node signal of length L.
+        :return: The (possibly jittered) signal.
+        """
+        if self._min_node_std <= 0.0:
+            return values
+        std = float(np.std(values))
+        if std >= self._min_node_std:
+            return values
+        # Collapsed to a (near-)constant channel. Inject Gaussian noise of a
+        # meaningful amplitude so the channel keeps usable variation, adding
+        # around the existing mean to preserve its level (the paper's "mean
+        # level as a discriminative cue").
+        noise_std = max(self._min_node_std, 0.5)
+        noise = rng.normal(0.0, noise_std, size=values.shape)
+        return (values + noise).astype(np.float64)
 
     def __str__(self) -> str:
         return "CaukerPipeline"
@@ -611,6 +667,8 @@ class CaukerPipeline:
         rng: np.random.RandomState,
         n_inputs_points: int,
         input_dimension: Optional[int] = None,
+        adjacency: Optional[np.ndarray] = None,
+        n_classes: Optional[int] = None,
         return_metadata: bool = False,
     ) -> Any:
         """Generate synthetic time series from the CAUKER pipeline.
@@ -621,40 +679,63 @@ class CaukerPipeline:
         :param n_inputs_points: Target length L of each time series.
         :param input_dimension: Number of observed variables d (output dimension).
                                If None, randomly sampled from {1, ..., min(12, V)}.
+        :param adjacency: Optional binary adjacency matrix of shape (V, V)
+                          describing a DAG. If provided, it is used instead of
+                          generating a random DAG, and V is its number of nodes.
+        :param n_classes: If given, also return a classification label for the
+                          generated series (the CAUKER pretraining objective is
+                          classification). The label is a single integer derived
+                          deterministically from the series summary statistic;
+                          for balanced labels use ``generate_batch``.
         :param return_metadata: If True, also return metadata about the
                                generation process.
-        :return: Generated time series of shape (d, L), or (d, L) plus
-                 metadata dict if return_metadata is True.
+        :return: Generated time series of shape (d, L). If ``n_classes`` is
+                 given, returns ``(series, label)`` instead. A metadata dict is
+                 appended when ``return_metadata`` is True.
         """
         L = n_inputs_points
         t_grid = np.linspace(0, 1, L, dtype=np.float64)
 
-        # Sample the number of observed variables and total nodes
-        if input_dimension is None:
-            d = rng.randint(1, min(13, self._Vmax))
+        if adjacency is not None:
+            # User-specified graph: V is the graph size, d is sampled within it.
+            V = adjacency.shape[0]
+            if input_dimension is None:
+                d = rng.randint(1, max(2, min(13, V)))
+            else:
+                d = input_dimension
+            if d > V:
+                raise ValueError(
+                    f"input_dimension ({d}) exceeds graph size ({V})"
+                )
+            parents, roots, edges = adjacency_to_dag(adjacency)
+            E = len(edges)
         else:
-            d = input_dimension
+            # Sample the number of observed variables and total nodes
+            if input_dimension is None:
+                d = rng.randint(1, max(2, min(13, self._Vmax)))
+            else:
+                d = input_dimension
 
-        V = rng.randint(max(d, 2), self._Vmax + 1)
+            V = rng.randint(max(d, 2), self._Vmax + 1)
 
-        # Step 5: Generate DAG
-        parents, roots, edges = _generate_random_dag(rng, V, self._Pmax)
-        E = len(edges)
-
-        # Ensure at least one root node (if DAG generation gave none, re-run)
-        retries = 0
-        while len(roots) == 0 and retries < 10:
+            # Step 5: Generate DAG
             parents, roots, edges = _generate_random_dag(rng, V, self._Pmax)
             E = len(edges)
-            retries += 1
 
-        if len(roots) == 0:
-            # Force at least one root
-            roots = [0]
-            # Remove incoming edges to node 0
-            for child in range(V):
-                parents[child] = [p for p in parents[child] if p != child]
-            edges = [(p, c) for c in range(V) for p in parents[c]]
+            # Ensure at least one root node (if DAG generation gave none, re-run)
+            retries = 0
+            while len(roots) == 0 and retries < 10:
+                parents, roots, edges = _generate_random_dag(rng, V, self._Pmax)
+                E = len(edges)
+                retries += 1
+
+            if len(roots) == 0:
+                # Force at least one root
+                roots = [0]
+                # Remove incoming edges to node 0
+                for child in range(V):
+                    parents[child] = [p for p in parents[child] if p != 0]
+                edges = [(p, c) for c in range(V) for p in parents[c]]
 
         # Step 4: Sample activation functions for each edge
         activation_bank = _build_activation_bank(rng)
@@ -679,19 +760,10 @@ class CaukerPipeline:
             # Sample from GP
             node_values[r] = _sample_gp(rng, mean, cov_fn, t_grid)
 
-            # Ensure the root signal has non-zero variation
-            # Use a meaningful threshold: root nodes with near-zero variance
-            # produce flat channels that cascade through the DAG.
-            root_std = np.std(node_values[r])
-            if root_std < 0.01:
-                # Rescale or replace: add structured noise proportional to
-                # the original signal magnitude, or inject a fresh small GP.
-                if root_std < 1e-8:
-                    node_values[r] = rng.normal(0, 0.5, size=L).astype(np.float64)
-                else:
-                    node_values[r] = node_values[r] + rng.normal(
-                        0, max(0.05, root_std), size=L
-                    ).astype(np.float64)
+            # Guard against collapsed (flat/zero) root signals, e.g. a GP draw
+            # landing on a ConstantKernel. A flat channel would propagate through
+            # the DAG and yield dead/duplicate variates downstream.
+            node_values[r] = self._ensure_variation(rng, node_values[r])
 
         # Step 5 (continued): Propagate through DAG in topological order
         # Build topological order: nodes sorted by dependency
@@ -725,32 +797,33 @@ class CaukerPipeline:
             # Aggregate: z = W @ parent_signals^T + b -> shape (1, L)
             z = (W @ parent_signals.T + b).flatten()  # (L,)
 
-            # Standardize z before activation so the signal is centered
-            # around zero with unit variance.  This prevents:
-            #   - ReLU dying neurons (all-negative input → all-zero output)
-            #   - Sigmoid saturation (large |z| → gradient vanishes)
-            #   - Sin collapse near multiples of π
-            z_mean = float(np.mean(z))
-            z_std = float(np.std(z)) + 1e-8
-            z_norm = (z - z_mean) / z_std
-
             # Apply edge activation (use activation from first incoming edge)
             edge_key = (Pv[0], v)
-            if edge_key in edge_activations:
-                act_fn = edge_activations[edge_key]
-                act_params = edge_params[edge_key]
-                if act_params:
-                    activated = act_fn(z_norm, **act_params)
-                else:
-                    activated = act_fn(z_norm)
+            act_fn = edge_activations.get(edge_key)
+            act_params = edge_params.get(edge_key, {})
+
+            if self._standardize_activation_input:
+                # Optional numerical-stability normalization (off by default):
+                # center/scale z so ReLU/sigmoid/sin do not collapse, then
+                # rescale the output back to the original signal magnitude.
+                z_mean = float(np.mean(z))
+                z_std = float(np.std(z)) + 1e-8
+                z_act = (z - z_mean) / z_std
             else:
-                activated = z_norm
+                # Paper behavior (Algorithm 1, line 35): t_v = φ(W·[e·j] + b).
+                z_act = z
 
-            # Rescale to preserve the original signal magnitude
-            node_values[v] = (activated * z_std + z_mean).astype(np.float64)
+            if act_fn is not None:
+                activated = act_fn(z_act, **act_params) if act_params else act_fn(z_act)
+            else:
+                activated = z_act
 
-            # Ensure proper shape and dtype
-            node_values[v] = node_values[v].astype(np.float64)
+            if self._standardize_activation_input:
+                activated = activated * z_std + z_mean
+
+            node_values[v] = self._ensure_variation(
+                rng, activated.astype(np.float64)
+            )
 
         # Select d observed nodes (Algorithm 1, line 36)
         all_nodes = list(range(V))
@@ -773,7 +846,15 @@ class CaukerPipeline:
                 "observed_nodes": observed,
                 "root_nodes": roots,
                 "edge_list": [(p, c) for p, c in edges],
+                "graph_source": "custom" if adjacency is not None else "random",
             }
+
+        if n_classes is not None:
+            label = label_single(summarize_series(x), n_classes)
+            if return_metadata:
+                metadata["n_classes"] = n_classes
+                return x.astype(self._dtype), label, metadata
+            return x.astype(self._dtype), label
 
         if return_metadata:
             return x.astype(self._dtype), metadata
@@ -785,7 +866,9 @@ class CaukerPipeline:
         n_samples: int,
         n_inputs_points: int,
         input_dimension: Optional[int] = None,
-    ) -> List[np.ndarray]:
+        adjacency: Optional[np.ndarray] = None,
+        n_classes: Optional[int] = None,
+    ) -> List[Any]:
         """Generate a batch of N synthetic time series.
 
         Implements Algorithm 1, lines 18-39 loop over N samples.
@@ -794,7 +877,15 @@ class CaukerPipeline:
         :param n_samples: Number of samples to generate (N in Algorithm 1).
         :param n_inputs_points: Target length of each time series.
         :param input_dimension: Number of observed variables per sample.
-        :return: List of generated time series, each of shape (d, L).
+        :param adjacency: Optional binary adjacency matrix describing a DAG.
+                          If provided, it is reused for every sample.
+        :param n_classes: If given, assign each generated series a balanced
+                          class label by quantile-binning the per-series summary
+                          statistic across the batch (RML2016-style labeled
+                          dataset).
+        :return: List of generated time series, each of shape (d, L). If
+                 ``n_classes`` is given, returns a list of ``(series, label)``
+                 tuples instead.
         """
         dataset = []
         for _ in range(n_samples):
@@ -802,9 +893,15 @@ class CaukerPipeline:
                 rng=rng,
                 n_inputs_points=n_inputs_points,
                 input_dimension=input_dimension,
+                adjacency=adjacency,
                 return_metadata=False,
             )
             dataset.append(x)
+
+        if n_classes is not None:
+            stats = [summarize_series(x) for x in dataset]
+            labels = discretize_labels(stats, n_classes)
+            return [(x, int(y)) for x, y in zip(dataset, labels)]
         return dataset
 
     @property

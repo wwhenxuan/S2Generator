@@ -36,8 +36,9 @@ def censor_augmentation(
     :return: Censored time series, a 1D numpy array of the same length as the input series.
     """
 
-    # Validate the input time series
-    time_series = np.asarray(time_series)
+    # Validate the input time series (copy to avoid mutating the caller's array,
+    # matching the behavior of the other augmentation functions).
+    time_series = np.asarray(time_series, dtype=float).copy()
     if time_series.ndim != 1:
         raise ValueError("Input time_series must be a 1D array.")
 
