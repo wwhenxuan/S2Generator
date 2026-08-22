@@ -7,7 +7,7 @@ full dataset construction process:
 
 1. **CouplingPipeline** (TiRex-2): augmentation → coupling → post-processing
 2. **CaukerPipeline** (CAUKER): GP kernel composition → SCM propagation
-3. **ScmPriorPipeline** (TabPFN-3): DAG-based SCM prior for tabular data (N×P + target)
+3. **SCMPriorPipeline** (TabPFN-3): DAG-based SCM prior for tabular data (N×P + target)
 
 Reference:
     - Podest, P., et al. (2026). TiRex-2. arXiv:2607.01204v1.

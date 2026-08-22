@@ -33,7 +33,7 @@ This module implements the dataset construction methods from three papers:
    - Post-processing (outliers, missing values, scale-shift)
 
 The module provides both individual coupling mechanisms and unified pipeline
-interfaces (`CouplingPipeline`, `CaukerPipeline`, `ScmPriorPipeline`)
+interfaces (`CouplingPipeline`, `CaukerPipeline`, `SCMPriorPipeline`)
 for end-to-end dataset construction.
 
 References:
@@ -72,7 +72,7 @@ __all__ = [
     # CAUKER pipeline
     "CaukerPipeline",
     # SCM prior pipeline (TabPFN-3)
-    "ScmPriorPipeline",
+    "SCMPriorPipeline",
     # Unified interfaces
     "CouplingPipeline",
 ]
@@ -119,4 +119,4 @@ except ImportError:
 from s2generator.scm.cauker import CaukerPipeline
 
 # --- SCM prior pipeline (TabPFN-3) ---
-from s2generator.scm.scm_prior import ScmPriorPipeline
+from s2generator.scm.scm_prior import SCMPriorPipeline

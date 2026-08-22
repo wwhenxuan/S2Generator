@@ -561,7 +561,7 @@ def _generate_random_dag(
 # ===========================================================================
 
 
-class CaukerPipeline:
+class CaukerPipeline(object):
     """CAUKER synthetic time-series generator for classification.
 
     Implements Algorithm 1 from Xie et al. (2025). The pipeline generates

@@ -49,7 +49,7 @@ from s2generator.scm.scm_prior import (
     _discretize_target,
     _bin_categorical,
     # Pipeline
-    ScmPriorPipeline,
+    SCMPriorPipeline,
 )
 
 
@@ -509,15 +509,15 @@ class TestCategorical(unittest.TestCase):
 
 
 # ===========================================================================
-# ScmPriorPipeline Init Tests
+# SCMPriorPipeline Init Tests
 # ===========================================================================
 
 
-class TestScmPriorPipelineInit(unittest.TestCase):
+class TestSCMPriorPipelineInit(unittest.TestCase):
     """Test pipeline initialization and properties."""
 
     def test_default_init(self):
-        pipe = ScmPriorPipeline()
+        pipe = SCMPriorPipeline()
         self.assertEqual(pipe._Vmin, 3)
         self.assertEqual(pipe._Vmax, 20)
         self.assertEqual(pipe._Pmax, 4)
@@ -527,7 +527,7 @@ class TestScmPriorPipelineInit(unittest.TestCase):
         self.assertEqual(pipe._dtype, np.float64)
 
     def test_custom_init(self):
-        pipe = ScmPriorPipeline(
+        pipe = SCMPriorPipeline(
             Vmin=5,
             Vmax=15,
             Pmax=3,
@@ -547,16 +547,16 @@ class TestScmPriorPipelineInit(unittest.TestCase):
         self.assertEqual(pipe._categorical_prob, 0.0)
 
     def test_str_method(self):
-        self.assertEqual(str(ScmPriorPipeline()), "ScmPriorPipeline")
+        self.assertEqual(str(SCMPriorPipeline()), "SCMPriorPipeline")
 
     def test_properties(self):
-        pipe = ScmPriorPipeline()
+        pipe = SCMPriorPipeline()
         self.assertEqual(len(pipe.dag_algorithms), 6)
         self.assertEqual(len(pipe.combiner_mechanisms), 6)
         self.assertEqual(len(pipe.activations), 8)
 
     def test_custom_weights(self):
-        pipe = ScmPriorPipeline(
+        pipe = SCMPriorPipeline(
             dag_weights={
                 "chain": 1.0,
                 "fork": 0.0,
@@ -576,15 +576,15 @@ class TestScmPriorPipelineInit(unittest.TestCase):
 
 
 # ===========================================================================
-# ScmPriorPipeline Generate Tests
+# SCMPriorPipeline Generate Tests
 # ===========================================================================
 
 
-class TestScmPriorPipelineGenerate(unittest.TestCase):
+class TestSCMPriorPipelineGenerate(unittest.TestCase):
     """Test the main generate() method."""
 
     def setUp(self):
-        self.pipe = ScmPriorPipeline(Vmin=5, Vmax=12, Pmax=2)
+        self.pipe = SCMPriorPipeline(Vmin=5, Vmax=12, Pmax=2)
         self.rng = np.random.RandomState(42)
 
     def test_generate_default(self):
@@ -650,7 +650,7 @@ class TestScmPriorPipelineGenerate(unittest.TestCase):
         self.assertFalse(np.allclose(X1, X2))
 
     def test_generate_not_all_constant(self):
-        pipe = ScmPriorPipeline(
+        pipe = SCMPriorPipeline(
             Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False, categorical_prob=0.0
         )
         X = pipe.generate(self.rng, n_samples=128, n_features=3)
@@ -658,12 +658,12 @@ class TestScmPriorPipelineGenerate(unittest.TestCase):
         self.assertGreater(np.nanmax(stds), 1e-8)
 
     def test_generate_dtype_float32(self):
-        pipe = ScmPriorPipeline(Vmin=3, Vmax=8, Pmax=2, dtype=np.float32)
+        pipe = SCMPriorPipeline(Vmin=3, Vmax=8, Pmax=2, dtype=np.float32)
         X = pipe.generate(np.random.RandomState(0), n_samples=64, n_features=2)
         self.assertEqual(X.dtype, np.float32)
 
     def test_generate_no_postprocessing(self):
-        pipe = ScmPriorPipeline(Vmin=3, Vmax=8, Pmax=2, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=3, Vmax=8, Pmax=2, apply_postprocessing=False)
         X = pipe.generate(self.rng, n_samples=64, n_features=2)
         self.assertTrue(np.isfinite(X).all())
         self.assertFalse(np.any(np.isnan(X)))
@@ -696,15 +696,15 @@ class TestScmPriorPipelineGenerate(unittest.TestCase):
 
 
 # ===========================================================================
-# ScmPriorPipeline Batch Tests
+# SCMPriorPipeline Batch Tests
 # ===========================================================================
 
 
-class TestScmPriorPipelineBatch(unittest.TestCase):
+class TestSCMPriorPipelineBatch(unittest.TestCase):
     """Test batch generation."""
 
     def setUp(self):
-        self.pipe = ScmPriorPipeline(
+        self.pipe = SCMPriorPipeline(
             Vmin=5, Vmax=12, Pmax=2, apply_postprocessing=False
         )
         self.rng = np.random.RandomState(42)
@@ -755,7 +755,7 @@ class TestScmPriorIntegration(unittest.TestCase):
 
     def test_full_pipeline_workflow(self):
         rng = np.random.RandomState(42)
-        pipe = ScmPriorPipeline(Vmin=5, Vmax=20, Pmax=4, apply_postprocessing=True)
+        pipe = SCMPriorPipeline(Vmin=5, Vmax=20, Pmax=4, apply_postprocessing=True)
         dataset = pipe.generate_batch(
             rng=rng, n_batches=50, n_samples=128, n_features=3, n_classes=2
         )
@@ -765,7 +765,7 @@ class TestScmPriorIntegration(unittest.TestCase):
             self.assertEqual(y.shape, (128,))
 
     def test_multivariate_output(self):
-        pipe = ScmPriorPipeline(Vmin=5, Vmax=12, Pmax=3, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=5, Vmax=12, Pmax=3, apply_postprocessing=False)
         rng = np.random.RandomState(123)
         X, y, meta = pipe.generate(
             rng, n_samples=128, n_features=4, n_classes=3, return_metadata=True
@@ -776,15 +776,15 @@ class TestScmPriorIntegration(unittest.TestCase):
 
     def test_reproducibility_across_pipelines(self):
         rng1, rng2 = np.random.RandomState(42), np.random.RandomState(42)
-        pipe1 = ScmPriorPipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False)
-        pipe2 = ScmPriorPipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False)
+        pipe1 = SCMPriorPipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False)
+        pipe2 = SCMPriorPipeline(Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False)
         out1 = pipe1.generate(rng1, n_samples=64, n_features=2, n_classes=2)
         out2 = pipe2.generate(rng2, n_samples=64, n_features=2, n_classes=2)
         np.testing.assert_array_equal(out1[0], out2[0])
         np.testing.assert_array_equal(out1[1], out2[1])
 
     def test_scale_up(self):
-        pipe = ScmPriorPipeline(Vmin=5, Vmax=20, Pmax=4, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=5, Vmax=20, Pmax=4, apply_postprocessing=False)
         rng = np.random.RandomState(0)
         scales = [10, 30, 50]
         for n in scales:
@@ -794,7 +794,7 @@ class TestScmPriorIntegration(unittest.TestCase):
             self.assertEqual(len(dataset), n)
 
     def test_with_postprocessing_has_nan_or_outliers(self):
-        pipe = ScmPriorPipeline(
+        pipe = SCMPriorPipeline(
             Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=True, categorical_prob=0.0
         )
         rng = np.random.RandomState(0)
@@ -819,23 +819,23 @@ class TestScmPriorEdgeCases(unittest.TestCase):
         self.rng = np.random.RandomState(42)
 
     def test_minimal_config(self):
-        pipe = ScmPriorPipeline(Vmin=2, Vmax=2, Pmax=1, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=2, Vmax=2, Pmax=1, apply_postprocessing=False)
         X = pipe.generate(self.rng, n_samples=32, n_features=1)
         self.assertEqual(X.shape, (32, 1))
 
     def test_small_n_samples(self):
-        pipe = ScmPriorPipeline(Vmin=2, Vmax=5, Pmax=1, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=2, Vmax=5, Pmax=1, apply_postprocessing=False)
         X = pipe.generate(self.rng, n_samples=4, n_features=1)
         self.assertEqual(X.shape, (4, 1))
 
     def test_large_n_samples(self):
-        pipe = ScmPriorPipeline(Vmin=2, Vmax=5, Pmax=1, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=2, Vmax=5, Pmax=1, apply_postprocessing=False)
         X = pipe.generate(self.rng, n_samples=2048, n_features=1)
         self.assertEqual(X.shape, (2048, 1))
         self.assertTrue(np.isfinite(X).all())
 
     def test_large_vmax_small_features(self):
-        pipe = ScmPriorPipeline(Vmin=5, Vmax=30, Pmax=5, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=5, Vmax=30, Pmax=5, apply_postprocessing=False)
         X, y, meta = pipe.generate(
             self.rng, n_samples=64, n_features=2, n_classes=2, return_metadata=True
         )
@@ -843,7 +843,7 @@ class TestScmPriorEdgeCases(unittest.TestCase):
         self.assertGreaterEqual(meta["n_nodes"], 2)
 
     def test_all_dag_types_coverage(self):
-        pipe = ScmPriorPipeline(Vmin=5, Vmax=15, Pmax=3, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=5, Vmax=15, Pmax=3, apply_postprocessing=False)
         for i in range(30):
             X, y, meta = pipe.generate(
                 np.random.RandomState(i),
@@ -860,11 +860,11 @@ class TestScmPriorEdgeCases(unittest.TestCase):
 # ===========================================================================
 
 
-class TestScmPriorPipelineCustomGraph(unittest.TestCase):
+class TestSCMPriorPipelineCustomGraph(unittest.TestCase):
     """Test generation with a user-supplied adjacency matrix."""
 
     def setUp(self):
-        self.pipe = ScmPriorPipeline(
+        self.pipe = SCMPriorPipeline(
             Vmin=3, Vmax=10, Pmax=2, apply_postprocessing=False
         )
         self.rng = np.random.RandomState(42)
@@ -994,10 +994,10 @@ class TestNoiseStd(unittest.TestCase):
         )
 
     def test_noise_std_changes_output(self):
-        pipe0 = ScmPriorPipeline(
+        pipe0 = SCMPriorPipeline(
             noise_std=0.0, apply_postprocessing=False, categorical_prob=0.0
         )
-        pipe1 = ScmPriorPipeline(
+        pipe1 = SCMPriorPipeline(
             noise_std=0.5, apply_postprocessing=False, categorical_prob=0.0
         )
         X0 = pipe0.generate(
@@ -1009,7 +1009,7 @@ class TestNoiseStd(unittest.TestCase):
         self.assertFalse(np.allclose(X0, X1))
 
     def test_noise_std_zero_finite(self):
-        pipe = ScmPriorPipeline(
+        pipe = SCMPriorPipeline(
             noise_std=0.0, apply_postprocessing=False, categorical_prob=0.0
         )
         X = pipe.generate(
@@ -1030,7 +1030,7 @@ class TestMetadataConsistency(unittest.TestCase):
         self.rng = np.random.RandomState(42)
 
     def test_supervised_metadata_consistency(self):
-        pipe = ScmPriorPipeline(Vmin=5, Vmax=12, Pmax=3, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=5, Vmax=12, Pmax=3, apply_postprocessing=False)
         X, y, meta = pipe.generate(
             self.rng, n_samples=100, n_features=4, n_classes=3, return_metadata=True
         )
@@ -1049,7 +1049,7 @@ class TestMetadataConsistency(unittest.TestCase):
         self.assertEqual(y.shape, (meta["n_rows"],))
 
     def test_unsupervised_metadata(self):
-        pipe = ScmPriorPipeline(Vmin=5, Vmax=12, Pmax=3, apply_postprocessing=False)
+        pipe = SCMPriorPipeline(Vmin=5, Vmax=12, Pmax=3, apply_postprocessing=False)
         X, meta = pipe.generate(
             self.rng, n_samples=100, n_features=3, return_metadata=True
         )
@@ -1073,7 +1073,7 @@ class TestCategoricalProb(unittest.TestCase):
         self.rng = np.random.RandomState(42)
 
     def test_categorical_prob_zero(self):
-        pipe = ScmPriorPipeline(
+        pipe = SCMPriorPipeline(
             Vmin=5, Vmax=12, Pmax=2, apply_postprocessing=False, categorical_prob=0.0
         )
         X, y, meta = pipe.generate(
@@ -1082,7 +1082,7 @@ class TestCategoricalProb(unittest.TestCase):
         self.assertEqual(meta["categorical_features"], [])
 
     def test_categorical_prob_one_all_binned(self):
-        pipe = ScmPriorPipeline(
+        pipe = SCMPriorPipeline(
             Vmin=5, Vmax=12, Pmax=2, apply_postprocessing=False, categorical_prob=1.0
         )
         X, y, meta = pipe.generate(
@@ -1093,7 +1093,7 @@ class TestCategoricalProb(unittest.TestCase):
             self.assertTrue(np.allclose(X[:, j], np.round(X[:, j])))
 
     def test_categorical_prob_one_levels(self):
-        pipe = ScmPriorPipeline(
+        pipe = SCMPriorPipeline(
             Vmin=5, Vmax=12, Pmax=2, apply_postprocessing=False, categorical_prob=1.0
         )
         X = pipe.generate(self.rng, n_samples=200, n_features=4)

@@ -588,7 +588,7 @@ def _bin_categorical(
 # ===========================================================================
 
 
-class ScmPriorPipeline:
+class SCMPriorPipeline(object):
     """TabPFN-3 SCM prior pipeline for tabular data generation.
 
     Implements the SCM prior described in TabPFN-3 (Section 2.5) for
@@ -677,7 +677,7 @@ class ScmPriorPipeline:
         }
 
     def __str__(self) -> str:
-        return "ScmPriorPipeline"
+        return "SCMPriorPipeline"
 
     def _sample_dag(
         self, rng: np.random.RandomState, V: int
