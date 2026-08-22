@@ -52,9 +52,7 @@ def spike_injection(
 
     # Validate the kernel argument
     if kernel is not None and kernel not in _SPIKE_KERNELS:
-        raise ValueError(
-            f"kernel must be one of {_SPIKE_KERNELS}, got {kernel!r}."
-        )
+        raise ValueError(f"kernel must be one of {_SPIKE_KERNELS}, got {kernel!r}.")
 
     # Get the length of the time series
     length = time_series.shape[0]

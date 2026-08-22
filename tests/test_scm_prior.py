@@ -686,9 +686,7 @@ class TestScmPriorPipelineGenerate(unittest.TestCase):
         self.assertEqual(set(np.unique(y)), {0, 1})
 
     def test_many_classes(self):
-        X, y = self.pipe.generate(
-            self.rng, n_samples=1000, n_features=2, n_classes=20
-        )
+        X, y = self.pipe.generate(self.rng, n_samples=1000, n_features=2, n_classes=20)
         self.assertEqual(set(np.unique(y)), set(range(20)))
 
     def test_single_row(self):
@@ -706,7 +704,9 @@ class TestScmPriorPipelineBatch(unittest.TestCase):
     """Test batch generation."""
 
     def setUp(self):
-        self.pipe = ScmPriorPipeline(Vmin=5, Vmax=12, Pmax=2, apply_postprocessing=False)
+        self.pipe = ScmPriorPipeline(
+            Vmin=5, Vmax=12, Pmax=2, apply_postprocessing=False
+        )
         self.rng = np.random.RandomState(42)
 
     def test_batch_basic(self):
@@ -917,9 +917,7 @@ class TestScmPriorPipelineCustomGraph(unittest.TestCase):
             ]
         )
         with self.assertRaises(ValueError):
-            self.pipe.generate(
-                self.rng, n_samples=64, n_features=2, adjacency=cyclic
-            )
+            self.pipe.generate(self.rng, n_samples=64, n_features=2, adjacency=cyclic)
 
     def test_non_square_raises(self):
         with self.assertRaises(ValueError):
@@ -939,9 +937,7 @@ class TestScmPriorPipelineCustomGraph(unittest.TestCase):
             ]
         )
         with self.assertRaises(ValueError):
-            self.pipe.generate(
-                self.rng, n_samples=64, n_features=2, adjacency=loop
-            )
+            self.pipe.generate(self.rng, n_samples=64, n_features=2, adjacency=loop)
 
     def test_n_features_exceeds_nodes_raises(self):
         with self.assertRaises(ValueError):

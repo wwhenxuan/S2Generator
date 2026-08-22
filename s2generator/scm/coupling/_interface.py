@@ -94,9 +94,7 @@ class CouplingPipeline(object):
         # Initialize mechanism probabilities
         if mechanism_probabilities is None:
             n = len(self._mechanisms)
-            self._mechanism_probs = {
-                name: 1.0 / n for name in self._mechanisms
-            }
+            self._mechanism_probs = {name: 1.0 / n for name in self._mechanisms}
         else:
             self._mechanism_probs = mechanism_probabilities
 
@@ -164,9 +162,7 @@ class CouplingPipeline(object):
         # Stage 2: Post-processing
         if apply_postprocessing:
             h = horizon if horizon is not None else self._horizon
-            coupled = self._post_processor(
-                rng=rng, series=coupled, horizon=h
-            )
+            coupled = self._post_processor(rng=rng, series=coupled, horizon=h)
             metadata["post_processed"] = True
         else:
             metadata["post_processed"] = False
@@ -189,9 +185,7 @@ class CouplingPipeline(object):
         :return: Name of the selected coupling mechanism.
         """
         names = list(self._mechanism_probs.keys())
-        probs = np.array(
-            [self._mechanism_probs[n] for n in names], dtype=float
-        )
+        probs = np.array([self._mechanism_probs[n] for n in names], dtype=float)
 
         # Restrict to mechanisms compatible with the available number of variates.
         if n_variates is not None:
@@ -301,9 +295,7 @@ class CouplingPipeline(object):
 
         # Generate base univariate series from the GP-based synthetic pool
         # (TiRex-2: zero-mean GP with randomly composed kernels).
-        base_series = self._generate_base_series(
-            rng, n_inputs_points, input_dimension
-        )
+        base_series = self._generate_base_series(rng, n_inputs_points, input_dimension)
 
         # Stage 1: independent augmentation of each univariate series.
         if apply_augmentation:
@@ -479,4 +471,3 @@ class CouplingPipeline(object):
     def dtype(self) -> np.dtype:
         """Get the data type."""
         return self._dtype
-

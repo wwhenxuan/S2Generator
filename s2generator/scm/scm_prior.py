@@ -790,8 +790,10 @@ class ScmPriorPipeline:
             parents, roots, edges = self._sample_dag(rng, V)
         E = len(edges)
 
-        N = n_samples if n_samples is not None else rng.randint(
-            self._Nmin, self._Nmax + 1
+        N = (
+            n_samples
+            if n_samples is not None
+            else rng.randint(self._Nmin, self._Nmax + 1)
         )
         C = n_classes
 
@@ -808,9 +810,7 @@ class ScmPriorPipeline:
         else:
             P = n_features
         if P > max_P:
-            raise ValueError(
-                f"n_features ({P}) exceeds available nodes ({max_P})"
-            )
+            raise ValueError(f"n_features ({P}) exceeds available nodes ({max_P})")
 
         # Ensure at least one root
         if len(roots) == 0:
@@ -879,9 +879,7 @@ class ScmPriorPipeline:
             target_node = None
             remaining = all_nodes
 
-        feature_nodes = sorted(
-            rng.choice(remaining, size=P, replace=False).tolist()
-        )
+        feature_nodes = sorted(rng.choice(remaining, size=P, replace=False).tolist())
 
         # Stack into feature matrix: shape (N, P)
         X = np.stack([node_values[v] for v in feature_nodes], axis=1)

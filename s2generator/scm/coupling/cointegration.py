@@ -97,14 +97,12 @@ class Cointegration(BaseCoupling):
         :param kwargs: Additional parameters.
         :return: Cointegrated multivariate series of shape (T, Q).
         """
-        self._validate_series(series, min_variates=self.min_variates, min_length=self.min_length)
+        self._validate_series(
+            series, min_variates=self.min_variates, min_length=self.min_length
+        )
 
         T, Q = series.shape
-        max_t = (
-            self._max_trends
-            if self._max_trends is not None
-            else max(1, Q // 2)
-        )
+        max_t = self._max_trends if self._max_trends is not None else max(1, Q // 2)
         # Clamp so that 1 <= min_trends <= max_trends <= Q, keeping randint valid.
         max_t = max(1, min(max_t, Q))
         min_t = min(self._min_trends, max_t)

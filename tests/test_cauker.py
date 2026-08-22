@@ -979,7 +979,10 @@ class TestCaukerLabeledInterface(unittest.TestCase):
 
     def test_generate_single_label_with_metadata(self):
         out = self.pipe.generate(
-            self.rng, n_inputs_points=64, input_dimension=2, n_classes=4,
+            self.rng,
+            n_inputs_points=64,
+            input_dimension=2,
+            n_classes=4,
             return_metadata=True,
         )
         self.assertEqual(len(out), 3)
@@ -989,7 +992,10 @@ class TestCaukerLabeledInterface(unittest.TestCase):
 
     def test_batch_labels_balanced(self):
         batch = self.pipe.generate_batch(
-            self.rng, n_samples=40, n_inputs_points=64, input_dimension=1,
+            self.rng,
+            n_samples=40,
+            n_inputs_points=64,
+            input_dimension=1,
             n_classes=4,
         )
         self.assertEqual(len(batch), 40)
@@ -1007,8 +1013,12 @@ class TestCaukerLabeledInterface(unittest.TestCase):
 
     def test_label_deterministic(self):
         r1, r2 = np.random.RandomState(0), np.random.RandomState(0)
-        _, y1 = self.pipe.generate(r1, n_inputs_points=64, input_dimension=2, n_classes=6)
-        _, y2 = self.pipe.generate(r2, n_inputs_points=64, input_dimension=2, n_classes=6)
+        _, y1 = self.pipe.generate(
+            r1, n_inputs_points=64, input_dimension=2, n_classes=6
+        )
+        _, y2 = self.pipe.generate(
+            r2, n_inputs_points=64, input_dimension=2, n_classes=6
+        )
         self.assertEqual(y1, y2)
 
 

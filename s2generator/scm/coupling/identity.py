@@ -48,7 +48,9 @@ class IdentityCoupling(BaseCoupling):
         :param kwargs: Additional parameters (unused).
         :return: The same series, unchanged, of shape (T, Q).
         """
-        self._validate_series(series, min_variates=self.min_variates, min_length=self.min_length)
+        self._validate_series(
+            series, min_variates=self.min_variates, min_length=self.min_length
+        )
         return series.astype(self._data_type, copy=False)
 
 
@@ -80,6 +82,8 @@ class UnivariatePassThrough(BaseCoupling):
         :param kwargs: Additional parameters (unused).
         :return: The first column of the input, shape (T, 1).
         """
-        self._validate_series(series, min_variates=self.min_variates, min_length=self.min_length)
+        self._validate_series(
+            series, min_variates=self.min_variates, min_length=self.min_length
+        )
         result = series[:, :1].astype(self._data_type, copy=True)
         return result

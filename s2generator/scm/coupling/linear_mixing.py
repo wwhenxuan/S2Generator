@@ -52,9 +52,7 @@ class LinearMixing(BaseCoupling):
         """
         super().__init__(dtype=dtype)
         self._spectral_regimes = (
-            spectral_regimes
-            if spectral_regimes is not None
-            else self._SPECTRAL_REGIMES
+            spectral_regimes if spectral_regimes is not None else self._SPECTRAL_REGIMES
         )
 
     def __str__(self) -> str:
@@ -78,7 +76,9 @@ class LinearMixing(BaseCoupling):
         :param kwargs: Additional parameters.
         :return: Linearly mixed multivariate series of shape (T, Q).
         """
-        self._validate_series(series, min_variates=self.min_variates, min_length=self.min_length)
+        self._validate_series(
+            series, min_variates=self.min_variates, min_length=self.min_length
+        )
 
         T, Q = series.shape
         regime = rng.choice(self._spectral_regimes)
@@ -134,9 +134,7 @@ class LinearMixing(BaseCoupling):
         return A
 
     @staticmethod
-    def _random_orthogonal(
-        rng: np.random.RandomState, n: int
-    ) -> np.ndarray:
+    def _random_orthogonal(rng: np.random.RandomState, n: int) -> np.ndarray:
         """Generate a random orthogonal matrix of size n x n.
 
         Uses QR decomposition of a random Gaussian matrix.

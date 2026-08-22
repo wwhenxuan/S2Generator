@@ -704,9 +704,7 @@ class CaukerPipeline:
             else:
                 d = input_dimension
             if d > V:
-                raise ValueError(
-                    f"input_dimension ({d}) exceeds graph size ({V})"
-                )
+                raise ValueError(f"input_dimension ({d}) exceeds graph size ({V})")
             parents, roots, edges = adjacency_to_dag(adjacency)
             E = len(edges)
         else:
@@ -821,9 +819,7 @@ class CaukerPipeline:
             if self._standardize_activation_input:
                 activated = activated * z_std + z_mean
 
-            node_values[v] = self._ensure_variation(
-                rng, activated.astype(np.float64)
-            )
+            node_values[v] = self._ensure_variation(rng, activated.astype(np.float64))
 
         # Select d observed nodes (Algorithm 1, line 36)
         all_nodes = list(range(V))

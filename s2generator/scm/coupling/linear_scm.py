@@ -89,7 +89,9 @@ class LinearSCM(BaseCoupling):
         :param kwargs: Additional parameters.
         :return: Causally coupled multivariate series of shape (T, Q).
         """
-        self._validate_series(series, min_variates=self.min_variates, min_length=self.min_length)
+        self._validate_series(
+            series, min_variates=self.min_variates, min_length=self.min_length
+        )
 
         T, Q = series.shape
         # Ensure max_lag >= 1 so that randint(1, max_lag + 1) stays valid even for
@@ -102,9 +104,7 @@ class LinearSCM(BaseCoupling):
                 rng, adjacency, Q, max_lag
             )
         else:
-            adjacency, lags, coefficients = self._generate_random_dag(
-                rng, Q, max_lag
-            )
+            adjacency, lags, coefficients = self._generate_random_dag(rng, Q, max_lag)
 
         # Initialize output with the input series scattered
         result = np.zeros((T, Q), dtype=self._data_type)

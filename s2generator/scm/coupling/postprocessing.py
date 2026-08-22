@@ -248,9 +248,7 @@ def value_discretization(
         if mode == "uniform":
             edges = np.linspace(v_min, v_max, n_b + 1)
         elif mode == "quantile":
-            edges = np.quantile(
-                col[valid], np.linspace(0, 1, n_b + 1)
-            )
+            edges = np.quantile(col[valid], np.linspace(0, 1, n_b + 1))
         elif mode == "power_law":
             # Power-law spaced bins: denser at one end
             exponent = rng.uniform(0.3, 3.0)

@@ -287,9 +287,7 @@ class TestSpikeInjection(unittest.TestCase):
 
     def test_all_kernels(self):
         for k in ["gaussian", "triangular", "rectangular"]:
-            out = spike_injection(
-                self.series, num_spikes=2, kernel=k, rng=self.rng
-            )
+            out = spike_injection(self.series, num_spikes=2, kernel=k, rng=self.rng)
             self.assertEqual(out.shape, self.series.shape)
             self.assertTrue(np.all(np.isfinite(out)))
 

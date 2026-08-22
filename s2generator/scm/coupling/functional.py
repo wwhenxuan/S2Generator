@@ -62,9 +62,7 @@ class FunctionalCoupling(BaseCoupling):
         super().__init__(dtype=dtype)
         self._noise_std = noise_std
         self._function_types = (
-            function_types
-            if function_types is not None
-            else self._FUNCTION_TYPES
+            function_types if function_types is not None else self._FUNCTION_TYPES
         )
 
     def __str__(self) -> str:
@@ -98,7 +96,9 @@ class FunctionalCoupling(BaseCoupling):
         :param kwargs: Additional parameters.
         :return: Coupled multivariate series of shape (T, Q).
         """
-        self._validate_series(series, min_variates=self.min_variates, min_length=self.min_length)
+        self._validate_series(
+            series, min_variates=self.min_variates, min_length=self.min_length
+        )
 
         T, Q = series.shape
         noise_std = noise_std if noise_std is not None else self._noise_std
@@ -177,6 +177,7 @@ class FunctionalCoupling(BaseCoupling):
 
             def func(x: np.ndarray) -> np.ndarray:
                 return a * np.tanh(b * x)
+
         else:
 
             def func(x: np.ndarray) -> np.ndarray:
@@ -205,9 +206,7 @@ class FunctionalCoupling(BaseCoupling):
             indices = np.digitize(x, bins[1:-1], right=False)
             # Clip indices to valid range
             indices = np.clip(indices, 0, n_bins - 1)
-            bin_centers = np.array([
-                (bins[i] + bins[i + 1]) / 2 for i in range(n_bins)
-            ])
+            bin_centers = np.array([(bins[i] + bins[i + 1]) / 2 for i in range(n_bins)])
             return bin_centers[indices]
 
         return func
@@ -227,12 +226,8 @@ class FunctionalCoupling(BaseCoupling):
             result = np.zeros_like(x, dtype=float)
             for i in range(n_knots - 1):
                 mask = (x >= knots_x[i]) & (x <= knots_x[i + 1])
-                frac = (x[mask] - knots_x[i]) / (
-                    knots_x[i + 1] - knots_x[i] + 1e-8
-                )
-                result[mask] = (
-                    knots_y[i] + frac * (knots_y[i + 1] - knots_y[i])
-                )
+                frac = (x[mask] - knots_x[i]) / (knots_x[i + 1] - knots_x[i] + 1e-8)
+                result[mask] = knots_y[i] + frac * (knots_y[i + 1] - knots_y[i])
             # Extrapolate beyond edges
             result[x < knots_x[0]] = knots_y[0]
             result[x > knots_x[-1]] = knots_y[-1]

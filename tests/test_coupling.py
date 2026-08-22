@@ -130,9 +130,7 @@ class TestIdentityCoupling(unittest.TestCase):
 
     def test_single_variate(self):
         x = self.rng.normal(0, 1, (10, 1))
-        np.testing.assert_array_equal(
-            IdentityCoupling().couple(self.rng, x), x
-        )
+        np.testing.assert_array_equal(IdentityCoupling().couple(self.rng, x), x)
 
 
 class TestUnivariatePassThrough(unittest.TestCase):
@@ -388,9 +386,7 @@ class TestLinearSCM(unittest.TestCase):
         self.assertEqual(coupler.edge_probability, 0.2)
 
     def test_generate_random_dag_structure(self):
-        adjacency, lags, coefficients = LinearSCM()._generate_random_dag(
-            self.rng, 5, 3
-        )
+        adjacency, lags, coefficients = LinearSCM()._generate_random_dag(self.rng, 5, 3)
         self.assertEqual(adjacency.shape, (5, 5))
         self.assertEqual(lags.shape, (5, 5))
         self.assertEqual(coefficients.shape, (5, 5))
@@ -475,9 +471,7 @@ class TestNonlinearSCM(unittest.TestCase):
         coupler = NonlinearSCM(max_lag=3, edge_probability=0.2)
         self.assertEqual(coupler.max_lag, 3)
         self.assertEqual(coupler.edge_probability, 0.2)
-        self.assertEqual(
-            coupler.nonlinearity_types, NonlinearSCM._NONLINEARITY_TYPES
-        )
+        self.assertEqual(coupler.nonlinearity_types, NonlinearSCM._NONLINEARITY_TYPES)
 
     def test_sample_nonlinearity(self):
         coupler = NonlinearSCM()
@@ -857,8 +851,12 @@ class TestCouplingPipelineGenerate(unittest.TestCase):
     def test_call_deterministic(self):
         series = self.rng.normal(0, 1, (64, 4))
         r1, r2 = np.random.RandomState(7), np.random.RandomState(7)
-        o1 = self.pipe(r1, series, mechanism="linear_mixing", apply_postprocessing=False)
-        o2 = self.pipe(r2, series, mechanism="linear_mixing", apply_postprocessing=False)
+        o1 = self.pipe(
+            r1, series, mechanism="linear_mixing", apply_postprocessing=False
+        )
+        o2 = self.pipe(
+            r2, series, mechanism="linear_mixing", apply_postprocessing=False
+        )
         np.testing.assert_array_equal(o1, o2)
 
     def test_call_metadata(self):
@@ -913,9 +911,7 @@ class TestCouplingPipelineGenerate(unittest.TestCase):
 
     def test_generate_without_postprocessing_no_nan(self):
         pipe = CouplingPipeline(patch_size=16)
-        out = pipe.generate(
-            self.rng, 64, input_dimension=4, apply_postprocessing=False
-        )
+        out = pipe.generate(self.rng, 64, input_dimension=4, apply_postprocessing=False)
         self.assertTrue(np.all(np.isfinite(out)))
 
     def test_sample_mechanism(self):
@@ -956,9 +952,7 @@ class TestCouplingIntegration(unittest.TestCase):
         pipe = CouplingPipeline(patch_size=16)
         series = rng.normal(0, 1, (64, 4))
         for name in pipe.mechanisms:
-            out = pipe(
-                rng, series, mechanism=name, apply_postprocessing=False
-            )
+            out = pipe(rng, series, mechanism=name, apply_postprocessing=False)
             if name == "univariate":
                 self.assertEqual(out.shape, (64, 1), msg=f"{name} shape mismatch")
             else:
@@ -1012,7 +1006,9 @@ class TestCouplingRegression(unittest.TestCase):
                     for seed in range(50):
                         rng = np.random.RandomState(seed)
                         out = mech_cls().couple(rng, rng.normal(0, 1, (T, Q)))
-                        self.assertEqual(out.shape, (T, Q), msg=f"{mech_cls.__name__} T={T}")
+                        self.assertEqual(
+                            out.shape, (T, Q), msg=f"{mech_cls.__name__} T={T}"
+                        )
                         self.assertTrue(np.all(np.isfinite(out)))
 
     def test_generate_single_variate_does_not_crash(self):
@@ -1032,9 +1028,7 @@ class TestCouplingRegression(unittest.TestCase):
         """generate(input_dimension=None) draws V ~ U{1..12}; Q=1 must be safe."""
         pipe = CouplingPipeline()
         for seed in range(200):
-            pipe.generate(
-                np.random.RandomState(seed), 128, apply_postprocessing=False
-            )
+            pipe.generate(np.random.RandomState(seed), 128, apply_postprocessing=False)
 
     def test_single_variate_mechanism_restricted(self):
         """With Q=1, only univariate-capable mechanisms are ever sampled."""
@@ -1144,7 +1138,9 @@ class TestCouplingEdgeCases(unittest.TestCase):
             for i in range(10):
                 out = coupler.couple(np.random.RandomState(i), series)
                 self.assertEqual(out.shape, (128, 4))
-                self.assertTrue(np.all(np.isfinite(out)), msg=coupler.__class__.__name__)
+                self.assertTrue(
+                    np.all(np.isfinite(out)), msg=coupler.__class__.__name__
+                )
 
 
 # ===========================================================================
@@ -1177,7 +1173,10 @@ class TestCouplingLabeledInterface(unittest.TestCase):
 
     def test_batch_labels_balanced(self):
         batch = self.pipe.generate_batch(
-            self.rng, n_samples=30, n_inputs_points=64, input_dimension=4,
+            self.rng,
+            n_samples=30,
+            n_inputs_points=64,
+            input_dimension=4,
             n_classes=3,
         )
         self.assertEqual(len(batch), 30)
@@ -1230,15 +1229,16 @@ class TestCouplingAdjacencyInterface(unittest.TestCase):
     def test_empty_adjacency_gives_no_coupling(self):
         """An all-zero graph + zero noise must leave the output identically zero."""
         empty = np.zeros((self.Q, self.Q), dtype=bool)
-        out = LinearSCM(noise_std=0.0).couple(
-            self.rng, self.series, adjacency=empty
-        )
+        out = LinearSCM(noise_std=0.0).couple(self.rng, self.series, adjacency=empty)
         self.assertTrue(np.allclose(out, 0.0))
 
     def test_generate_infers_dimension_from_adjacency(self):
         pipe = CouplingPipeline()
         x, meta = pipe.generate(
-            self.rng, 64, mechanism="linear_scm", adjacency=self.adj,
+            self.rng,
+            64,
+            mechanism="linear_scm",
+            adjacency=self.adj,
             return_metadata=True,
         )
         self.assertEqual(x.shape, (64, self.Q))
@@ -1247,7 +1247,10 @@ class TestCouplingAdjacencyInterface(unittest.TestCase):
     def test_generate_explicit_matching_dimension(self):
         pipe = CouplingPipeline()
         x = pipe.generate(
-            self.rng, 64, input_dimension=4, mechanism="nonlinear_scm",
+            self.rng,
+            64,
+            input_dimension=4,
+            mechanism="nonlinear_scm",
             adjacency=self.adj,
         )
         self.assertEqual(x.shape, (64, self.Q))
@@ -1256,7 +1259,10 @@ class TestCouplingAdjacencyInterface(unittest.TestCase):
         pipe = CouplingPipeline()
         with self.assertRaises(ValueError):
             pipe.generate(
-                self.rng, 64, input_dimension=3, mechanism="linear_scm",
+                self.rng,
+                64,
+                input_dimension=3,
+                mechanism="linear_scm",
                 adjacency=self.adj,
             )
 
@@ -1268,7 +1274,10 @@ class TestCouplingAdjacencyInterface(unittest.TestCase):
     def test_generate_batch_with_adjacency(self):
         pipe = CouplingPipeline()
         batch = pipe.generate_batch(
-            self.rng, n_samples=4, n_inputs_points=64, mechanism="linear_scm",
+            self.rng,
+            n_samples=4,
+            n_inputs_points=64,
+            mechanism="linear_scm",
             adjacency=self.adj,
         )
         self.assertEqual(len(batch), 4)
@@ -1279,7 +1288,10 @@ class TestCouplingAdjacencyInterface(unittest.TestCase):
         """A non-SCM mechanism should accept (and ignore) the adjacency kwarg."""
         pipe = CouplingPipeline()
         x = pipe(
-            self.rng, self.series, mechanism="identity", adjacency=self.adj,
+            self.rng,
+            self.series,
+            mechanism="identity",
+            adjacency=self.adj,
             apply_postprocessing=False,
         )
         self.assertEqual(x.shape, (64, self.Q))

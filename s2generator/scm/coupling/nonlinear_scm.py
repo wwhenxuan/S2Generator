@@ -109,7 +109,9 @@ class NonlinearSCM(BaseCoupling):
         :param kwargs: Additional parameters.
         :return: Nonlinearly coupled multivariate series of shape (T, Q).
         """
-        self._validate_series(series, min_variates=self.min_variates, min_length=self.min_length)
+        self._validate_series(
+            series, min_variates=self.min_variates, min_length=self.min_length
+        )
 
         T, Q = series.shape
         # Ensure max_lag >= 1 so that randint(1, max_lag + 1) stays valid even for
