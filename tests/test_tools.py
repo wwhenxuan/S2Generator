@@ -23,6 +23,7 @@ from s2generator.utils._tools import (
     is_all_zeros,
     z_score_normalization,
     max_min_normalization,
+    save_table,
 )
 
 
@@ -361,6 +362,64 @@ class TestTools(unittest.TestCase):
     #         second=self.data["response"],
     #         msg="Loaded response should match original!",
     #     )
+
+
+class TestSaveTable(unittest.TestCase):
+    """Tests for exporting (N, P) tables to CSV / Excel."""
+
+    def setUp(self) -> None:
+        self.X = np.array(
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]],
+            dtype=np.float64,
+        )
+        self.y = np.array([0, 1, 0], dtype=np.int64)
+
+    def test_save_csv_features_only(self) -> None:
+        import tempfile
+
+        import pandas as pd
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path_csv = path.join(tmp, "table.csv")
+            save_table(self.X, path_csv)
+            loaded = pd.read_csv(path_csv)
+            self.assertEqual(list(loaded.columns), ["x0", "x1", "x2"])
+            np.testing.assert_allclose(loaded.to_numpy(), self.X)
+
+    def test_save_csv_with_target_tuple(self) -> None:
+        import tempfile
+
+        import pandas as pd
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path_csv = path.join(tmp, "supervised.csv")
+            save_table((self.X, self.y), path_csv)
+            loaded = pd.read_csv(path_csv)
+            self.assertEqual(list(loaded.columns), ["x0", "x1", "x2", "target"])
+            np.testing.assert_array_equal(loaded["target"].to_numpy(), self.y)
+
+    def test_save_xlsx_roundtrip(self) -> None:
+        import tempfile
+
+        import pandas as pd
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path_xlsx = path.join(tmp, "nested", "table.xlsx")
+            save_table(
+                self.X,
+                path_xlsx,
+                y=self.y,
+                columns=["a", "b", "c"],
+                target_name="label",
+            )
+            loaded = pd.read_excel(path_xlsx, engine="openpyxl")
+            self.assertEqual(list(loaded.columns), ["a", "b", "c", "label"])
+            np.testing.assert_allclose(loaded[["a", "b", "c"]].to_numpy(), self.X)
+            np.testing.assert_array_equal(loaded["label"].to_numpy(), self.y)
+
+    def test_rejects_unknown_extension(self) -> None:
+        with self.assertRaises(TypeError):
+            save_table(self.X, "table.parquet")
 
 
 if __name__ == "__main__":

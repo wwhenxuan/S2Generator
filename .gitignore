@@ -41,3 +41,6 @@ venv/
 
 # The Repo and Paper
 repo/
+
+# Notebook demo dumps
+examples/scm/_generated/
