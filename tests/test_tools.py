@@ -7,6 +7,7 @@ Created on 2025/08/23 17:17:23
 """
 
 import unittest
+from importlib.util import find_spec
 from os import path
 
 import numpy as np
@@ -398,6 +399,10 @@ class TestSaveTable(unittest.TestCase):
             self.assertEqual(list(loaded.columns), ["x0", "x1", "x2", "target"])
             np.testing.assert_array_equal(loaded["target"].to_numpy(), self.y)
 
+    @unittest.skipUnless(
+        find_spec("openpyxl") is not None,
+        "openpyxl is required to write .xlsx files",
+    )
     def test_save_xlsx_roundtrip(self) -> None:
         import tempfile
 

@@ -39,6 +39,7 @@ dependencies = [
     "statsmodels>=0.14.5",
     "colorama>=0.4.6",
     "pandas>=2.3.1",
+    "openpyxl>=3.1.0",
     "pysdkit>=0.4.54",
 ]
 
