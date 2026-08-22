@@ -33,6 +33,7 @@ __all__ = [
     "linear_interpolation",
     "cubic_spline_interpolation",
     "lagrange_interpolation",
+    "save_table",
 ]
 
 import os
@@ -46,7 +47,7 @@ from scipy.interpolate import interp1d, lagrange  # 改用lagrange函数
 
 import pandas as pd
 
-from typing import Optional, Dict, Union, Tuple
+from typing import Optional, Dict, Union, Tuple, Sequence
 
 from s2generator.symbol.base import Node, NodeList
 
@@ -588,3 +589,129 @@ def lagrange_interpolation(x_known: np.ndarray, y_known: np.ndarray, x_new: np.n
     # Calculate interpolation results (polyval supports single values or array inputs)
     y_new = np.polyval(lagrange_poly, x_new)
     return y_new
+
+
+def save_table(
+    data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray], Sequence],
+    save_path: str,
+    y: Optional[np.ndarray] = None,
+    columns: Optional[Sequence[str]] = None,
+    target_name: str = "target",
+    index: bool = False,
+) -> None:
+    """Save a tabular array as a CSV or Excel spreadsheet.
+
+    This helper is intended for the arrays produced by
+    :meth:`s2generator.scm.SCMPriorPipeline.generate`:
+
+    * unsupervised: ``X`` of shape ``(N, P)`` (rows × features);
+    * supervised: ``(X, y)`` where ``y`` is an integer label vector of
+      shape ``(N,)`` (optionally appended as a last column named
+      ``target_name``).
+
+    The output format is inferred from ``save_path``:
+
+    * ``.csv`` — UTF-8 comma-separated values (no extra dependency);
+    * ``.xlsx`` / ``.xls`` — Excel workbook via ``pandas`` (requires
+      ``openpyxl``).
+
+    :param data: Feature matrix ``(N, P)``, a pandas ``DataFrame``, or a
+                 ``(X, y)`` tuple/list as returned by ``generate``.
+    :param save_path: Destination file path ending in ``.csv``, ``.xlsx``
+                      or ``.xls``. Parent directories are created if needed.
+    :param y: Optional target vector of shape ``(N,)``. Ignored when
+              ``data`` is already an ``(X, y)`` pair. When given, it is
+              written as the last column.
+    :param columns: Optional feature column names of length ``P``. Defaults
+                    to ``x0, x1, ...``.
+    :param target_name: Column name used when a target vector is written.
+    :param index: Whether to write the DataFrame index.
+    :raises TypeError: If ``save_path`` does not have a supported extension.
+    :raises ValueError: If shapes of ``data`` / ``y`` / ``columns`` disagree.
+    """
+    df = _table_to_dataframe(
+        data=data,
+        y=y,
+        columns=columns,
+        target_name=target_name,
+    )
+
+    save_path = os.path.abspath(os.fspath(save_path))
+    ext = os.path.splitext(save_path)[1].lower()
+    if ext not in {".csv", ".xlsx", ".xls"}:
+        raise TypeError(
+            "save_path must end with '.csv', '.xlsx' or '.xls', " f"got {save_path!r}"
+        )
+
+    parent = os.path.dirname(save_path)
+    if parent and not path.exists(parent):
+        os.makedirs(parent)
+
+    if ext == ".csv":
+        df.to_csv(save_path, index=index)
+        return
+
+    try:
+        df.to_excel(save_path, index=index, engine="openpyxl")
+    except ImportError as exc:
+        raise ImportError(
+            "Saving Excel files requires the 'openpyxl' package. "
+            "Install it with: pip install openpyxl"
+        ) from exc
+
+
+def _table_to_dataframe(
+    data: Union[np.ndarray, pd.DataFrame, Tuple[np.ndarray, np.ndarray], Sequence],
+    y: Optional[np.ndarray] = None,
+    columns: Optional[Sequence[str]] = None,
+    target_name: str = "target",
+) -> pd.DataFrame:
+    """Convert SCM-prior outputs into a pandas DataFrame for export."""
+    if isinstance(data, pd.DataFrame):
+        df = data.copy()
+        if y is not None:
+            y_arr = np.asarray(y).reshape(-1)
+            if y_arr.shape[0] != len(df):
+                raise ValueError(
+                    f"y has length {y_arr.shape[0]} but the table has "
+                    f"{len(df)} rows"
+                )
+            df[target_name] = y_arr
+        return df
+
+    if y is None and isinstance(data, (tuple, list)):
+        if len(data) != 2:
+            raise ValueError(
+                "when data is a sequence it must be an (X, y) pair, "
+                f"got length {len(data)}"
+            )
+        data, y = data[0], data[1]
+
+    arr = np.asarray(data)
+    if arr.ndim == 1:
+        arr = arr.reshape(-1, 1)
+    if arr.ndim != 2:
+        raise ValueError(
+            f"data must be a 2-D table of shape (N, P), got shape {arr.shape}"
+        )
+
+    n_rows, n_features = arr.shape
+    if columns is None:
+        feature_names = [f"x{j}" for j in range(n_features)]
+    else:
+        feature_names = [str(name) for name in columns]
+        if len(feature_names) != n_features:
+            raise ValueError(
+                f"columns has length {len(feature_names)} but the table "
+                f"has {n_features} feature columns"
+            )
+
+    df = pd.DataFrame(arr, columns=feature_names)
+    if y is not None:
+        y_arr = np.asarray(y).reshape(-1)
+        if y_arr.shape[0] != n_rows:
+            raise ValueError(
+                f"y has length {y_arr.shape[0]} but the table has {n_rows} rows"
+            )
+        df[target_name] = y_arr
+    return df

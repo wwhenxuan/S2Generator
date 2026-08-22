@@ -73,6 +73,7 @@ __all__ = [
     "list_datasets",
     "load_univariate",
     "load_multivariate",
+    "save_table",
 ]
 
 # Transform the symbol from string to latex
@@ -177,3 +178,5 @@ from .data import (
     load_multivariate,
     load_univariate,
 )
+
+from ._tools import save_table
