@@ -68,6 +68,11 @@ __all__ = [
     "generate_stock_price",
     "generate_electrocardiogram",
     "generate_electroencephalogram",
+    "AVAILABLE_UNIVARIATE_DATASETS",
+    "AVAILABLE_MULTIVARIATE_DATASETS",
+    "list_datasets",
+    "load_univariate",
+    "load_multivariate",
 ]
 
 # Transform the symbol from string to latex
@@ -163,4 +168,12 @@ from ._data import (
     generate_stock_price,
     generate_electrocardiogram,
     generate_electroencephalogram,
+)
+
+from .data import (
+    AVAILABLE_MULTIVARIATE_DATASETS,
+    AVAILABLE_UNIVARIATE_DATASETS,
+    list_datasets,
+    load_multivariate,
+    load_univariate,
 )
