@@ -38,3 +38,6 @@ venv/
 
 .vscode/
 .vscode
+
+# The Repo and Paper
+repo/
