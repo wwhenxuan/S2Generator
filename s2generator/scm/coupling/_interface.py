@@ -20,7 +20,7 @@ Created on 2026/08/10 00:00:00
 @url: https://github.com/wwhenxuan/S2Generator
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -58,6 +58,21 @@ class CouplingPipeline(object):
     The pipeline is designed as a procedural prior: each stage is independently
     randomized per example, yielding a combinatorial enlargement of the effective
     training distribution.
+
+    Note:
+        Coupling mixes channels (linear mixing, SCMs, cointegration, etc.).
+        Real or concatenated series often live on very different scales, so a
+        high-energy channel would dominate the mixture and drown out the rest.
+        Set ``normalize=True`` in :meth:`__call__` to z-score each of the Q
+        columns of the ``(T, Q)`` input, then multiply every channel by an
+        energy coefficient. The coefficient is either a random draw from
+        ``U[scale_min, scale_max]`` (defaults 0.5 and 2.0) or a user-supplied
+        ``channel_scales`` vector. The extra scale keeps the series from all
+        collapsing onto a standard normal after z-scoring.
+
+        When ``normalize=False`` (the default) the pipeline does not rescale
+        anything. The caller **must** already have balanced per-channel energy
+        before passing ``series`` in; otherwise mixing is scale-dominated.
     """
 
     def __init__(
@@ -67,6 +82,8 @@ class CouplingPipeline(object):
         post_processor: Optional[PostProcessor] = None,
         patch_size: int = 32,
         horizon: int = 0,
+        scale_min: float = 0.5,
+        scale_max: float = 2.0,
         dtype: np.dtype = np.float64,
     ) -> None:
         """Initialize the coupling pipeline.
@@ -79,11 +96,23 @@ class CouplingPipeline(object):
                               If None, a default PostProcessor is created.
         :param patch_size: Patch size for post-processing operations.
         :param horizon: Forecast horizon for future masking.
+        :param scale_min: Lower bound of the per-channel energy multiplier
+                          sampled after z-score normalization when
+                          ``normalize=True`` and ``channel_scales`` is not given.
+        :param scale_max: Upper bound of the per-channel energy multiplier
+                          sampled after z-score normalization when
+                          ``normalize=True`` and ``channel_scales`` is not given.
         :param dtype: The numpy data type for generated data.
         """
+        if scale_max < scale_min:
+            raise ValueError(
+                f"scale_max ({scale_max}) must be >= scale_min ({scale_min})"
+            )
         self._dtype = dtype
         self._patch_size = patch_size
         self._horizon = horizon
+        self._scale_min = float(scale_min)
+        self._scale_max = float(scale_max)
 
         # Initialize coupling mechanisms
         if mechanisms is None:
@@ -121,11 +150,33 @@ class CouplingPipeline(object):
         adjacency: Optional[np.ndarray] = None,
         apply_postprocessing: bool = True,
         return_metadata: bool = False,
+        normalize: bool = False,
+        channel_scales: Optional[Union[Sequence[float], np.ndarray]] = None,
     ) -> Union[
         np.ndarray,
         Tuple[np.ndarray, Dict[str, Any]],
     ]:
         """Run the full coupling pipeline.
+
+        Note:
+            Why normalize. Mechanisms such as linear mixing and the SCMs form
+            each variate from a combination of the input channels. If those
+            channels have mismatched amplitudes, the largest one dominates the
+            coupled output. Normalization equalizes per-channel energy so that
+            mixing reflects the intended relationships rather than raw scale.
+
+            How it is done. With ``normalize=True`` each of the Q columns of
+            ``series`` (shape ``(T, Q)``) is z-scored along time. A per-channel
+            energy multiplier is then applied: a random sample from
+            ``U[scale_min, scale_max]`` when ``channel_scales`` is omitted, or
+            the user-provided length-Q tuple/list/array otherwise. The
+            multiplier is there so that z-scored channels do not all sit on
+            N(0, 1).
+
+            When not to use it. With ``normalize=False`` this method leaves the
+            array unchanged. The caller **must** preprocess ``series`` first
+            (balance each channel's energy / scale) before calling the
+            pipeline. Passing ``channel_scales`` in this mode is rejected.
 
         :param rng: The random number generator with fixed seed.
         :param series: Input univariate series of shape (T, Q).
@@ -139,14 +190,34 @@ class CouplingPipeline(object):
         :param apply_postprocessing: Whether to apply post-processing transforms.
         :param return_metadata: If True, also return metadata about the
                                generation process.
+        :param normalize: If True, z-score each of the Q channels before
+                          coupling. After z-scoring, each channel is multiplied
+                          by an energy scale so the series do not all collapse
+                          onto a standard normal. If False, the input is used
+                          as-is and the caller is responsible for balancing
+                          per-channel energy.
+        :param channel_scales: Optional length-Q tuple, list, or array of
+                               per-channel energy multipliers. Used only when
+                               ``normalize=True``. If omitted, a scale is drawn
+                               independently for each channel from
+                               ``U[scale_min, scale_max]``. If provided, those
+                               values are used and no random offset is added.
         :return: Coupled multivariate series of shape (T, Q), and optionally
                  a metadata dictionary.
         """
         T, Q = series.shape
+        series, applied_scales = self._prepare_input_series(
+            rng=rng,
+            series=series,
+            normalize=normalize,
+            channel_scales=channel_scales,
+        )
         metadata: Dict[str, Any] = {
             "input_shape": (T, Q),
             "n_variates": Q,
             "sequence_length": T,
+            "normalized": bool(normalize),
+            "channel_scales": applied_scales,
         }
 
         # Stage 1: Sample and apply coupling mechanism
@@ -170,6 +241,64 @@ class CouplingPipeline(object):
         if return_metadata:
             return coupled, metadata
         return coupled
+
+    def _prepare_input_series(
+        self,
+        rng: np.random.RandomState,
+        series: np.ndarray,
+        normalize: bool,
+        channel_scales: Optional[Union[Sequence[float], np.ndarray]],
+    ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+        """Optionally z-score and re-scale each channel of an input series.
+
+        Operates on arrays of shape (T, Q), treating each of the Q columns as
+        an independent channel. When ``normalize`` is False the series is
+        returned unchanged and the caller is expected to have already set
+        per-channel energy. When ``normalize`` is True each channel is first
+        z-scored, then multiplied by either the user-supplied
+        ``channel_scales`` or a random draw from ``U[scale_min, scale_max]``.
+
+        :param rng: Random number generator used for the random energy offset.
+        :param series: Input series of shape (T, Q).
+        :param normalize: Whether to z-score and re-scale channels.
+        :param channel_scales: Optional length-Q energy multipliers. Ignored
+                               (and rejected) when ``normalize`` is False.
+        :return: Prepared series of shape (T, Q) and the applied per-channel
+                 scales, or ``None`` when ``normalize`` is False.
+        """
+        prepared = np.asarray(series, dtype=self._dtype)
+        if prepared.ndim != 2:
+            raise ValueError(
+                f"series must be a 2-D array of shape (T, Q), got ndim={prepared.ndim}"
+            )
+        _, Q = prepared.shape
+
+        if not normalize:
+            if channel_scales is not None:
+                raise ValueError(
+                    "channel_scales is only used when normalize=True; "
+                    "with normalize=False scale each channel before calling "
+                    "the pipeline"
+                )
+            return prepared, None
+
+        mean = prepared.mean(axis=0, keepdims=True)
+        std = prepared.std(axis=0, keepdims=True)
+        std = np.where(std < 1e-12, 1.0, std)
+        prepared = (prepared - mean) / std
+
+        if channel_scales is None:
+            scales = rng.uniform(self._scale_min, self._scale_max, size=Q).astype(
+                self._dtype, copy=False
+            )
+        else:
+            scales = np.asarray(channel_scales, dtype=self._dtype).reshape(-1)
+            if scales.size != Q:
+                raise ValueError(
+                    f"channel_scales must have length Q={Q}, got {scales.size}"
+                )
+        prepared = prepared * scales[np.newaxis, :]
+        return prepared, scales
 
     def _sample_mechanism(
         self,
@@ -237,6 +366,8 @@ class CouplingPipeline(object):
         apply_postprocessing: bool = True,
         n_classes: Optional[int] = None,
         return_metadata: bool = False,
+        normalize: bool = False,
+        channel_scales: Optional[Union[Sequence[float], np.ndarray]] = None,
     ) -> Union[
         np.ndarray,
         Tuple[np.ndarray, np.ndarray],
@@ -270,6 +401,11 @@ class CouplingPipeline(object):
                           series summary statistic. For balanced labels use
                           ``generate_batch``.
         :param return_metadata: Whether to return metadata.
+        :param normalize: Forwarded to :meth:`__call__`. If True, z-score and
+                          re-scale each generated channel before coupling.
+        :param channel_scales: Forwarded to :meth:`__call__`. Optional
+                               per-channel energy multipliers used only when
+                               ``normalize`` is True.
         :return: Generated multivariate time series. If ``n_classes`` is given,
                  returns ``(series, label)``. A metadata dict is appended when
                  ``return_metadata`` is True.
@@ -309,6 +445,8 @@ class CouplingPipeline(object):
             adjacency=adjacency,
             apply_postprocessing=apply_postprocessing,
             return_metadata=return_metadata,
+            normalize=normalize,
+            channel_scales=channel_scales,
         )
 
         if return_metadata:
@@ -471,3 +609,13 @@ class CouplingPipeline(object):
     def dtype(self) -> np.dtype:
         """Get the data type."""
         return self._dtype
+
+    @property
+    def scale_min(self) -> float:
+        """Lower bound of the random per-channel energy multiplier."""
+        return self._scale_min
+
+    @property
+    def scale_max(self) -> float:
+        """Upper bound of the random per-channel energy multiplier."""
+        return self._scale_max

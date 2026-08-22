@@ -785,12 +785,22 @@ class TestCouplingPipelineInit(unittest.TestCase):
         self.assertEqual(pipe._patch_size, 32)
         self.assertEqual(pipe._horizon, 0)
         self.assertEqual(pipe.dtype, np.float64)
+        self.assertEqual(pipe.scale_min, 0.5)
+        self.assertEqual(pipe.scale_max, 2.0)
 
     def test_custom_init(self):
-        pipe = CouplingPipeline(patch_size=16, horizon=8, dtype=np.float32)
+        pipe = CouplingPipeline(
+            patch_size=16, horizon=8, dtype=np.float32, scale_min=0.2, scale_max=3.0
+        )
         self.assertEqual(pipe._patch_size, 16)
         self.assertEqual(pipe._horizon, 8)
         self.assertEqual(pipe.dtype, np.float32)
+        self.assertEqual(pipe.scale_min, 0.2)
+        self.assertEqual(pipe.scale_max, 3.0)
+
+    def test_invalid_scale_range(self):
+        with self.assertRaises(ValueError):
+            CouplingPipeline(scale_min=2.0, scale_max=0.5)
 
     def test_str_method(self):
         self.assertEqual(str(CouplingPipeline()), "CouplingPipeline")
@@ -875,6 +885,94 @@ class TestCouplingPipelineGenerate(unittest.TestCase):
         self.assertEqual(meta["coupling_mechanism"], "identity")
         self.assertEqual(meta["coupled_shape"], (64, 3))
         self.assertFalse(meta["post_processed"])
+        self.assertFalse(meta["normalized"])
+        self.assertIsNone(meta["channel_scales"])
+
+    def test_call_normalize_false_preserves_input(self):
+        """With normalize=False the identity mechanism must leave series unchanged."""
+        series = self.rng.normal(10.0, 4.0, (64, 3))
+        out = self.pipe(
+            self.rng,
+            series,
+            mechanism="identity",
+            apply_postprocessing=False,
+            normalize=False,
+        )
+        np.testing.assert_array_equal(out, series)
+
+    def test_call_normalize_with_explicit_scales(self):
+        """Z-score then multiply by the user-supplied per-channel energy."""
+        series = np.column_stack(
+            [
+                self.rng.normal(5.0, 2.0, 256),
+                self.rng.normal(-3.0, 0.5, 256),
+                self.rng.normal(0.0, 10.0, 256),
+            ]
+        )
+        scales = (0.5, 1.0, 2.0)
+        out, meta = self.pipe(
+            self.rng,
+            series,
+            mechanism="identity",
+            apply_postprocessing=False,
+            return_metadata=True,
+            normalize=True,
+            channel_scales=scales,
+        )
+        self.assertTrue(meta["normalized"])
+        np.testing.assert_allclose(meta["channel_scales"], scales)
+        np.testing.assert_allclose(out.mean(axis=0), 0.0, atol=1e-10)
+        np.testing.assert_allclose(out.std(axis=0), scales, rtol=1e-10, atol=1e-10)
+
+    def test_call_normalize_random_offset_in_range(self):
+        """Without channel_scales, each channel is scaled by U[scale_min, scale_max]."""
+        pipe = CouplingPipeline(scale_min=0.5, scale_max=2.0)
+        series = np.column_stack(
+            [
+                self.rng.normal(8.0, 3.0, 256),
+                self.rng.normal(-2.0, 1.5, 256),
+                self.rng.normal(0.0, 7.0, 256),
+            ]
+        )
+        out, meta = pipe(
+            np.random.RandomState(0),
+            series,
+            mechanism="identity",
+            apply_postprocessing=False,
+            return_metadata=True,
+            normalize=True,
+        )
+        self.assertTrue(meta["normalized"])
+        scales = np.asarray(meta["channel_scales"])
+        self.assertEqual(scales.shape, (3,))
+        self.assertTrue(np.all(scales >= 0.5 - 1e-12))
+        self.assertTrue(np.all(scales <= 2.0 + 1e-12))
+        np.testing.assert_allclose(out.mean(axis=0), 0.0, atol=1e-10)
+        np.testing.assert_allclose(out.std(axis=0), scales, rtol=1e-10, atol=1e-10)
+
+    def test_call_normalize_rejects_channel_scales_when_disabled(self):
+        series = self.rng.normal(0, 1, (64, 3))
+        with self.assertRaises(ValueError):
+            self.pipe(
+                self.rng,
+                series,
+                mechanism="identity",
+                apply_postprocessing=False,
+                normalize=False,
+                channel_scales=(1.0, 1.0, 1.0),
+            )
+
+    def test_call_normalize_rejects_wrong_scale_length(self):
+        series = self.rng.normal(0, 1, (64, 3))
+        with self.assertRaises(ValueError):
+            self.pipe(
+                self.rng,
+                series,
+                mechanism="identity",
+                apply_postprocessing=False,
+                normalize=True,
+                channel_scales=(1.0, 2.0),
+            )
 
     def test_generate_shape(self):
         out = self.pipe.generate(
