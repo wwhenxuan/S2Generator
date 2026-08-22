@@ -38,7 +38,7 @@ import numpy as np
 
 # Importing data generators object
 from s2generator.symbol import SeriesSymbolGenerator, SeriesParams, SymbolParams
-from s2generator.utils import plot_series
+from s2generator.utils import plot_symbol_series
 
 # Creating a random number object
 rng = np.random.RandomState(0)
@@ -58,7 +58,7 @@ symbols, inputs, outputs = generator.run(
 # Print the expressions
 print(symbols)
 # Visualize the time series
-fig = plot_series(inputs, outputs)
+fig = plot_symbol_series(inputs, outputs)
 ~~~
 
 ~~~python
@@ -81,7 +81,7 @@ rng = np.random.RandomState(512)  # Change the random seed
 symbols, inputs, outputs = generator.run(rng, input_dimension=2, output_dimension=2, n_inputs_points=336)
 
 print(symbols)
-fig = plot_series(inputs, outputs)
+fig = plot_symbol_series(inputs, outputs)
 ~~~
 
 > (-9.45 add ((((0.026 mul rand) sub (-62.7 mul cos((4.79 add (-6.69 mul x_1))))) add (-0.982 mul sqrt((4.2 add (-0.14 mul x_0))))) sub (0.683 mul x_1))) | (67.6 add ((-9.0 mul x_1) add (2.15 mul sqrt((0.867 add (-92.1 mul x_1))))))
