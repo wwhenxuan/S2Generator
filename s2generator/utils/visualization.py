@@ -6,11 +6,15 @@ Created on 2025/01/25 00:02:43
 """
 
 __all__ = [
-    "plot_time_series",
-    "plot_series",
+    "plot_univariate_time_series",
+    "plot_symbol_series",
     "plot_symbol",
     "plot_shapiro_wilk",
     "plot_simulator_statistics",
+    "plot_adjacency_matrix",
+    "plot_graph",
+    "plot_multivariate_time_series",
+    "plot_correlation",
 ]
 
 from typing import Optional, Union, Dict, Any, Tuple, List
@@ -26,21 +30,35 @@ from s2generator.symbol.base import Node, NodeList
 from s2generator.symbol.print_symbol import symbol_to_markdown
 
 
-def plot_time_series(
+def plot_univariate_time_series(
     time_series: np.ndarray, figsize: Tuple[int, int] = (12, 3), dpi: int = 256
 ) -> plt.Figure:
     """
-    Visualize a single time series.
+    Visualize a single univariate time series.
 
-    :param time_series: The time series data to be visualized.
+    :param time_series: 1D array of shape ``(L,)``, or 2D ``(1, L)`` / ``(L, 1)``.
     :param figsize: The size of the figure for the generated plot.
     :param dpi: Dots per inch (resolution) for the generated plot.
-
     :return: A matplotlib Figure object containing the time series plot.
     """
+    series = np.asarray(time_series)
+    if series.ndim == 2:
+        if 1 in series.shape:
+            series = series.reshape(-1)
+        else:
+            raise ValueError(
+                "plot_univariate_time_series expects a 1D series; "
+                f"got shape {series.shape}. Use plot_multivariate_time_series "
+                "for multiple channels."
+            )
+    elif series.ndim != 1:
+        raise ValueError(
+            f"plot_univariate_time_series expects 1D input, got shape {series.shape}"
+        )
+
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-    ax.plot(time_series, color="royalblue")
-    ax.set_title("Time Series Visualization", fontweight="bold", fontsize=13)
+    ax.plot(series, color="royalblue")
+    ax.set_title("Univariate Time Series", fontweight="bold", fontsize=13)
     ax.set_xlabel("Time Steps", fontsize=11.5)
     ax.set_ylabel("Value", fontsize=11.5)
     ax.grid(True)
@@ -48,12 +66,12 @@ def plot_time_series(
     return fig
 
 
-def plot_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
+def plot_symbol_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
     """
-    Visualize S2 data
+    Visualize Series-Symbol (S2) excitation / response pairs.
 
-    :param x: input sampling series
-    :param y: output generated series
+    :param x: input sampling (excitation) series of shape ``(L, d_in)``.
+    :param y: output (response) series of shape ``(L, d_out)``.
     :return: the plot figure of matplotlib
     """
 
@@ -514,12 +532,295 @@ def plot_simulator_statistics(
     return fig
 
 
-if __name__ == "__main__":
-    import numpy as np
+def plot_adjacency_matrix(
+    adjacency_matrix: np.ndarray,
+    figsize: Optional[Tuple[float, float]] = None,
+    dpi: int = 160,
+    ax: Optional[plt.Axes] = None,
+) -> plt.Figure:
+    """
+    Visualize a binary adjacency matrix as a heatmap.
 
+    Convention: ``adjacency[i, j] = 1`` means a directed edge ``i → j``.
+
+    :param adjacency_matrix: Square ``(V, V)`` adjacency matrix.
+    :param figsize: Figure size; defaults to a square scaled by ``V``.
+    :param dpi: Figure resolution.
+    :param ax: Optional existing axes to draw into.
+    :return: Matplotlib Figure.
+    """
+    adj = np.asarray(adjacency_matrix)
+    if adj.ndim != 2 or adj.shape[0] != adj.shape[1]:
+        raise ValueError(
+            f"adjacency_matrix must be square (V, V), got shape {adj.shape}"
+        )
+    V = adj.shape[0]
+    if figsize is None:
+        side = max(4.0, 0.55 * V + 2.0)
+        figsize = (side, side)
+
+    created_fig = ax is None
+    if created_fig:
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+    else:
+        fig = ax.figure
+
+    im = ax.imshow(adj, cmap="Blues", vmin=0, vmax=max(1, float(np.max(adj))))
+    ax.set_xticks(np.arange(V))
+    ax.set_yticks(np.arange(V))
+    ax.set_xticklabels([f"{i}" for i in range(V)])
+    ax.set_yticklabels([f"{i}" for i in range(V)])
+    ax.set_xlabel("Target (j)", fontsize=11)
+    ax.set_ylabel("Source (i)", fontsize=11)
+    ax.set_title("Adjacency Matrix (i → j)", fontweight="bold", fontsize=12)
+    fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    if created_fig:
+        fig.tight_layout()
+    return fig
+
+
+def _draw_circular_digraph(ax: plt.Axes, adjacency_matrix: np.ndarray) -> None:
+    """Draw a directed graph with a circular layout on ``ax``."""
+    adj = np.asarray(adjacency_matrix).astype(bool)
+    V = adj.shape[0]
+    angles = np.linspace(0, 2 * np.pi, V, endpoint=False) - np.pi / 2
+    radius = 1.0
+    pos = {
+        i: (radius * np.cos(angles[i]), radius * np.sin(angles[i])) for i in range(V)
+    }
+
+    # Edges
+    for i in range(V):
+        for j in range(V):
+            if not adj[i, j] or i == j:
+                continue
+            x0, y0 = pos[i]
+            x1, y1 = pos[j]
+            # Shorten arrows so they stop at node boundaries
+            dx, dy = x1 - x0, y1 - y0
+            length = np.hypot(dx, dy)
+            if length < 1e-8:
+                continue
+            shrink = 0.12
+            sx, sy = x0 + shrink * dx / length, y0 + shrink * dy / length
+            ex, ey = x1 - shrink * dx / length, y1 - shrink * dy / length
+            ax.annotate(
+                "",
+                xy=(ex, ey),
+                xytext=(sx, sy),
+                arrowprops=dict(
+                    arrowstyle="-|>",
+                    color="#334155",
+                    lw=1.4,
+                    mutation_scale=12,
+                ),
+            )
+
+    # Nodes
+    xs = [pos[i][0] for i in range(V)]
+    ys = [pos[i][1] for i in range(V)]
+    ax.scatter(
+        xs,
+        ys,
+        s=650,
+        c="#e2e8f0",
+        edgecolors="#0f172a",
+        linewidths=1.5,
+        zorder=3,
+    )
+    for i in range(V):
+        ax.text(
+            pos[i][0],
+            pos[i][1],
+            str(i),
+            ha="center",
+            va="center",
+            fontsize=11,
+            fontweight="bold",
+            zorder=4,
+        )
+
+    ax.set_xlim(-1.35, 1.35)
+    ax.set_ylim(-1.35, 1.35)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_title("Causal Graph (i → j)", fontweight="bold", fontsize=12)
+
+
+def plot_graph(
+    adjacency_matrix: np.ndarray,
+    show_matrix: bool = False,
+    figsize: Optional[Tuple[float, float]] = None,
+    dpi: int = 160,
+) -> plt.Figure:
+    """
+    Visualize a DAG from its adjacency matrix with a circular layout.
+
+    Convention: ``adjacency[i, j] = 1`` means a directed edge ``i → j``.
+    When ``show_matrix`` is True, a second subplot shows the adjacency heatmap.
+
+    :param adjacency_matrix: Square ``(V, V)`` adjacency matrix.
+    :param show_matrix: If True, draw graph (left) and matrix (right).
+    :param figsize: Optional figure size.
+    :param dpi: Figure resolution.
+    :return: Matplotlib Figure.
+    """
+    adj = np.asarray(adjacency_matrix)
+    if adj.ndim != 2 or adj.shape[0] != adj.shape[1]:
+        raise ValueError(
+            f"adjacency_matrix must be square (V, V), got shape {adj.shape}"
+        )
+    V = adj.shape[0]
+
+    if show_matrix:
+        if figsize is None:
+            figsize = (max(9.0, 0.7 * V + 6.0), max(4.0, 0.55 * V + 2.5))
+        fig, axes = plt.subplots(1, 2, figsize=figsize, dpi=dpi)
+        _draw_circular_digraph(axes[0], adj)
+        plot_adjacency_matrix(adj, ax=axes[1], dpi=dpi)
+        fig.tight_layout()
+        return fig
+
+    if figsize is None:
+        side = max(5.0, 0.55 * V + 3.0)
+        figsize = (side, side)
+    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+    _draw_circular_digraph(ax, adj)
+    fig.tight_layout()
+    return fig
+
+
+def plot_correlation(
+    time_series: np.ndarray,
+    measure: Union[str, List[str], Tuple[str, ...]] = "pearson",
+    figsize: Optional[Tuple[float, float]] = None,
+    dpi: int = 160,
+    cmap: Optional[str] = None,
+    **kwargs,
+) -> plt.Figure:
+    """
+    Visualize pairwise correlation / similarity / distance matrices.
+
+    :param time_series: Multivariate series of shape ``[num_samples, seq_length]``
+                        with ``num_samples >= 2``.
+    :param measure: One measure, a space-separated string (e.g.
+                    ``\"pearson wasserstein\"``), or a list of measure names.
+                    Supported: ``pearson``, ``spearman``, ``autocorrelation``,
+                    ``power_spectrum``, ``distribution``, ``wasserstein``.
+    :param figsize: Optional figure size; scales with the number of measures.
+    :param dpi: Figure resolution.
+    :param cmap: Colormap override. Defaults to ``coolwarm`` for correlations
+                 and ``viridis`` for Wasserstein distances.
+    :param kwargs: Forwarded to ``multivariate_correlation`` (e.g. ``nlags``,
+                   ``bins``, ``mean_weight``, ``covar_weight``).
+    :return: Matplotlib Figure with one subplot per requested measure.
+    """
+    from s2generator.utils._multivariate_correlation import (
+        multivariate_correlation,
+        parse_correlation_measures,
+    )
+
+    measures = parse_correlation_measures(measure)
+    computed = multivariate_correlation(time_series, measure=measures, **kwargs)
+    if isinstance(computed, dict):
+        matrices = computed
+    else:
+        matrices = {measures[0]: computed}
+
+    n = len(measures)
+    if figsize is None:
+        figsize = (max(4.0, 4.2 * n), 4.0)
+
+    fig, axes = plt.subplots(1, n, figsize=figsize, dpi=dpi, squeeze=False)
+    titles = {
+        "pearson": "Pearson Correlation",
+        "spearman": "Spearman Correlation",
+        "autocorrelation": "Autocorrelation Similarity",
+        "power_spectrum": "Power-Spectrum Similarity",
+        "distribution": "Distribution Similarity",
+        "wasserstein": "Wasserstein Distance",
+    }
+
+    for col, name in enumerate(measures):
+        ax = axes[0, col]
+        mat = matrices[name]
+        V = mat.shape[0]
+        is_distance = name == "wasserstein"
+        local_cmap = cmap or ("viridis" if is_distance else "coolwarm")
+        if is_distance:
+            vmin, vmax = 0.0, float(np.max(mat)) if np.max(mat) > 0 else 1.0
+        else:
+            finite = mat[np.isfinite(mat)]
+            bound = float(np.max(np.abs(finite))) if finite.size else 1.0
+            bound = max(bound, 1.0)
+            vmin, vmax = -bound, bound
+
+        im = ax.imshow(mat, cmap=local_cmap, vmin=vmin, vmax=vmax)
+        ax.set_xticks(np.arange(V))
+        ax.set_yticks(np.arange(V))
+        ax.set_xticklabels([str(i) for i in range(V)])
+        ax.set_yticklabels([str(i) for i in range(V)])
+        ax.set_xlabel("Series j", fontsize=10)
+        ax.set_ylabel("Series i", fontsize=10)
+        ax.set_title(titles.get(name, name), fontweight="bold", fontsize=11)
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+    fig.tight_layout()
+    return fig
+
+
+def plot_multivariate_time_series(
+    time_series: np.ndarray,
+    figsize: Optional[Tuple[float, float]] = None,
+    dpi: int = 160,
+    sharex: bool = True,
+) -> plt.Figure:
+    """
+    Visualize multivariate / multi-sample time series as stacked row subplots.
+
+    :param time_series: Array of shape ``[num_samples, seq_length]``
+                        (e.g. CauKer output ``(d, L)``).
+    :param figsize: Optional figure size; defaults to scale with ``num_samples``.
+    :param dpi: Figure resolution.
+    :param sharex: Whether subplots share the x-axis.
+    :return: Matplotlib Figure with one row per sample.
+    """
+    data = np.asarray(time_series)
+    if data.ndim != 2:
+        raise ValueError(
+            "plot_multivariate_time_series expects shape [num_samples, seq_length], "
+            f"got {data.shape}"
+        )
+    n_samples, seq_len = data.shape
+    if n_samples < 1:
+        raise ValueError("time_series must contain at least one sample row")
+
+    if figsize is None:
+        figsize = (12, max(2.0, 1.8 * n_samples))
+
+    fig, axes = plt.subplots(
+        nrows=n_samples,
+        ncols=1,
+        figsize=figsize,
+        dpi=dpi,
+        sharex=sharex,
+        squeeze=False,
+    )
+    for i in range(n_samples):
+        ax = axes[i, 0]
+        ax.plot(data[i], color="royalblue")
+        ax.set_ylabel(f"Dim {i}", fontsize=10)
+        ax.grid(True, alpha=0.35)
+        ax.set_xlim(0, seq_len - 1 if seq_len > 1 else 1)
+    axes[-1, 0].set_xlabel("Time Steps", fontsize=11)
+    axes[0, 0].set_title("Multivariate Time Series", fontweight="bold", fontsize=12)
+    fig.tight_layout()
+    return fig
+
+
+if __name__ == "__main__":
     # Importing data generators, parameter controllers and visualization functions
     from s2generator.symbol import SeriesSymbolGenerator
-    from s2generator.utils import plot_series
 
     generator = SeriesSymbolGenerator()  # Create an instance
 
@@ -527,7 +828,7 @@ if __name__ == "__main__":
     # Start generating symbolic expressions, sampling and generating series
 
     trees, x, y = generator.run(
-        rng, input_dimension=2, output_dimension=10, n_points=20
+        rng, input_dimension=2, output_dimension=10, n_inputs_points=20
     )
 
     trees_list = str(trees).split(" | ")

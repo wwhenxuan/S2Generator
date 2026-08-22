@@ -4,7 +4,7 @@ Shared DAG utilities for the SCM generators.
 
 This module provides the conversion from a user-supplied numpy adjacency
 matrix to the internal ``(parents, roots, edges)`` representation used by
-``CaukerPipeline`` and ``ScmPriorPipeline``.
+``CaukerPipeline`` and ``SCMPriorPipeline``.
 
 An adjacency matrix ``A`` of shape ``(V, V)`` is interpreted as a directed
 graph where ``A[i, j] != 0`` denotes an edge ``i -> j``. The matrix is

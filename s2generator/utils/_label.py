@@ -4,7 +4,7 @@ Shared helpers for deriving classification labels from time-series samples.
 
 TiRex-2 (``coupling``) and CAUKER (``cauker``) are time-series generators: a
 single sample is one multivariate series of shape ``(d, T)`` (or ``(T, Q)``).
-To expose a classification interface analogous to :class:`ScmPriorPipeline`
+To expose a classification interface analogous to :class:`SCMPriorPipeline`
 (which discretizes a tabular target node into a many-class label), we collapse
 each series into a scalar summary statistic and quantile-bin those statistics.
 

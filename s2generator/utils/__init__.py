@@ -41,8 +41,13 @@ __all__ = [
     "exponential_smoothing",
     "smooth_show_info",
     "MovingDecomp",
-    "plot_time_series",
-    "plot_series",
+    "plot_univariate_time_series",
+    "plot_symbol_series",
+    "plot_adjacency_matrix",
+    "plot_graph",
+    "plot_multivariate_time_series",
+    "plot_correlation",
+    "multivariate_correlation",
     "plot_symbol",
     "plot_shapiro_wilk",
     "plot_simulator_statistics",
@@ -126,12 +131,18 @@ from ._decomposition import STL, STLResult
 
 # The Shapiro-Wilk test for normality of the residuals
 from .visualization import (
-    plot_time_series,
-    plot_series,
+    plot_univariate_time_series,
+    plot_symbol_series,
+    plot_adjacency_matrix,
+    plot_graph,
+    plot_multivariate_time_series,
+    plot_correlation,
     plot_symbol,
     plot_shapiro_wilk,
     plot_simulator_statistics,
 )
+
+from ._multivariate_correlation import multivariate_correlation
 
 # The generate the time series data through the ARMA model
 from ._data import (
