@@ -39,7 +39,7 @@ dependencies = [
     "statsmodels>=0.14.5",
     "colorama>=0.4.6",
     "pandas>=2.3.1",
-    "pysdkit>=0.4.21",
+    "pysdkit>=0.4.54",
 ]
 
 [project.urls]
@@ -54,3 +54,6 @@ version = { attr = "s2generator.__version__" }
 where = ["."]
 include = ["s2generator*"]
 exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+"s2generator.utils.data" = ["*.csv", "*.npy"]
