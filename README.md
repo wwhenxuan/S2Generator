@@ -18,6 +18,8 @@ This method allows for the unrestricted creation of high-quality time series dat
 
 ### 🔥 News
 
+**[Aug. 2026]** Recently, multivariate time series generation algorithms based on structural causal models (SCM) have been widely used: [TabPFNv3](https://arxiv.org/abs/2605.13986), [CauKer](https://arxiv.org/abs/2508.02879), and [TiRex-2](https://arxiv.org/abs/2607.01204). Therefore, we specifically reproduced the corresponding generation algorithms in the [scm module](https://github.com/wwhenxuan/S2Generator/tree/main/s2generator/scm). See the [notebooks](https://github.com/wwhenxuan/S2Generator/tree/main/examples/scm).
+
 **[Jun. 2026]** We extend the learnable white-noise-to-signal simulator family with [KalmanFilterSimulator](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/kalman_filtering.py) (state-space AR + Kalman filtering) and [MarkovSwitchingSimulator](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/markov_switching.py) (Markov-switching autoregression for regime-dependent dynamics).
 
 **[Feb. 2026]** Since all stationary time series can be obtained by exciting a linear time-invariant system with white noise, we propose [a learnable series generation method](https://github.com/wwhenxuan/S2Generator/blob/main/s2generator/simulator/arima.py) based on the ARIMA model. This method ensures the generated series is highly similar to the inputs in autocorrelation and power spectrum density.
