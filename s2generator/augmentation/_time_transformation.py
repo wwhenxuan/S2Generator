@@ -6,7 +6,14 @@ Created on 2026/03/05 16:19:59
 @url: https://github.com/wwhenxuan/S2Generator
 """
 
-__all__ = ["add_linear_trend", "value_flipping", "time_series_mixup"]
+__all__ = [
+    "add_linear_trend",
+    "add_piecewise_linear_trend",
+    "value_flipping",
+    "time_series_mixup",
+]
+
+from typing import Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -65,6 +72,157 @@ def add_linear_trend(
 
     # Average the original signal and the trend to maintain the overall scale
     return (time_series + trend) / 2
+
+
+def add_piecewise_linear_trend(
+    time_series: np.ndarray,
+    num_segments: int = 3,
+    trend_strengths: Optional[Sequence[float]] = None,
+    directions: Optional[Sequence[str]] = None,
+    strength_range: Tuple[float, float] = (0.5, 2.0),
+    normalize: bool = True,
+    rng: Optional[np.random.RandomState] = None,
+    seed: int = 42,
+) -> np.ndarray:
+    """
+    Add a multi-segment (piecewise linear) trend to a 1-D time series.
+
+    The series is split into ``num_segments`` contiguous pieces. Each piece
+    gets its own linear ramp whose **range** (net change) is
+    ``trend_strengths[i]`` and whose **sign** is ``directions[i]``
+    (``"upward"`` or ``"downward"``). Adjacent pieces share an endpoint so
+    the composite trend is continuous.
+
+    If ``trend_strengths`` or ``directions`` is omitted, the missing values
+    are drawn at random: strengths from ``U[strength_range]``, directions
+    uniformly from ``{"upward", "downward"}``.
+
+    :param time_series: Input time series, a 1D numpy array.
+    :param num_segments: Number of trend pieces. Must be >= 1 and at most
+                         the series length.
+    :param trend_strengths: Per-segment trend ranges / magnitudes. Length
+                            must equal ``num_segments``. If None, sampled
+                            uniformly from ``strength_range``.
+    :param directions: Per-segment trend directions, each ``"upward"`` or
+                       ``"downward"``. Length must equal ``num_segments``.
+                       If None, sampled uniformly.
+    :param strength_range: ``(min, max)`` used when sampling random
+                           ``trend_strengths``.
+    :param normalize: If True, affine-rescale the output to the original
+                      mean and std (same behaviour as ``add_linear_trend``).
+                      If False, average the series with the trend.
+    :param rng: Optional random number generator. Used only for entries
+                that are not provided by the caller.
+    :param seed: Seed used when ``rng`` is None.
+    :return: Augmented series of the same length as the input.
+    """
+    time_series = np.asarray(time_series, dtype=float)
+    if time_series.ndim != 1:
+        raise ValueError("Input time_series must be a 1D array.")
+
+    seq_length = len(time_series)
+    if num_segments < 1:
+        raise ValueError("num_segments must be >= 1")
+    if num_segments > seq_length:
+        raise ValueError(
+            f"num_segments ({num_segments}) cannot exceed the series length "
+            f"({seq_length})"
+        )
+
+    low, high = strength_range
+    if high < low:
+        raise ValueError(f"strength_range max ({high}) must be >= min ({low})")
+
+    if rng is None:
+        rng = np.random.RandomState(seed)
+
+    strengths = _resolve_trend_strengths(
+        trend_strengths, num_segments=num_segments, low=low, high=high, rng=rng
+    )
+    dirs = _resolve_trend_directions(directions, num_segments=num_segments, rng=rng)
+
+    bounds = _segment_bounds(seq_length, num_segments)
+    original_energy = np.mean(time_series**2)
+    scale = np.sqrt(original_energy) if original_energy > 0 else 1.0
+
+    trend = np.zeros(seq_length, dtype=float)
+    cursor = 0.0
+    for i in range(num_segments):
+        start, end = int(bounds[i]), int(bounds[i + 1])
+        length = end - start
+        sign = 1.0 if dirs[i] == "upward" else -1.0
+        delta = sign * float(strengths[i]) * scale
+        if length == 1:
+            trend[start] = cursor
+            cursor = cursor + delta
+        else:
+            trend[start:end] = np.linspace(cursor, cursor + delta, length)
+            cursor = trend[end - 1]
+
+    if normalize:
+        augmented_series = time_series + trend
+        std = np.std(time_series)
+        aug_std = np.std(augmented_series)
+        if aug_std > 0 and std > 0:
+            augmented_series = (
+                (augmented_series - np.mean(augmented_series)) / aug_std
+            ) * std + np.mean(time_series)
+        return augmented_series
+
+    return (time_series + trend) / 2
+
+
+def _segment_bounds(seq_length: int, num_segments: int) -> np.ndarray:
+    """Split ``[0, seq_length)`` into ``num_segments`` contiguous pieces."""
+    sizes = np.full(num_segments, seq_length // num_segments, dtype=int)
+    sizes[: seq_length % num_segments] += 1
+    return np.concatenate(([0], np.cumsum(sizes)))
+
+
+def _resolve_trend_strengths(
+    trend_strengths: Optional[Sequence[float]],
+    num_segments: int,
+    low: float,
+    high: float,
+    rng: np.random.RandomState,
+) -> np.ndarray:
+    if trend_strengths is None:
+        return rng.uniform(low, high, size=num_segments)
+    strengths = np.asarray(trend_strengths, dtype=float).reshape(-1)
+    if strengths.size != num_segments:
+        raise ValueError(
+            f"trend_strengths must have length num_segments={num_segments}, "
+            f"got {strengths.size}"
+        )
+    if np.any(strengths < 0):
+        raise ValueError("trend_strengths must be non-negative")
+    return strengths
+
+
+def _resolve_trend_directions(
+    directions: Optional[Sequence[str]],
+    num_segments: int,
+    rng: np.random.RandomState,
+) -> list:
+    if directions is None:
+        return rng.choice(["upward", "downward"], size=num_segments).tolist()
+    if len(directions) != num_segments:
+        raise ValueError(
+            f"directions must have length num_segments={num_segments}, "
+            f"got {len(directions)}"
+        )
+    parsed = []
+    for item in directions:
+        key = str(item).strip().lower()
+        if key in {"upward", "up", "1"}:
+            parsed.append("upward")
+        elif key in {"downward", "down", "-1"}:
+            parsed.append("downward")
+        else:
+            raise ValueError(
+                "each direction must be 'upward' or 'downward', " f"got {item!r}"
+            )
+    return parsed
 
 
 def value_flipping(time_series: np.ndarray) -> np.ndarray:
