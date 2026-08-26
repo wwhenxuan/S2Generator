@@ -18,6 +18,7 @@ from s2generator.augmentation import (
     wiener_filter,
     add_linear_trend,
     add_piecewise_linear_trend,
+    add_nonlinear_trend,
     time_series_mixup,
     spike_injection,
 )
@@ -257,6 +258,67 @@ class TestDataAugmentation(unittest.TestCase):
             add_piecewise_linear_trend(
                 series, num_segments=2, directions=("sideways", "upward")
             )
+
+    def test_add_nonlinear_trend(self) -> None:
+        """Test nonlinear trend families, convexity, and parameter checks."""
+        t = np.linspace(0, 1, 128)
+        series = np.sin(2 * np.pi * 3 * t)
+
+        for kind in (
+            "polynomial",
+            "exponential",
+            "logarithmic",
+            "sigmoid",
+            "power",
+            "spline",
+        ):
+            out = add_nonlinear_trend(
+                series, kind=kind, trend_strength=1.0, seed=3, normalize=False
+            )
+            self.assertEqual(len(out), len(series))
+            self.assertFalse(np.array_equal(out, series))
+
+        zeros = np.zeros(80)
+        up = add_nonlinear_trend(
+            zeros, kind="polynomial", degree=2, direction="upward", normalize=False
+        )
+        down = add_nonlinear_trend(
+            zeros, kind="polynomial", degree=2, direction="downward", normalize=False
+        )
+        self.assertGreater(up[-1], up[0])
+        self.assertLess(down[-1], down[0])
+
+        convex = add_nonlinear_trend(
+            zeros, kind="power", power=3.0, convex=True, normalize=False
+        )
+        concave = add_nonlinear_trend(
+            zeros, kind="power", power=3.0, convex=False, normalize=False
+        )
+        # Accelerating rise stays below the linear chord; decelerating stays above.
+        mid = 40
+        chord = 0.5 * (zeros[0] + convex[-1])
+        self.assertLess(convex[mid], chord)
+        self.assertGreater(concave[mid], 0.5 * (zeros[0] + concave[-1]))
+
+        spline_a = add_nonlinear_trend(series, kind="spline", n_knots=6, seed=11)
+        spline_b = add_nonlinear_trend(series, kind="spline", n_knots=6, seed=11)
+        np.testing.assert_array_equal(spline_a, spline_b)
+
+        custom = add_nonlinear_trend(
+            zeros,
+            kind="spline",
+            n_knots=4,
+            knot_values=(0.0, 0.2, 0.9, 1.0),
+            normalize=False,
+        )
+        self.assertGreater(custom[-1], custom[0])
+
+        with self.assertRaises(ValueError):
+            add_nonlinear_trend(series, kind="unknown")
+        with self.assertRaises(ValueError):
+            add_nonlinear_trend(series, kind="polynomial", degree=0)
+        with self.assertRaises(ValueError):
+            add_nonlinear_trend(np.ones((8, 2)), kind="polynomial")
 
     def test_empirical_mode_modulation(self) -> None:
         """Test the function for performing empirical mode modulation on time series data."""
