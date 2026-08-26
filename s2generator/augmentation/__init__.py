@@ -17,6 +17,7 @@ __all__ = [
     "wiener_filter",
     "add_linear_trend",
     "add_piecewise_linear_trend",
+    "add_nonlinear_trend",
     "value_flipping",
     "time_series_mixup",
 ]
@@ -46,6 +47,7 @@ from ._wiener_filter import wiener_filter
 from ._time_transformation import (
     add_linear_trend,
     add_piecewise_linear_trend,
+    add_nonlinear_trend,
     value_flipping,
     time_series_mixup,
 )
