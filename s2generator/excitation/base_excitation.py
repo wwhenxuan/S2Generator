@@ -23,17 +23,15 @@ class BaseExcitation(ABC):
     def __str__(self) -> str:
         return self.__class__.__name__
 
-    def create_zeros(
-        self, n_inputs_points: int = 512, input_dimension: int = 1
-    ) -> np.ndarray:
+    def create_zeros(self, seq_length: int = 512, num_channels: int = 1) -> np.ndarray:
         """
         Constructs an empty time series data of the specified length and dimension.
 
-        :param n_inputs_points: The length of the generated time series data.
-        :param input_dimension: The dimension of the generated time series data.
+        :param seq_length: The length of the generated time series data.
+        :param num_channels: The dimension of the generated time series data.
         :return: The zeros time series with the specified dimension and length.
         """
-        return np.zeros(shape=(n_inputs_points, input_dimension), dtype=self.data_type)
+        return np.zeros(shape=(seq_length, num_channels), dtype=self.data_type)
 
     @property
     def dtype(self) -> np.dtype:
@@ -42,6 +40,6 @@ class BaseExcitation(ABC):
 
     @abstractmethod
     def generate(
-        self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
+        self, rng: np.random.RandomState, seq_length: int = 512, num_channels: int = 1
     ) -> np.ndarray:
         """Generate a unified interface for time series data"""

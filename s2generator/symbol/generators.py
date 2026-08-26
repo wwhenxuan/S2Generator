@@ -757,7 +757,7 @@ class SeriesSymbolGenerator(object):
     def generate_excitation(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
+        seq_length: int,
         input_dimension: int = 1,
         normalize: Optional[bool] = False,
     ) -> np.ndarray:
@@ -769,15 +769,15 @@ class SeriesSymbolGenerator(object):
         (symbolic expression) to further generate a response time series.
 
         :param rng: The random number generator in NumPy with fixed seed.
-        :param n_inputs_points: The number of points of time series to generate.
+        :param seq_length: The number of points of time series to generate.
         :param input_dimension: The number of dimensions of time series to generate.
         :param normalize: If True, normalize the output time series.
         :return: The generated excitation time series.
         """
         return self.excitation.generate(
             rng=rng,
-            n_inputs_points=n_inputs_points,
-            input_dimension=input_dimension,
+            seq_length=seq_length,
+            num_channels=input_dimension,
             normalization=normalize,
         )
 
@@ -824,7 +824,7 @@ class SeriesSymbolGenerator(object):
         self,
         rng: np.random.RandomState,
         trees: Union[str, Node, NodeList, List[str]],
-        n_inputs_points: int,
+        seq_length: int,
         input_dimension: Optional[int] = None,
         output_dimension: Optional[int] = None,
         max_trials: Optional[int] = None,
@@ -840,7 +840,7 @@ class SeriesSymbolGenerator(object):
 
         :param rng: The random number generator in NumPy with fixed seed.
         :param trees: Symbolic expression (string / Node / NodeList / prefix tokens).
-        :param n_inputs_points: The number of points of time series to generate.
+        :param seq_length: The number of points of time series to generate.
         :param input_dimension: Input channels; inferred from the symbol if omitted.
         :param output_dimension: Output channels; inferred from the symbol if omitted.
         :param max_trials: The maximum number of trials to generate and try.
@@ -865,7 +865,7 @@ class SeriesSymbolGenerator(object):
 
         if self.print_status:
             self.status.show_start(
-                n_inputs_points=n_inputs_points,
+                seq_length=seq_length,
                 input_dimension=input_dimension,
                 output_dimension=output_dimension,
                 max_trials=max_trials,
@@ -879,12 +879,12 @@ class SeriesSymbolGenerator(object):
 
         inputs, outputs = [], []
         trials = 0
-        remaining_points = n_inputs_points
+        remaining_points = seq_length
 
         while remaining_points > 0 and trials < max_trials:
             x = self.generate_excitation(
                 rng=rng,
-                n_inputs_points=n_inputs_points,
+                seq_length=seq_length,
                 input_dimension=input_dimension,
                 normalize=input_normalize,
             )
@@ -925,8 +925,8 @@ class SeriesSymbolGenerator(object):
                 self.status.reset()
             return None, None, None
 
-        inputs = np.concatenate(inputs, axis=0)[:n_inputs_points]
-        outputs = np.concatenate(outputs, axis=0)[:n_inputs_points]
+        inputs = np.concatenate(inputs, axis=0)[:seq_length]
+        outputs = np.concatenate(outputs, axis=0)[:seq_length]
 
         if output_normalize is None:
             pass
@@ -958,7 +958,7 @@ class SeriesSymbolGenerator(object):
         self,
         rng: np.random.RandomState,
         symbol: Union[str, Node, NodeList, List[str]],
-        n_inputs_points: int,
+        seq_length: int,
         input_dimension: Optional[int] = None,
         output_dimension: Optional[int] = None,
         max_trials: Optional[int] = None,
@@ -977,7 +977,7 @@ class SeriesSymbolGenerator(object):
 
         :param rng: The random number generator in NumPy with fixed seed.
         :param symbol: User-specified expression (infix / prefix / Node / NodeList).
-        :param n_inputs_points: The number of points of time series to generate.
+        :param seq_length: The number of points of time series to generate.
         :param input_dimension: Input channels; inferred from ``symbol`` if omitted.
         :param output_dimension: Output channels; inferred from ``symbol`` if omitted.
         :param max_trials: The maximum number of trials to generate and try.
@@ -992,7 +992,7 @@ class SeriesSymbolGenerator(object):
         return self.evaluate_symbol(
             rng=rng,
             trees=symbol,
-            n_inputs_points=n_inputs_points,
+            seq_length=seq_length,
             input_dimension=input_dimension,
             output_dimension=output_dimension,
             max_trials=max_trials,
@@ -1007,7 +1007,7 @@ class SeriesSymbolGenerator(object):
     def run_with_state(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
+        seq_length: int,
         input_dimension: int = 1,
         output_dimension: int = 1,
         max_trials: Optional[int] = None,
@@ -1022,7 +1022,7 @@ class SeriesSymbolGenerator(object):
         Generate a random symbolic expression and excitation series with status logging.
 
         :param rng: The random number generator in NumPy with fixed seed.
-        :param n_inputs_points: The number of points of time series to generate.
+        :param seq_length: The number of points of time series to generate.
         :param input_dimension: The number of the input dimensions of time series to generate.
         :param output_dimension: The number of the output dimensions of time series or symbol expression to generate.
         :param max_trials: The maximum number of trials to generate and try.
@@ -1046,7 +1046,7 @@ class SeriesSymbolGenerator(object):
         return self.evaluate_symbol(
             rng=rng,
             trees=trees,
-            n_inputs_points=n_inputs_points,
+            seq_length=seq_length,
             input_dimension=input_dimension,
             output_dimension=output_dimension,
             max_trials=max_trials,
@@ -1061,7 +1061,7 @@ class SeriesSymbolGenerator(object):
     def run(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
+        seq_length: int,
         input_dimension: int = 1,
         output_dimension: int = 1,
         max_trials: Optional[int] = None,
@@ -1076,7 +1076,7 @@ class SeriesSymbolGenerator(object):
         Randomly generate a symbolic expression (complex system) and excitation time series.
 
         :param rng: The random number generator in NumPy with fixed seed.
-        :param n_inputs_points: The number of points of time series to generate.
+        :param seq_length: The number of points of time series to generate.
         :param input_dimension: The number of the input dimensions of time series to generate.
         :param output_dimension: The number of the output dimensions of time series or symbol expression to generate.
         :param max_trials: The maximum number of trials to generate and try.
@@ -1090,7 +1090,7 @@ class SeriesSymbolGenerator(object):
         if self.print_status:
             return self.run_with_state(
                 rng=rng,
-                n_inputs_points=n_inputs_points,
+                seq_length=seq_length,
                 input_dimension=input_dimension,
                 output_dimension=output_dimension,
                 input_normalize=input_normalize,
@@ -1114,7 +1114,7 @@ class SeriesSymbolGenerator(object):
         return self.evaluate_symbol(
             rng=rng,
             trees=trees,
-            n_inputs_points=n_inputs_points,
+            seq_length=seq_length,
             input_dimension=input_dimension,
             output_dimension=output_dimension,
             max_trials=max_trials,
@@ -1189,7 +1189,7 @@ class CustomSymbolGenerator(object):
     def run(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
+        seq_length: int,
         input_dimension: Optional[int] = None,
         output_dimension: Optional[int] = None,
         max_trials: Optional[int] = None,
@@ -1204,7 +1204,7 @@ class CustomSymbolGenerator(object):
         Sample excitation with the excitation module and evaluate the bound symbol.
 
         :param rng: The random number generator in NumPy with fixed seed.
-        :param n_inputs_points: The number of points of time series to generate.
+        :param seq_length: The number of points of time series to generate.
         :param input_dimension: Input channels; defaults to the dimension inferred
                                 from the bound symbolic expression.
         :param output_dimension: Output channels; defaults to the bound expression
@@ -1221,7 +1221,7 @@ class CustomSymbolGenerator(object):
         return self._generator.run_from_symbol(
             rng=rng,
             symbol=self.symbol,
-            n_inputs_points=n_inputs_points,
+            seq_length=seq_length,
             input_dimension=(
                 self.input_dimension if input_dimension is None else input_dimension
             ),
@@ -1247,8 +1247,8 @@ if __name__ == "__main__":
 
     rng = np.random.RandomState(0)
     trees, x, y = generator.run(
-        rng, input_dimension=6, output_dimension=4, n_inputs_points=1024
+        rng, input_dimension=6, output_dimension=4, seq_length=1024
     )
     trees, x, y = generator.run(
-        rng, input_dimension=6, output_dimension=4, n_inputs_points=1024
+        rng, input_dimension=6, output_dimension=4, seq_length=1024
     )

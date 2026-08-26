@@ -119,7 +119,7 @@ class WienerFilterSimulator(object):
 
         The specific parameters will be obtained using the Yule-Walker method.
 
-        :param time_series: The input time series to fit the Wiener filter, with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        :param time_series: The input time series to fit the Wiener filter, with shape 1D [seq_length, ] or 2D [num_samples, seq_length].
 
         :return: None
         """
@@ -159,16 +159,16 @@ class WienerFilterSimulator(object):
         )
 
     def transform(
-        self, num_samples: int, seq_len: int, random_state: Optional[int] = None
+        self, num_samples: int, seq_length: int, random_state: Optional[int] = None
     ) -> np.ndarray:
         """
         Generate new time series by exciting the fitted Wiener filter with white noise.
 
         :param num_samples: The number of new time series to generate.
-        :param seq_len: The length of each generated time series.
+        :param seq_length: The length of each generated time series.
         :param random_state: The random seed for reproducibility. If None, it will use the random state of the class instance.
 
-        :return: The generated time series with shape [num_samples, seq_len].
+        :return: The generated time series with shape [num_samples, seq_length].
         """
 
         # Check if the filter coefficients have been calculated; if not, raise an error.
@@ -188,11 +188,11 @@ class WienerFilterSimulator(object):
         white_noise = rng.normal(
             0,
             scale=np.sqrt(self.sigma_sq),
-            size=(num_samples, seq_len + self.filter_order),
+            size=(num_samples, seq_length + self.filter_order),
         )  # Note that increasing the filter order is necessary to avoid edge effects.
 
         # Using white noise to excite the Wiener optimal filter to generate entirely new sequences
-        simulated_series = np.zeros(shape=(num_samples, seq_len))
+        simulated_series = np.zeros(shape=(num_samples, seq_length))
 
         for i in range(num_samples):
             # Implemented using linear filtering:
@@ -214,9 +214,9 @@ class WienerFilterSimulator(object):
         Generate directly by calling the filter
         (without generating random noise).
 
-        :param white_noise: The input white noise sequence to excite the filter, with shape 1D [seq_len + filter_order, ].
+        :param white_noise: The input white noise sequence to excite the filter, with shape 1D [seq_length + filter_order, ].
 
-        :return: The generated time series with shape 1D [seq_len, ].
+        :return: The generated time series with shape 1D [seq_length, ].
         """
         if self._coeffs is None:
             raise ValueError(
@@ -241,7 +241,7 @@ class WienerFilterSimulator(object):
         """
         Calculate the autocorrelation function (ACF) of the input time series.
 
-        :param time_series: The input time series for which to calculate the ACF, with shape 1D [seq_len, ].
+        :param time_series: The input time series for which to calculate the ACF, with shape 1D [seq_length, ].
         :param lag_max: The maximum lag for which to calculate the ACF. If None, it defaults to self.lag_max (which is filter_order * 2).
         :param fft: Whether to use FFT to speed up the ACF calculation. Default is True.
 
@@ -255,19 +255,19 @@ class WienerFilterSimulator(object):
         """
         Check the format and length of the input time series.
 
-        :param time_series: The input time series to check, with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        :param time_series: The input time series to check, with shape 1D [seq_length, ] or 2D [num_samples, seq_length].
 
-        :return: The checked and possibly reshaped time series, with shape 1D [seq_len, ].
+        :return: The checked and possibly reshaped time series, with shape 1D [seq_length, ].
         """
 
         # Check if the input is a NumPy array
         if not isinstance(time_series, np.ndarray):
             raise ValueError("The input time series must be a NumPy array.")
 
-        # Check the shape of the input time series. It should be either 1D [seq_len, ] or 2D [num_samples, seq_len].
+        # Check the shape of the input time series. It should be either 1D [seq_length, ] or 2D [num_samples, seq_length].
         if len(time_series.shape) > 2:
             raise ValueError(
-                "The input time series must be 1D with [seq_len, ] or 2D with [num_samples, seq_len], but got shape: {}".format(
+                "The input time series must be 1D with [seq_length, ] or 2D with [num_samples, seq_length], but got shape: {}".format(
                     time_series.shape
                 )
             )

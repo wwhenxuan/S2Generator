@@ -68,9 +68,9 @@ class TestMixedDistributionInitialization(unittest.TestCase):
         md = MixedDistribution()
         rng = np.random.RandomState(42)
 
-        result1 = md(rng, n_inputs_points=32, input_dimension=2)
+        result1 = md(rng, seq_length=32, num_channels=2)
         rng = np.random.RandomState(42)
-        result2 = md.generate(rng, n_inputs_points=32, input_dimension=2)
+        result2 = md.generate(rng, seq_length=32, num_channels=2)
 
         # Results should have same shape (may not be identical due to randomness)
         self.assertEqual(result1.shape, result2.shape)
@@ -209,59 +209,59 @@ class TestStatsGeneration(unittest.TestCase):
 
     def test_generate_stats_basic(self):
         """Test basic statistics generation"""
-        input_dimension = 2
+        num_channels = 2
         n_centroids = 3
 
         means, covariances, rotations = self.md.generate_stats(
-            self.rng, input_dimension, n_centroids
+            self.rng, num_channels, n_centroids
         )
 
         # Check shapes and types
-        self.assertEqual(means.shape, (n_centroids, input_dimension))
-        self.assertEqual(covariances.shape, (n_centroids, input_dimension))
+        self.assertEqual(means.shape, (n_centroids, num_channels))
+        self.assertEqual(covariances.shape, (n_centroids, num_channels))
         self.assertEqual(len(rotations), n_centroids)
 
         for rotation in rotations:
-            self.assertEqual(rotation.shape, (input_dimension, input_dimension))
+            self.assertEqual(rotation.shape, (num_channels, num_channels))
             self.assertIsInstance(rotation, np.ndarray)
 
     def test_generate_stats_no_rotation(self):
         """Test statistics generation without rotation"""
         self.md.rotate = False
-        input_dimension = 3
+        num_channels = 3
         n_centroids = 2
 
         means, covariances, rotations = self.md.generate_stats(
-            self.rng, input_dimension, n_centroids
+            self.rng, num_channels, n_centroids
         )
 
         # All rotations should be identity matrices
         for rotation in rotations:
-            np.testing.assert_array_equal(rotation, np.identity(input_dimension))
+            np.testing.assert_array_equal(rotation, np.identity(num_channels))
 
     def test_generate_stats_with_rotation(self):
         """Test statistics generation with rotation"""
         self.md.rotate = True
-        input_dimension = 3
+        num_channels = 3
         n_centroids = 2
 
         means, covariances, rotations = self.md.generate_stats(
-            self.rng, input_dimension, n_centroids
+            self.rng, num_channels, n_centroids
         )
 
         # Rotations should be orthogonal matrices (not identity)
         for rotation in rotations:
             # Check orthogonality: R @ R.T = I
             product = rotation @ rotation.T
-            np.testing.assert_array_almost_equal(product, np.identity(input_dimension))
+            np.testing.assert_array_almost_equal(product, np.identity(num_channels))
 
     def test_generate_stats_1d_case(self):
         """Test statistics generation for 1D case"""
-        input_dimension = 1
+        num_channels = 1
         n_centroids = 2
 
         means, covariances, rotations = self.md.generate_stats(
-            self.rng, input_dimension, n_centroids
+            self.rng, num_channels, n_centroids
         )
 
         self.assertEqual(means.shape, (n_centroids, 1))
@@ -273,7 +273,7 @@ class TestStatsGeneration(unittest.TestCase):
 
     def test_generate_stats_stores_values(self):
         """Test that generate_stats stores values in instance variables"""
-        input_dimension = 2
+        num_channels = 2
         n_centroids = 3
 
         # Initially None
@@ -282,7 +282,7 @@ class TestStatsGeneration(unittest.TestCase):
         self.assertIsNone(self.md.rotations)
 
         means, covariances, rotations = self.md.generate_stats(
-            self.rng, input_dimension, n_centroids
+            self.rng, num_channels, n_centroids
         )
 
         # Should be stored in instance
@@ -292,10 +292,10 @@ class TestStatsGeneration(unittest.TestCase):
 
     def test_get_stats_properties(self):
         """Test get_stats, get_means, get_covariances, get_rotations properties"""
-        input_dimension = 2
+        num_channels = 2
         n_centroids = 2
 
-        self.md.generate_stats(self.rng, input_dimension, n_centroids)
+        self.md.generate_stats(self.rng, num_channels, n_centroids)
 
         # Test get_stats
         stats = self.md.get_stats
@@ -317,18 +317,18 @@ class TestGaussianGeneration(unittest.TestCase):
         """Set up test instance and parameters"""
         self.md = MixedDistribution()
         self.rng = np.random.RandomState(42)
-        self.input_dimension = 2
+        self.num_channels = 2
         self.n_centroids = 3
         self.n_points_comp = np.array([10, 15, 20])
 
     def test_generate_gaussian_basic(self):
         """Test basic Gaussian generation"""
         result = self.md.generate_gaussian(
-            self.rng, self.input_dimension, self.n_centroids, self.n_points_comp
+            self.rng, self.num_channels, self.n_centroids, self.n_points_comp
         )
 
         expected_total_points = np.sum(self.n_points_comp)
-        self.assertEqual(result.shape, (expected_total_points, self.input_dimension))
+        self.assertEqual(result.shape, (expected_total_points, self.num_channels))
         self.assertEqual(result.dtype, self.md.dtype)
 
     def test_generate_gaussian_single_centroid(self):
@@ -337,20 +337,20 @@ class TestGaussianGeneration(unittest.TestCase):
         n_points_comp = np.array([25])
 
         result = self.md.generate_gaussian(
-            self.rng, self.input_dimension, n_centroids, n_points_comp
+            self.rng, self.num_channels, n_centroids, n_points_comp
         )
 
-        self.assertEqual(result.shape, (25, self.input_dimension))
+        self.assertEqual(result.shape, (25, self.num_channels))
 
     def test_generate_gaussian_1d(self):
         """Test Gaussian generation in 1D"""
-        input_dimension = 1
+        num_channels = 1
         result = self.md.generate_gaussian(
-            self.rng, input_dimension, self.n_centroids, self.n_points_comp
+            self.rng, num_channels, self.n_centroids, self.n_points_comp
         )
 
         expected_total_points = np.sum(self.n_points_comp)
-        self.assertEqual(result.shape, (expected_total_points, input_dimension))
+        self.assertEqual(result.shape, (expected_total_points, num_channels))
 
     def test_generate_gaussian_deterministic(self):
         """Test deterministic behavior with fixed seed"""
@@ -358,10 +358,10 @@ class TestGaussianGeneration(unittest.TestCase):
         rng2 = np.random.RandomState(42)
 
         result1 = self.md.generate_gaussian(
-            rng1, self.input_dimension, self.n_centroids, self.n_points_comp
+            rng1, self.num_channels, self.n_centroids, self.n_points_comp
         )
         result2 = self.md.generate_gaussian(
-            rng2, self.input_dimension, self.n_centroids, self.n_points_comp
+            rng2, self.num_channels, self.n_centroids, self.n_points_comp
         )
 
         np.testing.assert_array_equal(result1, result2)
@@ -370,11 +370,11 @@ class TestGaussianGeneration(unittest.TestCase):
         """Test Gaussian generation with rotation enabled"""
         self.md.rotate = True
         result = self.md.generate_gaussian(
-            self.rng, self.input_dimension, self.n_centroids, self.n_points_comp
+            self.rng, self.num_channels, self.n_centroids, self.n_points_comp
         )
 
         expected_total_points = np.sum(self.n_points_comp)
-        self.assertEqual(result.shape, (expected_total_points, self.input_dimension))
+        self.assertEqual(result.shape, (expected_total_points, self.num_channels))
 
 
 class TestUniformGeneration(unittest.TestCase):
@@ -384,18 +384,18 @@ class TestUniformGeneration(unittest.TestCase):
         """Set up test instance and parameters"""
         self.md = MixedDistribution()
         self.rng = np.random.RandomState(42)
-        self.input_dimension = 2
+        self.num_channels = 2
         self.n_centroids = 3
         self.n_points_comp = np.array([10, 15, 20])
 
     def test_generate_uniform_basic(self):
         """Test basic uniform generation"""
         result = self.md.generate_uniform(
-            self.rng, self.input_dimension, self.n_centroids, self.n_points_comp
+            self.rng, self.num_channels, self.n_centroids, self.n_points_comp
         )
 
         expected_total_points = np.sum(self.n_points_comp)
-        self.assertEqual(result.shape, (expected_total_points, self.input_dimension))
+        self.assertEqual(result.shape, (expected_total_points, self.num_channels))
         self.assertEqual(result.dtype, self.md.dtype)
 
     def test_generate_uniform_single_centroid(self):
@@ -404,20 +404,20 @@ class TestUniformGeneration(unittest.TestCase):
         n_points_comp = np.array([25])
 
         result = self.md.generate_uniform(
-            self.rng, self.input_dimension, n_centroids, n_points_comp
+            self.rng, self.num_channels, n_centroids, n_points_comp
         )
 
-        self.assertEqual(result.shape, (25, self.input_dimension))
+        self.assertEqual(result.shape, (25, self.num_channels))
 
     def test_generate_uniform_1d(self):
         """Test uniform generation in 1D"""
-        input_dimension = 1
+        num_channels = 1
         result = self.md.generate_uniform(
-            self.rng, input_dimension, self.n_centroids, self.n_points_comp
+            self.rng, num_channels, self.n_centroids, self.n_points_comp
         )
 
         expected_total_points = np.sum(self.n_points_comp)
-        self.assertEqual(result.shape, (expected_total_points, input_dimension))
+        self.assertEqual(result.shape, (expected_total_points, num_channels))
 
     def test_generate_uniform_deterministic(self):
         """Test deterministic behavior with fixed seed"""
@@ -425,10 +425,10 @@ class TestUniformGeneration(unittest.TestCase):
         rng2 = np.random.RandomState(42)
 
         result1 = self.md.generate_uniform(
-            rng1, self.input_dimension, self.n_centroids, self.n_points_comp
+            rng1, self.num_channels, self.n_centroids, self.n_points_comp
         )
         result2 = self.md.generate_uniform(
-            rng2, self.input_dimension, self.n_centroids, self.n_points_comp
+            rng2, self.num_channels, self.n_centroids, self.n_points_comp
         )
 
         np.testing.assert_array_equal(result1, result2)
@@ -437,11 +437,11 @@ class TestUniformGeneration(unittest.TestCase):
         """Test uniform generation with rotation enabled"""
         self.md.rotate = True
         result = self.md.generate_uniform(
-            self.rng, self.input_dimension, self.n_centroids, self.n_points_comp
+            self.rng, self.num_channels, self.n_centroids, self.n_points_comp
         )
 
         expected_total_points = np.sum(self.n_points_comp)
-        self.assertEqual(result.shape, (expected_total_points, self.input_dimension))
+        self.assertEqual(result.shape, (expected_total_points, self.num_channels))
 
 
 class TestGenerateOnce(unittest.TestCase):
@@ -454,7 +454,7 @@ class TestGenerateOnce(unittest.TestCase):
 
     def test_generate_once_basic(self):
         """Test basic generate_once functionality"""
-        result = self.md.generate_once(self.rng, n_inputs_points=100)
+        result = self.md.generate_once(self.rng, seq_length=100)
 
         # Note: Original code has a logic issue - it only returns from the first
         # distribution type in the loop, not actually mixing distributions
@@ -467,14 +467,14 @@ class TestGenerateOnce(unittest.TestCase):
         """Test generate_once with different input sizes"""
         sizes = [50, 100, 200]
         for size in sizes:
-            result = self.md.generate_once(self.rng, n_inputs_points=size)
+            result = self.md.generate_once(self.rng, seq_length=size)
             self.assertIsNotNone(result)
             self.assertEqual(result.shape[0], size)
 
     def test_generate_once_gaussian_only(self):
         """Test generate_once with only Gaussian enabled"""
         md = MixedDistribution(gaussian=True, uniform=False)
-        result = md.generate_once(self.rng, n_inputs_points=50)
+        result = md.generate_once(self.rng, seq_length=50)
 
         self.assertIsNotNone(result)
         self.assertEqual(result.shape, (50, 1))
@@ -482,7 +482,7 @@ class TestGenerateOnce(unittest.TestCase):
     def test_generate_once_uniform_only(self):
         """Test generate_once with only uniform enabled"""
         md = MixedDistribution(gaussian=False, uniform=True)
-        result = md.generate_once(self.rng, n_inputs_points=50)
+        result = md.generate_once(self.rng, seq_length=50)
 
         self.assertIsNotNone(result)
         self.assertEqual(result.shape, (50, 1))
@@ -496,15 +496,15 @@ class TestGenerateOnce(unittest.TestCase):
         md._available_prob = [1.0]
 
         with self.assertRaises(ValueError):
-            md.generate_once(self.rng, n_inputs_points=50)
+            md.generate_once(self.rng, seq_length=50)
 
     def test_generate_once_deterministic(self):
         """Test deterministic behavior of generate_once"""
         rng1 = np.random.RandomState(42)
         rng2 = np.random.RandomState(42)
 
-        result1 = self.md.generate_once(rng1, n_inputs_points=50)
-        result2 = self.md.generate_once(rng2, n_inputs_points=50)
+        result1 = self.md.generate_once(rng1, seq_length=50)
+        result2 = self.md.generate_once(rng2, seq_length=50)
 
         np.testing.assert_array_equal(result1, result2)
 
@@ -519,7 +519,7 @@ class TestGenerate(unittest.TestCase):
 
     def test_generate_basic(self):
         """Test basic generate functionality"""
-        result = self.md.generate(self.rng, n_inputs_points=100, input_dimension=1)
+        result = self.md.generate(self.rng, seq_length=100, num_channels=1)
 
         self.assertIsInstance(result, np.ndarray)
         self.assertEqual(result.shape, (100, 1))
@@ -527,13 +527,13 @@ class TestGenerate(unittest.TestCase):
 
     def test_generate_multiple_dimensions(self):
         """Test generate with multiple dimensions"""
-        result = self.md.generate(self.rng, n_inputs_points=50, input_dimension=3)
+        result = self.md.generate(self.rng, seq_length=50, num_channels=3)
 
         self.assertEqual(result.shape, (50, 3))
 
     def test_generate_single_dimension(self):
         """Test generate with single dimension"""
-        result = self.md.generate(self.rng, n_inputs_points=75, input_dimension=1)
+        result = self.md.generate(self.rng, seq_length=75, num_channels=1)
 
         self.assertEqual(result.shape, (75, 1))
 
@@ -544,9 +544,7 @@ class TestGenerate(unittest.TestCase):
 
         for size in sizes:
             for dim in dimensions:
-                result = self.md.generate(
-                    self.rng, n_inputs_points=size, input_dimension=dim
-                )
+                result = self.md.generate(self.rng, seq_length=size, num_channels=dim)
                 self.assertEqual(result.shape, (size, dim))
 
     def test_generate_deterministic(self):
@@ -554,8 +552,8 @@ class TestGenerate(unittest.TestCase):
         rng1 = np.random.RandomState(42)
         rng2 = np.random.RandomState(42)
 
-        result1 = self.md.generate(rng1, n_inputs_points=50, input_dimension=2)
-        result2 = self.md.generate(rng2, n_inputs_points=50, input_dimension=2)
+        result1 = self.md.generate(rng1, seq_length=50, num_channels=2)
+        result2 = self.md.generate(rng2, seq_length=50, num_channels=2)
 
         np.testing.assert_array_equal(result1, result2)
 
@@ -563,11 +561,11 @@ class TestGenerate(unittest.TestCase):
         """Test generate with zero input dimension"""
         # Original code will fail with ValueError when trying to hstack empty list
         with self.assertRaises(ValueError):
-            self.md.generate(self.rng, n_inputs_points=50, input_dimension=0)
+            self.md.generate(self.rng, seq_length=50, num_channels=0)
 
     def test_generate_zero_points(self):
         """Test generate with zero input points"""
-        result = self.md.generate(self.rng, n_inputs_points=0, input_dimension=2)
+        result = self.md.generate(self.rng, seq_length=0, num_channels=2)
 
         # Should return empty array with correct shape
         self.assertEqual(result.shape, (0, 2))
@@ -587,7 +585,7 @@ class TestEdgeCases(unittest.TestCase):
 
         # This should cause ValueError in randint
         with self.assertRaises(ValueError):
-            md.generate_once(self.rng, n_inputs_points=50)
+            md.generate_once(self.rng, seq_length=50)
 
     def test_min_centroids_equal_max_centroids(self):
         """Test behavior when min_centroids == max_centroids"""
@@ -595,7 +593,7 @@ class TestEdgeCases(unittest.TestCase):
         # When min == max, this causes ValueError: low >= high
         md = MixedDistribution(min_centroids=5, max_centroids=5)
         with self.assertRaises(ValueError):
-            md.generate_once(self.rng, n_inputs_points=50)
+            md.generate_once(self.rng, seq_length=50)
 
     def test_single_centroid(self):
         """Test behavior with single centroid"""
@@ -603,12 +601,12 @@ class TestEdgeCases(unittest.TestCase):
         # When min == max == 1, this causes ValueError: low >= high
         md = MixedDistribution(min_centroids=1, max_centroids=1)
         with self.assertRaises(ValueError):
-            md.generate_once(self.rng, n_inputs_points=50)
+            md.generate_once(self.rng, seq_length=50)
 
     def test_large_number_of_centroids(self):
         """Test behavior with large number of centroids"""
         md = MixedDistribution(min_centroids=20, max_centroids=25)
-        result = md.generate_once(self.rng, n_inputs_points=100)
+        result = md.generate_once(self.rng, seq_length=100)
 
         self.assertIsNotNone(result)
         self.assertEqual(result.shape, (100, 1))
@@ -630,7 +628,7 @@ class TestEdgeCases(unittest.TestCase):
     def test_dtype_preservation(self):
         """Test that specified dtype is preserved in output"""
         md = MixedDistribution(dtype=np.float32)
-        result = md.generate(self.rng, n_inputs_points=50, input_dimension=1)
+        result = md.generate(self.rng, seq_length=50, num_channels=1)
 
         # Note: Original code may not preserve dtype consistently
         self.assertIsInstance(result, np.ndarray)
@@ -651,7 +649,7 @@ class TestIntegration(unittest.TestCase):
         )
 
         rng = np.random.RandomState(42)
-        result = md.generate(rng, n_inputs_points=100, input_dimension=2)
+        result = md.generate(rng, seq_length=100, num_channels=2)
 
         self.assertEqual(result.shape, (100, 2))
         self.assertEqual(str(md), "MixedDistribution")
@@ -668,7 +666,7 @@ class TestIntegration(unittest.TestCase):
         )
 
         rng = np.random.RandomState(42)
-        result = md.generate(rng, n_inputs_points=75, input_dimension=3)
+        result = md.generate(rng, seq_length=75, num_channels=3)
 
         self.assertEqual(result.shape, (75, 3))
 
@@ -685,7 +683,7 @@ class TestIntegration(unittest.TestCase):
         )
 
         rng = np.random.RandomState(42)
-        result = md.generate(rng, n_inputs_points=128, input_dimension=4)
+        result = md.generate(rng, seq_length=128, num_channels=4)
 
         self.assertEqual(result.shape, (128, 4))
 
@@ -711,7 +709,7 @@ class TestIntegration(unittest.TestCase):
         # Multiple generations should work
         results = []
         for i in range(3):
-            result = md.generate(rng, n_inputs_points=50, input_dimension=2)
+            result = md.generate(rng, seq_length=50, num_channels=2)
             results.append(result)
             self.assertEqual(result.shape, (50, 2))
 
@@ -726,7 +724,7 @@ class TestIntegration(unittest.TestCase):
         self.assertIsNone(md.get_rotations)
 
         # Generate some data
-        md.generate_once(rng, n_inputs_points=50)
+        md.generate_once(rng, seq_length=50)
 
         # Should have statistics now
         self.assertIsNotNone(md.get_means)
@@ -778,7 +776,7 @@ class TestOriginalCodeIssues(unittest.TestCase):
         # The original code iterates over dist_list but returns from the first match
         # This means it never actually mixes different distribution types
         # It only uses the first distribution type in the randomly selected list
-        result = md.generate_once(rng, n_inputs_points=50)
+        result = md.generate_once(rng, seq_length=50)
 
         # This still works but doesn't do true mixing as the name suggests
         self.assertIsNotNone(result)
@@ -803,23 +801,21 @@ class TestOriginalCodeIssues(unittest.TestCase):
             patch.object(md, "generate_gaussian", side_effect=wrap_gaussian),
             patch.object(md, "generate_uniform", side_effect=wrap_uniform),
         ):
-            out = md.generate_once(np.random.RandomState(0), n_inputs_points=40)
+            out = md.generate_once(np.random.RandomState(0), seq_length=40)
 
         self.assertEqual(out.shape, (40, 1))
         self.assertEqual(calls["gaussian"] + calls["uniform"], 1)
 
     def test_generate_zero_dimension_raises(self):
-        """input_dimension=0 yields an empty stack and should raise"""
+        """num_channels=0 yields an empty stack and should raise"""
         md = MixedDistribution()
         with self.assertRaises((ValueError, IndexError)):
-            md.generate(np.random.RandomState(0), n_inputs_points=16, input_dimension=0)
+            md.generate(np.random.RandomState(0), seq_length=16, num_channels=0)
 
     def test_generate_finite_multichannel(self):
         """Multi-channel MixedDistribution outputs should be finite"""
         md = MixedDistribution()
-        out = md.generate(
-            np.random.RandomState(1), n_inputs_points=64, input_dimension=3
-        )
+        out = md.generate(np.random.RandomState(1), seq_length=64, num_channels=3)
         self.assertEqual(out.shape, (64, 3))
         self.assertTrue(np.all(np.isfinite(out)))
 

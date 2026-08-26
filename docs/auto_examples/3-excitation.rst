@@ -82,7 +82,7 @@ We can generate stimulus time series data using the ``__call__`` method or the r
 
     # Generate the Excitation Time Series
     time_series, choice_list = excitation.generate(
-        rng=rng, n_inputs_points=256, input_dimension=6, return_choice=True
+        rng=rng, seq_length=256, num_channels=6, return_choice=True
     )
 
     print("The shape of the time series is:", time_series.shape)
@@ -177,7 +177,7 @@ During data generation, we randomly select one of five methods for each channel'
 
     # Generate the New Excitation Time Series
     time_series, choice_list = excitation.generate(
-        rng=rng, n_inputs_points=256, input_dimension=6, return_choice=True
+        rng=rng, seq_length=256, num_channels=6, return_choice=True
     )
 
     # Visualize the Generated time series data
@@ -232,7 +232,7 @@ Next we will further demonstrate and analyze this process:
         generator = method()
         # Execute the general `generate` method to generate data
         time_series = generator.generate(
-            rng=np.random.RandomState(0), n_inputs_points=512, input_dimension=1
+            rng=np.random.RandomState(0), seq_length=512, num_channels=1
         )
         print("We create the excitation generator for {}".format(str(generator)))
 

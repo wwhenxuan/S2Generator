@@ -154,7 +154,7 @@ class MultivariateSimulator(object):
         """
         Fit one simulator per channel on the multivariate input series.
 
-        :param time_series: Multivariate series with shape ``[seq_len, n_channels]``.
+        :param time_series: Multivariate series with shape ``[seq_length, n_channels]``.
         :param select_order: Forwarded to simulators whose ``fit`` supports it.
 
         :return: None
@@ -175,7 +175,7 @@ class MultivariateSimulator(object):
         )
 
     def transform(
-        self, num_samples: int, seq_len: int, random_state: Optional[int] = None
+        self, num_samples: int, seq_length: int, random_state: Optional[int] = None
     ) -> np.ndarray:
         """
         Generate multivariate samples by exciting fitted channel models.
@@ -185,10 +185,10 @@ class MultivariateSimulator(object):
         ``transform`` implementation for the corresponding channel.
 
         :param num_samples: Number of multivariate sample paths to generate.
-        :param seq_len: Length of each generated sequence.
+        :param seq_length: Length of each generated sequence.
         :param random_state: Random seed for reproducibility.
 
-        :return: Generated series with shape ``[num_samples, seq_len, n_channels]``.
+        :return: Generated series with shape ``[num_samples, seq_length, n_channels]``.
         """
         if not self.simulators:
             raise ValueError(
@@ -198,7 +198,7 @@ class MultivariateSimulator(object):
         seed = random_state
         rng = np.random.RandomState(seed=seed)
         n_channels = len(self.simulators)
-        simulated = np.zeros((num_samples, seq_len, n_channels), dtype=np.float64)
+        simulated = np.zeros((num_samples, seq_length, n_channels), dtype=np.float64)
 
         invoke_indices = [
             idx
@@ -219,13 +219,13 @@ class MultivariateSimulator(object):
                 shared_noise = sample_rng.normal(
                     loc=0.0,
                     scale=1.0,
-                    size=seq_len + max_padding,
+                    size=seq_length + max_padding,
                 )
 
             for channel_index, simulator in enumerate(self.simulators):
                 if _supports_shared_excitation(simulator):
                     padding = _excitation_padding(simulator)
-                    channel_noise = shared_noise[-(seq_len + padding) :]
+                    channel_noise = shared_noise[-(seq_length + padding) :]
                     channel_series = simulator.invoke(white_noise=channel_noise)
                     channel_series = _apply_revin(simulator, channel_series)
                     # Shared-excitation path bypasses transform(); apply low-pass here.
@@ -238,7 +238,7 @@ class MultivariateSimulator(object):
                     )
                     channel_series = simulator.transform(
                         num_samples=1,
-                        seq_len=seq_len,
+                        seq_length=seq_length,
                         random_state=channel_seed,
                     )[0]
 
@@ -251,16 +251,16 @@ class MultivariateSimulator(object):
         """
         Validate a multivariate input array.
 
-        :param time_series: Array with shape ``[seq_len, n_channels]``.
+        :param time_series: Array with shape ``[seq_length, n_channels]``.
 
-        :return: Validated ``float64`` array with shape ``[seq_len, n_channels]``.
+        :return: Validated ``float64`` array with shape ``[seq_length, n_channels]``.
         """
         if not isinstance(time_series, np.ndarray):
             raise ValueError("Input time_series must be a numpy ndarray.")
 
         if time_series.ndim != 2:
             raise ValueError(
-                "Input time_series must be 2-dimensional with shape [seq_len, n_channels]."
+                "Input time_series must be 2-dimensional with shape [seq_length, n_channels]."
             )
 
         time_series = np.asarray(time_series, dtype=np.float64)

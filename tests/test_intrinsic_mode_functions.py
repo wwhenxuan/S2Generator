@@ -253,7 +253,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
     def test_call_method(self):
         """Test __call__ method"""
         imf = IntrinsicModeFunction()
-        result = imf(self.rng, n_inputs_points=100, input_dimension=2)
+        result = imf(self.rng, seq_length=100, num_channels=2)
 
         self.assertIsInstance(result, np.ndarray)
         self.assertEqual(result.shape, (100, 2))
@@ -324,7 +324,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         imf = IntrinsicModeFunction(noise_level=0.1)
         test_signal = np.array([1.0, 2.0, 3.0])
 
-        result = imf._add_noise(test_signal, n_inputs_points=3)
+        result = imf._add_noise(test_signal, seq_length=3)
 
         # Check that add_noise was called with correct parameters
         mock_add_noise.assert_called_once()
@@ -376,9 +376,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         imf = IntrinsicModeFunction(min_base_imfs=1, max_base_imfs=2)
         initial_signal = np.zeros(10)
 
-        result = imf.get_base_imfs(
-            imfs=initial_signal, rng=self.rng, n_inputs_points=10
-        )
+        result = imf.get_base_imfs(imfs=initial_signal, rng=self.rng, seq_length=10)
 
         self.assertEqual(len(result), 10)
         self.assertIsInstance(result, np.ndarray)
@@ -391,9 +389,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         imf = IntrinsicModeFunction(min_choice_imfs=1, max_choice_imfs=2)
         initial_signal = np.zeros(10)
 
-        result = imf.get_choice_imfs(
-            imfs=initial_signal, rng=self.rng, n_inputs_points=10
-        )
+        result = imf.get_choice_imfs(imfs=initial_signal, rng=self.rng, seq_length=10)
 
         self.assertEqual(len(result), 10)
         self.assertIsInstance(result, np.ndarray)
@@ -417,9 +413,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
 
         initial_signal = np.zeros(10)
 
-        result = imf.get_choice_imfs(
-            imfs=initial_signal, rng=self.rng, n_inputs_points=10
-        )
+        result = imf.get_choice_imfs(imfs=initial_signal, rng=self.rng, seq_length=10)
 
         self.assertEqual(len(result), 10)
         self.assertIsInstance(result, np.ndarray)
@@ -429,7 +423,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         imf = IntrinsicModeFunction()
 
         # Test single dimension
-        result = imf.generate(self.rng, n_inputs_points=100, input_dimension=1)
+        result = imf.generate(self.rng, seq_length=100, num_channels=1)
 
         self.assertIsInstance(result, np.ndarray)
         self.assertEqual(result.shape, (100, 1))
@@ -441,9 +435,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         imf = IntrinsicModeFunction()
 
         for dimensions in [1, 2, 3, 5]:
-            result = imf.generate(
-                self.rng, n_inputs_points=50, input_dimension=dimensions
-            )
+            result = imf.generate(self.rng, seq_length=50, num_channels=dimensions)
 
             self.assertEqual(result.shape, (50, dimensions))
             self.assertTrue(np.all(np.isfinite(result)))
@@ -453,7 +445,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         imf = IntrinsicModeFunction()
 
         for length in [32, 64, 128, 256, 512, 1024]:
-            result = imf.generate(self.rng, n_inputs_points=length, input_dimension=1)
+            result = imf.generate(self.rng, seq_length=length, num_channels=1)
 
             self.assertEqual(result.shape, (length, 1))
             self.assertTrue(np.all(np.isfinite(result)))
@@ -466,8 +458,8 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         rng1 = np.random.RandomState(42)
         rng2 = np.random.RandomState(42)
 
-        result1 = imf1.generate(rng1, n_inputs_points=100, input_dimension=1)
-        result2 = imf2.generate(rng2, n_inputs_points=100, input_dimension=1)
+        result1 = imf1.generate(rng1, seq_length=100, num_channels=1)
+        result2 = imf2.generate(rng2, seq_length=100, num_channels=1)
 
         # Results should be identical with same seed and configuration
         np.testing.assert_array_equal(result1, result2)
@@ -476,7 +468,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         """Test generate method with different dtypes"""
         for dtype in [np.float32, np.float64]:
             imf = IntrinsicModeFunction(dtype=dtype)
-            result = imf.generate(self.rng, n_inputs_points=50, input_dimension=1)
+            result = imf.generate(self.rng, seq_length=50, num_channels=1)
 
             self.assertEqual(result.dtype, dtype)
 
@@ -486,7 +478,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         custom_prob = {"generate_sin_signal": 0.6, "generate_cos_signal": 0.4}
 
         imf = IntrinsicModeFunction(probability_dict=custom_prob)
-        result = imf.generate(self.rng, n_inputs_points=100, input_dimension=1)
+        result = imf.generate(self.rng, seq_length=100, num_channels=1)
 
         self.assertEqual(result.shape, (100, 1))
         self.assertTrue(np.all(np.isfinite(result)))
@@ -499,7 +491,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         self.assertIsInstance(imf, BaseExcitation)
 
         # Test that it can create zeros
-        zeros = imf.create_zeros(n_inputs_points=10, input_dimension=2)
+        zeros = imf.create_zeros(seq_length=10, num_channels=2)
         self.assertEqual(zeros.shape, (10, 2))
         np.testing.assert_array_equal(zeros, np.zeros((10, 2)))
 
@@ -520,7 +512,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
             noise_level=0.0,
         )
 
-        result = imf_min.generate(self.rng, n_inputs_points=10, input_dimension=1)
+        result = imf_min.generate(self.rng, seq_length=10, num_channels=1)
         self.assertEqual(result.shape, (10, 1))
 
     def test_signal_energy_calculation(self):
@@ -531,7 +523,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
             noise_level=0.0,  # No noise for predictable energy
         )
 
-        result = imf.generate(self.rng, n_inputs_points=100, input_dimension=1)
+        result = imf.generate(self.rng, seq_length=100, num_channels=1)
         energy = _get_energy(result.flatten())
 
         # Energy should be positive for non-zero signals
@@ -542,13 +534,13 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         # Generate with no noise
         imf_no_noise = IntrinsicModeFunction(noise_level=0.0)
         result_no_noise = imf_no_noise.generate(
-            self.rng, n_inputs_points=100, input_dimension=1
+            self.rng, seq_length=100, num_channels=1
         )
 
         # Generate with high noise
         imf_high_noise = IntrinsicModeFunction(noise_level=0.5)
         result_high_noise = imf_high_noise.generate(
-            self.rng, n_inputs_points=100, input_dimension=1
+            self.rng, seq_length=100, num_channels=1
         )
 
         # Both should be finite but likely different
@@ -559,15 +551,11 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         """Test the effect of different frequency ranges"""
         # Low frequency
         imf_low_freq = IntrinsicModeFunction(min_frequency=0.1, max_frequency=1.0)
-        result_low = imf_low_freq.generate(
-            self.rng, n_inputs_points=100, input_dimension=1
-        )
+        result_low = imf_low_freq.generate(self.rng, seq_length=100, num_channels=1)
 
         # High frequency
         imf_high_freq = IntrinsicModeFunction(min_frequency=5.0, max_frequency=10.0)
-        result_high = imf_high_freq.generate(
-            self.rng, n_inputs_points=100, input_dimension=1
-        )
+        result_high = imf_high_freq.generate(self.rng, seq_length=100, num_channels=1)
 
         # Both should be valid
         self.assertTrue(np.all(np.isfinite(result_low)))
@@ -579,17 +567,13 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         imf_small = IntrinsicModeFunction(
             min_amplitude=0.01, max_amplitude=0.1, noise_level=0.0
         )
-        result_small = imf_small.generate(
-            self.rng, n_inputs_points=100, input_dimension=1
-        )
+        result_small = imf_small.generate(self.rng, seq_length=100, num_channels=1)
 
         # Large amplitude
         imf_large = IntrinsicModeFunction(
             min_amplitude=5.0, max_amplitude=10.0, noise_level=0.0
         )
-        result_large = imf_large.generate(
-            self.rng, n_inputs_points=100, input_dimension=1
-        )
+        result_large = imf_large.generate(self.rng, seq_length=100, num_channels=1)
 
         # Large amplitude signal should generally have higher energy
         energy_small = _get_energy(result_small.flatten())
@@ -610,9 +594,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
                 min_choice_imfs=1,
                 max_choice_imfs=1,
             )
-            result = imf_extreme.generate(
-                self.rng, n_inputs_points=10, input_dimension=1
-            )
+            result = imf_extreme.generate(self.rng, seq_length=10, num_channels=1)
             self.assertEqual(result.shape, (10, 1))
         except Exception as e:
             # If it fails, that's also a valid test result
@@ -651,7 +633,7 @@ class TestIntrinsicModeFunction(unittest.TestCase):
         rng = np.random.RandomState(0)
         for _ in range(40):
             base = np.zeros(32, dtype=np.float64)
-            component = imf.get_choice_imfs(imfs=base, rng=rng, n_inputs_points=32)
+            component = imf.get_choice_imfs(imfs=base, rng=rng, seq_length=32)
             counts.add(rng.randint(low=imf.min_choice_imfs, high=imf.max_choice_imfs))
             self.assertEqual(component.shape[0], 32)
         self.assertTrue(all(c < imf.max_choice_imfs for c in counts))
@@ -689,12 +671,8 @@ class TestIntrinsicModeFunction(unittest.TestCase):
             "adjust_upper_energy",
             side_effect=lambda signal, rng=None: signal,
         ):
-            small = imf_small.generate(
-                rng_small, n_inputs_points=128, input_dimension=1
-            )
-            large = imf_large.generate(
-                rng_large, n_inputs_points=128, input_dimension=1
-            )
+            small = imf_small.generate(rng_small, seq_length=128, num_channels=1)
+            large = imf_large.generate(rng_large, seq_length=128, num_channels=1)
         self.assertLess(_get_energy(small.flatten()), _get_energy(large.flatten()))
 
 

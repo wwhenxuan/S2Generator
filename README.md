@@ -58,7 +58,7 @@ generator = SeriesSymbolGenerator(series_params=series_params, symbol_params=sym
 
 # Start generating symbolic expressions, sampling and generating series
 symbols, inputs, outputs = generator.run(
-    rng, input_dimension=1, output_dimension=1, n_inputs_points=256
+    rng, input_dimension=1, output_dimension=1, seq_length=256
 )
 
 # Print the expressions
@@ -74,7 +74,7 @@ from s2generator.symbol import CustomSymbolGenerator
 
 # Bind a user-specified complex system, then generate via the excitation module
 custom = CustomSymbolGenerator("(x_0 add sin(x_0))")
-symbols, inputs, outputs = custom.run(rng, n_inputs_points=256)
+symbols, inputs, outputs = custom.run(rng, seq_length=256)
 ~~~
 
 > (73.5 add (x_0 mul (((9.38 mul cos((-0.092 add (-6.12 mul x_0)))) add (87.1 mul arctan((-0.965 add (0.973 mul rand))))) sub (8.89 mul exp(((4.49 mul log((-29.3 add (-86.2 mul x_0)))) add (-2.57 mul ((51.3 add (-55.6 mul x_0)))**2)))))))
@@ -87,7 +87,7 @@ The input and output dimensions of the multivariate time series and the length o
 rng = np.random.RandomState(512)  # Change the random seed
 
 # Try to generate the multi-channels time series
-symbols, inputs, outputs = generator.run(rng, input_dimension=2, output_dimension=2, n_inputs_points=336)
+symbols, inputs, outputs = generator.run(rng, input_dimension=2, output_dimension=2, seq_length=336)
 
 print(symbols)
 fig = plot_symbol_series(inputs, outputs)

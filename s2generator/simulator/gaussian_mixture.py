@@ -141,7 +141,7 @@ class GaussianMixtureSimulator(object):
         """
         Fit a Markov-switching Gaussian mixture model to the input time series.
 
-        :param time_series: Input series with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        :param time_series: Input series with shape 1D [seq_length, ] or 2D [num_samples, seq_length].
         :param select_order: If True, select the number of components by BIC.
 
         :return: None
@@ -183,16 +183,16 @@ class GaussianMixtureSimulator(object):
         )
 
     def transform(
-        self, num_samples: int, seq_len: int, random_state: Optional[int] = None
+        self, num_samples: int, seq_length: int, random_state: Optional[int] = None
     ) -> np.ndarray:
         """
         Generate new time series by exciting the fitted regime dynamics with white noise.
 
         :param num_samples: Number of independent sample paths to generate.
-        :param seq_len: Length of each generated sequence.
+        :param seq_length: Length of each generated sequence.
         :param random_state: Random seed for reproducibility. Uses the instance seed if None.
 
-        :return: Generated series with shape [num_samples, seq_len].
+        :return: Generated series with shape [num_samples, seq_length].
         """
         if self.model is None:
             raise ValueError(
@@ -200,12 +200,12 @@ class GaussianMixtureSimulator(object):
             )
 
         seed = random_state if random_state is not None else self.random_state
-        simulated_series = np.zeros((num_samples, seq_len), dtype=np.float64)
+        simulated_series = np.zeros((num_samples, seq_length), dtype=np.float64)
 
         for i in range(num_samples):
             sample_seed = None if seed is None else int(seed) + i
             simulated_series[i, :] = self._simulate(
-                seq_len=seq_len, random_state=sample_seed
+                seq_length=seq_length, random_state=sample_seed
             )
 
         if self.revin:
@@ -276,7 +276,7 @@ class GaussianMixtureSimulator(object):
         """
         Check whether the input time series satisfies the modeling requirements.
 
-        :param time_series: Input with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        :param time_series: Input with shape 1D [seq_length, ] or 2D [num_samples, seq_length].
 
         :return: Validated one-dimensional ``np.ndarray``.
         """
@@ -287,8 +287,8 @@ class GaussianMixtureSimulator(object):
 
         if len(time_series.shape) > 2:
             raise ValueError(
-                "Input time_series must be 1-dimensional with [seq_len, ] or "
-                "2-dimensional with [num_samples, seq_len]."
+                "Input time_series must be 1-dimensional with [seq_length, ] or "
+                "2-dimensional with [num_samples, seq_length]."
             )
 
         if len(time_series.shape) == 2:
@@ -516,7 +516,9 @@ class GaussianMixtureSimulator(object):
         pi = np.maximum(pi, 0.0)
         return pi / np.sum(pi)
 
-    def _simulate(self, seq_len: int, random_state: Optional[int] = None) -> np.ndarray:
+    def _simulate(
+        self, seq_length: int, random_state: Optional[int] = None
+    ) -> np.ndarray:
         """
         Simulate a single sample path from the fitted Markov-switching Gaussian model.
 
@@ -525,10 +527,10 @@ class GaussianMixtureSimulator(object):
 
             y_t = mu_{S_t} + sigma_{S_t} * w_t
 
-        :param seq_len: Length of the simulated sequence.
+        :param seq_length: Length of the simulated sequence.
         :param random_state: Random seed for reproducibility.
 
-        :return: Simulated series with shape [seq_len, ].
+        :return: Simulated series with shape [seq_length, ].
         """
         rng = np.random.RandomState(seed=random_state)
         const, variance = self._extract_regime_parameters()
@@ -536,9 +538,9 @@ class GaussianMixtureSimulator(object):
         initial_prob = np.asarray(self.model.initial_probabilities, dtype=np.float64)
 
         current_regime = rng.choice(self.k_regimes, p=initial_prob)
-        simulated = np.zeros(seq_len, dtype=np.float64)
+        simulated = np.zeros(seq_length, dtype=np.float64)
 
-        for t in range(seq_len):
+        for t in range(seq_length):
             if t > 0:
                 current_regime = rng.choice(
                     self.k_regimes, p=transition[:, current_regime]

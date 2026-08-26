@@ -149,7 +149,7 @@ class PrintStatus(object):
 
     def show_start(
         self,
-        n_inputs_points: int,
+        seq_length: int,
         input_dimension: int,
         output_dimension: int,
         max_trials: int,
@@ -162,7 +162,7 @@ class PrintStatus(object):
         """
         Prints basic information about real-time parameters during data generation.
 
-        :param n_inputs_points: The number of points of time series to generate.
+        :param seq_length: The number of points of time series to generate.
         :param input_dimension: The number of the input dimensions of time series to generate.
         :param output_dimension: The number of the output dimensions of time series or symbol expression to generate.
         :param max_trials: The maximum number of trials to generate and try.
@@ -182,7 +182,7 @@ class PrintStatus(object):
         # Print and organize configuration parameters related to data generation
         print(Style.BRIGHT + Fore.GREEN + self.generation_header + Style.RESET_ALL)
         self.generation_config = (
-            f'  {"Time Series Length:":<20} {n_inputs_points:<20}'
+            f'  {"Time Series Length:":<20} {seq_length:<20}'
             f'  {"Max Trials:":<20} {str(max_trials):<20}\n'
             f'  {"Input Dimension:":<20} {input_dimension:<20}'
             f'  {"Output Dimension:":<20} {output_dimension:<20}\n'
@@ -380,7 +380,7 @@ if __name__ == "__main__":
         symbol_params=SymbolParams(),
     )
     print_state.show_start(
-        n_inputs_points=100,
+        seq_length=100,
         input_dimension=2,
         output_dimension=2,
         max_trials=100,

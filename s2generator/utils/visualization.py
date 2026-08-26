@@ -76,7 +76,7 @@ def plot_symbol_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
     """
 
     # Determine the shape and length of the data
-    seq_len, input_dim = x.shape
+    seq_length, input_dim = x.shape
     _, output_dim = y.shape
     max_dim = max(input_dim, output_dim)
 
@@ -93,7 +93,7 @@ def plot_symbol_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
             ax = axes[i, 0]
         ax.plot(x[:, i], color="royalblue")
         ax.set_ylabel(f"Input Dim {i + 1}", fontsize=10)
-        ax.set_xlim(0, seq_len)
+        ax.set_xlim(0, seq_length)
 
     # Plot the output sequence
     for i in range(output_dim):
@@ -103,7 +103,7 @@ def plot_symbol_series(x: np.ndarray, y: np.ndarray) -> plt.Figure:
             ax = axes[i, 1]
         ax.plot(y[:, i], color="royalblue")
         ax.set_ylabel(f"Output Dim {i + 1}", fontsize=10)
-        ax.set_xlim(0, seq_len)
+        ax.set_xlim(0, seq_length)
 
     # Add titles to the two columns of images
     if max_dim == 1:
@@ -791,7 +791,7 @@ def plot_multivariate_time_series(
             "plot_multivariate_time_series expects shape [num_samples, seq_length], "
             f"got {data.shape}"
         )
-    n_samples, seq_len = data.shape
+    n_samples, seq_length = data.shape
     if n_samples < 1:
         raise ValueError("time_series must contain at least one sample row")
 
@@ -811,7 +811,7 @@ def plot_multivariate_time_series(
         ax.plot(data[i], color="royalblue")
         ax.set_ylabel(f"Dim {i}", fontsize=10)
         ax.grid(True, alpha=0.35)
-        ax.set_xlim(0, seq_len - 1 if seq_len > 1 else 1)
+        ax.set_xlim(0, seq_length - 1 if seq_length > 1 else 1)
     axes[-1, 0].set_xlabel("Time Steps", fontsize=11)
     axes[0, 0].set_title("Multivariate Time Series", fontweight="bold", fontsize=12)
     fig.tight_layout()
@@ -828,7 +828,7 @@ if __name__ == "__main__":
     # Start generating symbolic expressions, sampling and generating series
 
     trees, x, y = generator.run(
-        rng, input_dimension=2, output_dimension=10, n_inputs_points=20
+        rng, input_dimension=2, output_dimension=10, seq_length=20
     )
 
     trees_list = str(trees).split(" | ")

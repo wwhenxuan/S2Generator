@@ -77,13 +77,11 @@ class MixedDistribution(BaseExcitation):
     def __call__(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int = 512,
-        input_dimension: int = 1,
+        seq_length: int = 512,
+        num_channels: int = 1,
     ) -> np.ndarray:
         """Call the `generate` method to stimulate time series generation"""
-        return self.generate(
-            rng=rng, n_inputs_points=n_inputs_points, input_dimension=input_dimension
-        )
+        return self.generate(rng=rng, seq_length=seq_length, num_channels=num_channels)
 
     def __str__(self) -> str:
         """Get the name of the time series generator"""
@@ -175,13 +173,13 @@ class MixedDistribution(BaseExcitation):
         return available_dict, available_list, available_prob
 
     def generate_stats(
-        self, rng: np.random.RandomState, input_dimension: int, n_centroids: int
+        self, rng: np.random.RandomState, num_channels: int, n_centroids: int
     ) -> Tuple[np.ndarray, np.ndarray, List[np.ndarray]]:
         """
         Generate parameters required for sampling from a mixture distribution.
 
         :param rng: The random number generator in NumPy with fixed seed.
-        :param input_dimension: The number of input dimension.
+        :param num_channels: The number of input dimension.
         :param n_centroids: The number of centroids in mixed distribution.
         :return:
             - means: Mean array with np.ndarray;
@@ -191,10 +189,10 @@ class MixedDistribution(BaseExcitation):
             - rotations: Rotation matrix list (each element is a np.ndarray, representing the rotation matrix for each center);
         """
         self.means = rng.randn(
-            n_centroids, input_dimension
+            n_centroids, num_channels
         )  # Means of the mixture distribution
         self.covariances = rng.uniform(
-            0, 1, size=(n_centroids, input_dimension)
+            0, 1, size=(n_centroids, num_channels)
         )  # Variances of the mixture distribution
 
         # The rotation matrix is used to transform an independent Gaussian distribution
@@ -202,14 +200,14 @@ class MixedDistribution(BaseExcitation):
         if self.rotate:
             self.rotations = [
                 (
-                    special_ortho_group.rvs(input_dimension)
-                    if input_dimension > 1
+                    special_ortho_group.rvs(num_channels)
+                    if num_channels > 1
                     else np.identity(1)
                 )
                 for _ in range(n_centroids)
             ]
         else:
-            self.rotations = [np.identity(input_dimension) for _ in range(n_centroids)]
+            self.rotations = [np.identity(num_channels) for _ in range(n_centroids)]
 
         return self.means, self.covariances, self.rotations
 
@@ -236,7 +234,7 @@ class MixedDistribution(BaseExcitation):
     def generate_gaussian(
         self,
         rng: np.random.RandomState,
-        input_dimension: int,
+        num_channels: int,
         n_centroids: int,
         n_points_comp: np.ndarray,
     ) -> np.ndarray:
@@ -244,13 +242,13 @@ class MixedDistribution(BaseExcitation):
         Generate time series of specified dimensions and lengths using a Gaussian mixture distribution.
 
         :param rng: The random number generator in NumPy with fixed seed.
-        :param input_dimension: The number of input dimension.
+        :param num_channels: The number of input dimension.
         :param n_centroids: The number of centroids in mixed distribution.
         :param n_points_comp: The number of points in each dimension.
         :return: Time series of specified dimensions and lengths.
         """
         means, covariances, rotations = self.generate_stats(
-            rng, input_dimension, n_centroids
+            rng, num_channels, n_centroids
         )
         return np.vstack(
             [
@@ -265,7 +263,7 @@ class MixedDistribution(BaseExcitation):
     def generate_uniform(
         self,
         rng: np.random.RandomState,
-        input_dimension: int,
+        num_channels: int,
         n_centroids: int,
         n_points_comp: np.ndarray,
     ) -> np.ndarray:
@@ -273,19 +271,19 @@ class MixedDistribution(BaseExcitation):
         Generate time series of specified dimensions and lengths using a uniform mixture distribution.
 
         :param rng: The random number generator in NumPy with fixed seed.
-        :param input_dimension: The number of input dimension.
+        :param num_channels: The number of input dimension.
         :param n_centroids: The number of centroids in mixed distribution.
         :param n_points_comp: The number of points in each dimension.
         :return: Time series of specified dimensions and lengths.
         """
         means, covariances, rotations = self.generate_stats(
-            rng, input_dimension, n_centroids
+            rng, num_channels, n_centroids
         )
         return np.vstack(
             [
                 (
                     mean
-                    + rng.uniform(-1, 1, size=(sample, input_dimension))
+                    + rng.uniform(-1, 1, size=(sample, num_channels))
                     * np.sqrt(covariance)
                 )
                 @ rotation
@@ -296,13 +294,13 @@ class MixedDistribution(BaseExcitation):
         )
 
     def generate_once(
-        self, rng: np.random.RandomState, n_inputs_points: int = 512
+        self, rng: np.random.RandomState, seq_length: int = 512
     ) -> Union[np.ndarray, None]:
         """
         Generate stimulus time series data for a single channel through a mixture distribution.
 
         :param rng: The random status generator in NumPy.
-        :param n_inputs_points: The number of input points in this sampling.
+        :param seq_length: The number of input points in this sampling.
         :return: The generated time series samples with mixture distribution.
         """
         # 1. Statistical parameters for mixture distribution sampling
@@ -311,7 +309,7 @@ class MixedDistribution(BaseExcitation):
         # 2. Randomly generate the weight values for each distribution
         weights = rng.uniform(0, 1, size=(n_centroids,))
         weights /= np.sum(weights)
-        n_points_comp = rng.multinomial(n_inputs_points, weights)
+        n_points_comp = rng.multinomial(seq_length, weights)
 
         # 3. Decide which distribution to use for sampling
         dist_list = rng.choice(
@@ -324,7 +322,7 @@ class MixedDistribution(BaseExcitation):
                 # Sample using a Gaussian mixture distribution
                 return self.generate_gaussian(
                     rng=rng,
-                    input_dimension=1,
+                    num_channels=1,
                     n_centroids=n_centroids,
                     n_points_comp=n_points_comp,
                 )
@@ -332,7 +330,7 @@ class MixedDistribution(BaseExcitation):
                 # Sample using a uniform mixture distribution
                 return self.generate_uniform(
                     rng=rng,
-                    input_dimension=1,
+                    num_channels=1,
                     n_centroids=n_centroids,
                     n_points_comp=n_points_comp,
                 )
@@ -343,22 +341,22 @@ class MixedDistribution(BaseExcitation):
     def generate(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int = 512,
-        input_dimension: int = 1,
+        seq_length: int = 512,
+        num_channels: int = 1,
     ) -> np.ndarray:
         """
         Generate time series of specified dimensions and lengths using a uniform or gaussian mixture distribution.
 
         :param rng: The random number generator of NumPy with fixed seed.
-        :param n_inputs_points: The number of input points.
-        :param input_dimension: The dimension of the time series.
+        :param seq_length: The number of input points.
+        :param num_channels: The dimension of the time series.
         :return: The generated mixed distribution time series.
         """
         # Iterate over multiple channels to generate time series data
         time_series = np.hstack(
             [
-                self.generate_once(rng=rng, n_inputs_points=n_inputs_points)
-                for _ in range(input_dimension)
+                self.generate_once(rng=rng, seq_length=seq_length)
+                for _ in range(num_channels)
             ]
         )
 
@@ -371,7 +369,7 @@ if __name__ == "__main__":
     mixed_distribution = MixedDistribution()
 
     time = mixed_distribution.generate(
-        rng=np.random.RandomState(100), n_inputs_points=512, input_dimension=5
+        rng=np.random.RandomState(100), seq_length=512, num_channels=5
     )
 
     for i in range(5):

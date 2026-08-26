@@ -115,7 +115,7 @@ class KalmanFilterSimulator(object):
         AR parameters are estimated with the Yule-Walker method; the companion matrices ``F, G, H, Q, R`` are then
         constructed and a Kalman filter pass yields the innovation sequence.
 
-        :param time_series: The input time series to fit, with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        :param time_series: The input time series to fit, with shape 1D [seq_length, ] or 2D [num_samples, seq_length].
 
         :return: None
         """
@@ -153,16 +153,16 @@ class KalmanFilterSimulator(object):
         )
 
     def transform(
-        self, num_samples: int, seq_len: int, random_state: Optional[int] = None
+        self, num_samples: int, seq_length: int, random_state: Optional[int] = None
     ) -> np.ndarray:
         """
         Generate new time series by exciting the fitted state-space model with white process noise.
 
         :param num_samples: The number of new time series to generate.
-        :param seq_len: The length of each generated time series.
+        :param seq_length: The length of each generated time series.
         :param random_state: The random seed for reproducibility. If None, uses the instance random state.
 
-        :return: The generated time series with shape [num_samples, seq_len].
+        :return: The generated time series with shape [num_samples, seq_length].
         """
         if self._coeffs is None:
             raise ValueError(
@@ -177,10 +177,10 @@ class KalmanFilterSimulator(object):
         white_noise = rng.normal(
             0,
             scale=np.sqrt(self.sigma_sq),
-            size=(num_samples, seq_len + self.state_order),
+            size=(num_samples, seq_length + self.state_order),
         )
 
-        simulated_series = np.zeros(shape=(num_samples, seq_len))
+        simulated_series = np.zeros(shape=(num_samples, seq_length))
         for i in range(num_samples):
             simulated_series[i, :] = self.invoke(white_noise=white_noise[i, :])
 
@@ -196,9 +196,9 @@ class KalmanFilterSimulator(object):
         """
         Generate a sequence by driving the state equation with a supplied white-noise excitation.
 
-        :param white_noise: Input white-noise sequence with shape 1D [seq_len + state_order, ].
+        :param white_noise: Input white-noise sequence with shape 1D [seq_length + state_order, ].
 
-        :return: Generated time series with shape 1D [seq_len, ].
+        :return: Generated time series with shape 1D [seq_length, ].
         """
         if self._coeffs is None:
             raise ValueError(
@@ -217,7 +217,7 @@ class KalmanFilterSimulator(object):
         """
         Calculate the autocorrelation function (ACF) of the input time series.
 
-        :param time_series: Input series with shape 1D [seq_len, ].
+        :param time_series: Input series with shape 1D [seq_length, ].
         :param lag_max: Maximum lag. Defaults to ``self.lag_max`` (``state_order * 2``).
         :param fft: Whether to use FFT for ACF computation.
 
@@ -231,17 +231,17 @@ class KalmanFilterSimulator(object):
         """
         Check the format and length of the input time series.
 
-        :param time_series: Input with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        :param time_series: Input with shape 1D [seq_length, ] or 2D [num_samples, seq_length].
 
-        :return: Validated 1D time series with shape [seq_len, ].
+        :return: Validated 1D time series with shape [seq_length, ].
         """
         if not isinstance(time_series, np.ndarray):
             raise ValueError("The input time series must be a NumPy array.")
 
         if len(time_series.shape) > 2:
             raise ValueError(
-                "The input time series must be 1D with [seq_len, ] or 2D with "
-                "[num_samples, seq_len], but got shape: {}".format(time_series.shape)
+                "The input time series must be 1D with [seq_length, ] or 2D with "
+                "[num_samples, seq_length], but got shape: {}".format(time_series.shape)
             )
 
         if len(time_series.shape) == 2:
@@ -402,9 +402,9 @@ class KalmanFilterSimulator(object):
         """
         Forward-simulate the state equation under white-noise excitation.
 
-        :param white_noise: Process noise sequence, shape [seq_len, ].
+        :param white_noise: Process noise sequence, shape [seq_length, ].
 
-        :return: Output sequence before edge trimming, shape [seq_len, ].
+        :return: Output sequence before edge trimming, shape [seq_length, ].
         """
         n_steps = len(white_noise)
         p = self._F.shape[0]
@@ -435,9 +435,9 @@ if __name__ == "__main__":
     simulator = KalmanFilterSimulator(state_order=8, revin=True, random_state=42)
     simulator.fit(sine_signal)
 
-    generated = simulator.transform(num_samples=1, seq_len=seq_length, random_state=7)[
-        0
-    ]
+    generated = simulator.transform(
+        num_samples=1, seq_length=seq_length, random_state=7
+    )[0]
 
     print("KalmanFilterSimulator fit summary")
     print(f"  state_order : {simulator.state_order}")

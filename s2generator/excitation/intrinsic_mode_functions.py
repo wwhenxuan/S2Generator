@@ -227,13 +227,11 @@ class IntrinsicModeFunction(BaseExcitation):
     def __call__(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int = 512,
-        input_dimension: int = 1,
+        seq_length: int = 512,
+        num_channels: int = 1,
     ) -> np.ndarray:
         """Call the `generate` method to stimulate time series generation"""
-        return self.generate(
-            rng=rng, n_inputs_points=n_inputs_points, input_dimension=input_dimension
-        )
+        return self.generate(rng=rng, seq_length=seq_length, num_channels=num_channels)
 
     def __str__(self) -> str:
         """Get the name of the time series generator"""
@@ -308,7 +306,7 @@ class IntrinsicModeFunction(BaseExcitation):
 
         return available_dict, available_list, available_probability
 
-    def _add_noise(self, imfs: np.ndarray, n_inputs_points: int) -> np.ndarray:
+    def _add_noise(self, imfs: np.ndarray, seq_length: int) -> np.ndarray:
         """
         Generates adaptive Gaussian noise proportional to signal energy.
 
@@ -318,13 +316,13 @@ class IntrinsicModeFunction(BaseExcitation):
 
         :param imfs: Matrix of intrinsic mode functions (time series)
         :type imfs: np.ndarray
-        :param n_inputs_points: Number of time samples required
-        :type n_inputs_points: int
+        :param seq_length: Number of time samples required
+        :type seq_length: int
         :return: Noise vector scaled to signal energy
         :rtype: np.ndarray
         """
         return add_noise(
-            N=n_inputs_points,
+            N=seq_length,
             Mean=0,  # Zero-mean Gaussian noise
             STD=self.noise_level * _get_energy(signal=imfs),  # Energy-adaptive scaling
         )
@@ -381,7 +379,7 @@ class IntrinsicModeFunction(BaseExcitation):
         return rng.uniform(low=self.min_frequency, high=self.max_frequency, size=number)
 
     def get_base_imfs(
-        self, imfs: np.ndarray, rng: np.random.RandomState, n_inputs_points: int
+        self, imfs: np.ndarray, rng: np.random.RandomState, seq_length: int
     ) -> np.ndarray:
         """
         Generates fundamental IMF components (sine/cosine) and adds to the signal.
@@ -400,8 +398,8 @@ class IntrinsicModeFunction(BaseExcitation):
         :type imfs: np.ndarray
         :param rng: Seeded random number generator for reproducibility
         :type rng: np.random.RandomState
-        :param n_inputs_points: Required number of time samples
-        :type n_inputs_points: int
+        :param seq_length: Required number of time samples
+        :type seq_length: int
         :return: Signal matrix with added fundamental components
         :rtype: np.ndarray
         """
@@ -421,7 +419,7 @@ class IntrinsicModeFunction(BaseExcitation):
         ):
             # Calculate adaptive sampling rate for time alignment
             sampling_rate = get_adaptive_sampling_rate(
-                duration=duration, length=n_inputs_points
+                duration=duration, length=seq_length
             )
 
             # Generate component signal and add to matrix
@@ -431,7 +429,7 @@ class IntrinsicModeFunction(BaseExcitation):
                 frequency=frequency,
                 noise_level=0.0,  # No noise for fundamental components
             )[1][
-                :n_inputs_points
+                :seq_length
             ]  # Truncate to required length
 
             imfs += amplitude * component
@@ -439,7 +437,7 @@ class IntrinsicModeFunction(BaseExcitation):
         return imfs
 
     def get_choice_imfs(
-        self, imfs: np.ndarray, rng: np.random.RandomState, n_inputs_points: int
+        self, imfs: np.ndarray, rng: np.random.RandomState, seq_length: int
     ) -> np.ndarray:
         """
         Adds randomly selected IMF components from available types.
@@ -457,8 +455,8 @@ class IntrinsicModeFunction(BaseExcitation):
         :type imfs: np.ndarray
         :param rng: Seeded random number generator
         :type rng: np.random.RandomState
-        :param n_inputs_points: Required number of time samples
-        :type n_inputs_points: int
+        :param seq_length: Required number of time samples
+        :type seq_length: int
         :return: Signal matrix with added selected components
         :rtype: np.ndarray
         """
@@ -479,7 +477,7 @@ class IntrinsicModeFunction(BaseExcitation):
 
             # Calculate adaptive sampling rate
             sampling_rate = get_adaptive_sampling_rate(
-                duration=duration, length=n_inputs_points
+                duration=duration, length=seq_length
             )
 
             # Handle AM signal special case
@@ -493,7 +491,7 @@ class IntrinsicModeFunction(BaseExcitation):
                         1, 16
                     ),  # Modulating frequency (1-15 Hz)
                     noise_level=0.0,
-                )[1][:n_inputs_points]
+                )[1][:seq_length]
             else:
                 # Standard signal generation
                 component = func(
@@ -501,7 +499,7 @@ class IntrinsicModeFunction(BaseExcitation):
                     sampling_rate=sampling_rate,
                     frequency=frequency,
                     noise_level=0.0,
-                )[1][:n_inputs_points]
+                )[1][:seq_length]
 
             imfs += amplitude * component
 
@@ -530,8 +528,8 @@ class IntrinsicModeFunction(BaseExcitation):
     def generate(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int = 512,
-        input_dimension: int = 1,
+        seq_length: int = 512,
+        num_channels: int = 1,
     ) -> np.ndarray:
         """
         Generates multi-dimensional time series through IMF composition.
@@ -544,32 +542,30 @@ class IntrinsicModeFunction(BaseExcitation):
 
         :param rng: Seeded random number generator
         :type rng: np.random.RandomState
-        :param n_inputs_points: Number of time samples per dimension
-        :type n_inputs_points: int
-        :param input_dimension: Number of output dimensions (channels)
-        :type input_dimension: int
-        :return: Generated time series array of shape (n_inputs_points, input_dimension)
+        :param seq_length: Number of time samples per dimension
+        :type seq_length: int
+        :param num_channels: Number of output dimensions (channels)
+        :type num_channels: int
+        :return: Generated time series array of shape (seq_length, num_channels)
         :rtype: np.ndarray
         """
         # Initialize output matrix
-        imfs = np.zeros(shape=(n_inputs_points, input_dimension), dtype=self.dtype)
+        imfs = np.zeros(shape=(seq_length, num_channels), dtype=self.dtype)
 
         # Generate each dimension independently
-        for i in range(input_dimension):
+        for i in range(num_channels):
             # 1. Fundamental waveform components
             imfs[:, i] = self.get_base_imfs(
-                imfs=imfs[:, i], rng=rng, n_inputs_points=n_inputs_points
+                imfs=imfs[:, i], rng=rng, seq_length=seq_length
             )
 
             # 2. Additional IMF components
             imfs[:, i] = self.get_choice_imfs(
-                imfs=imfs[:, i], rng=rng, n_inputs_points=n_inputs_points
+                imfs=imfs[:, i], rng=rng, seq_length=seq_length
             )
 
             # 3. Energy-adaptive noise
-            imfs[:, i] += self._add_noise(
-                imfs=imfs[:, i], n_inputs_points=n_inputs_points
-            )
+            imfs[:, i] += self._add_noise(imfs=imfs[:, i], seq_length=seq_length)
 
             # 4. Scaling the energy of the imfs
             imfs[:, i] = self.adjust_upper_energy(imfs[:, i], rng=rng)

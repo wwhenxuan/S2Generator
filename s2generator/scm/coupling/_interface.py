@@ -357,8 +357,8 @@ class CouplingPipeline(object):
     def generate(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
-        input_dimension: Optional[int] = None,
+        seq_length: int,
+        num_channels: Optional[int] = None,
         mechanism: Optional[str] = None,
         horizon: Optional[int] = None,
         adjacency: Optional[np.ndarray] = None,
@@ -384,8 +384,8 @@ class CouplingPipeline(object):
         spikes), couples them, and finally post-processes the result.
 
         :param rng: The random number generator.
-        :param n_inputs_points: Length of the time series to generate.
-        :param input_dimension: Number of variates. If None, randomly
+        :param seq_length: Length of the time series to generate.
+        :param num_channels: Number of variates. If None, randomly
                                sampled from {1, ..., 12} (or taken from the
                                adjacency size when ``adjacency`` is given).
         :param mechanism: Coupling mechanism name or None for random.
@@ -419,19 +419,19 @@ class CouplingPipeline(object):
                     f"shape {adjacency.shape}"
                 )
             graph_Q = adjacency.shape[0]
-            if input_dimension is None:
-                input_dimension = graph_Q
-            elif input_dimension != graph_Q:
+            if num_channels is None:
+                num_channels = graph_Q
+            elif num_channels != graph_Q:
                 raise ValueError(
-                    f"input_dimension ({input_dimension}) does not match "
+                    f"num_channels ({num_channels}) does not match "
                     f"adjacency size ({graph_Q})"
                 )
-        elif input_dimension is None:
-            input_dimension = rng.randint(1, 13)  # V ~ U{1, ..., 12}
+        elif num_channels is None:
+            num_channels = rng.randint(1, 13)  # V ~ U{1, ..., 12}
 
         # Generate base univariate series from the GP-based synthetic pool
         # (TiRex-2: zero-mean GP with randomly composed kernels).
-        base_series = self._generate_base_series(rng, n_inputs_points, input_dimension)
+        base_series = self._generate_base_series(rng, seq_length, num_channels)
 
         # Stage 1: independent augmentation of each univariate series.
         if apply_augmentation:
@@ -470,8 +470,8 @@ class CouplingPipeline(object):
         self,
         rng: np.random.RandomState,
         n_samples: int,
-        n_inputs_points: int,
-        input_dimension: Optional[int] = None,
+        seq_length: int,
+        num_channels: Optional[int] = None,
         mechanism: Optional[str] = None,
         horizon: Optional[int] = None,
         adjacency: Optional[np.ndarray] = None,
@@ -487,8 +487,8 @@ class CouplingPipeline(object):
 
         :param rng: The random number generator.
         :param n_samples: Number of samples to generate.
-        :param n_inputs_points: Length of each time series.
-        :param input_dimension: Number of variates per sample (None => random,
+        :param seq_length: Length of each time series.
+        :param num_channels: Number of variates per sample (None => random,
                                 or taken from ``adjacency`` when given).
         :param mechanism: Coupling mechanism name or None for random per sample.
         :param horizon: Forecast horizon.
@@ -505,8 +505,8 @@ class CouplingPipeline(object):
         for _ in range(n_samples):
             x = self.generate(
                 rng=rng,
-                n_inputs_points=n_inputs_points,
-                input_dimension=input_dimension,
+                seq_length=seq_length,
+                num_channels=num_channels,
                 mechanism=mechanism,
                 horizon=horizon,
                 adjacency=adjacency,

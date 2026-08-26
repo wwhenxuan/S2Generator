@@ -102,7 +102,7 @@ class TestWienerLowpassIntegration(unittest.TestCase):
             random_state=0,
         )
         sim.fit(x)
-        y = sim.transform(num_samples=3, seq_len=len(x), random_state=0)
+        y = sim.transform(num_samples=3, seq_length=len(x), random_state=0)
 
         self.assertEqual(y.shape, (3, len(x)))
         self.assertTrue(np.all(np.isfinite(y)))
@@ -115,7 +115,7 @@ class TestWienerLowpassIntegration(unittest.TestCase):
         sim = WienerFilterSimulator(filter_order=4, random_state=0)
         sim.fit(x)
         self.assertIsNone(sim._lowpass_filter)
-        y = sim.transform(num_samples=2, seq_len=64, random_state=0)
+        y = sim.transform(num_samples=2, seq_length=64, random_state=0)
         self.assertEqual(y.shape, (2, 64))
 
 

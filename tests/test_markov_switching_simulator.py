@@ -101,7 +101,7 @@ class TestMarkovSwitchingSimulator(unittest.TestCase):
 
         After fitting on a valid regime-switching input sequence, residuals and
         smoothed probabilities should be available, and transform should return
-        simulated data with shape [num_samples, seq_len].
+        simulated data with shape [num_samples, seq_length].
         """
 
         simulator = self._make_simulator()
@@ -124,9 +124,9 @@ class TestMarkovSwitchingSimulator(unittest.TestCase):
         self.assertGreaterEqual(simulator.order, 1)
 
         # Generate new sequences from the fitted model
-        simulation = simulator.transform(num_samples=5, seq_len=100, random_state=7)
+        simulation = simulator.transform(num_samples=5, seq_length=100, random_state=7)
 
-        # Output shape should be [num_samples, seq_len]
+        # Output shape should be [num_samples, seq_length]
         self.assertEqual(simulation.shape, (5, 100))
         self.assertFalse(np.isnan(simulation).any())
 
@@ -150,7 +150,7 @@ class TestMarkovSwitchingSimulator(unittest.TestCase):
         self.assertGreaterEqual(simulator.order, 1)
         self.assertLessEqual(simulator.order, simulator.max_order)
 
-        generated = simulator.transform(num_samples=2, seq_len=80, random_state=3)
+        generated = simulator.transform(num_samples=2, seq_length=80, random_state=3)
         self.assertEqual(generated.shape, (2, 80))
 
     def test_check_inputs(self) -> None:
@@ -265,7 +265,7 @@ class TestMarkovSwitchingSimulator(unittest.TestCase):
         simulator = self._make_simulator()
 
         with self.assertRaises(ValueError):
-            simulator.transform(num_samples=1, seq_len=50)
+            simulator.transform(num_samples=1, seq_length=50)
 
     def test_select_msar_order(self) -> None:
         """
@@ -364,7 +364,7 @@ class TestMarkovSwitchingSimulator(unittest.TestCase):
         time_series = self._make_time_series(length=300, seed=9)
         simulator.fit(time_series)
 
-        simulated = simulator._simulate(seq_len=120, random_state=11)
+        simulated = simulator._simulate(seq_length=120, random_state=11)
 
         self.assertEqual(simulated.shape, (120,))
         self.assertFalse(np.isnan(simulated).any())
@@ -385,7 +385,7 @@ class TestMarkovSwitchingSimulator(unittest.TestCase):
         self.assertIsNone(simulator.mean)
         self.assertIsNone(simulator.std)
 
-        generated = simulator.transform(num_samples=3, seq_len=60, random_state=15)
+        generated = simulator.transform(num_samples=3, seq_length=60, random_state=15)
         self.assertEqual(generated.shape, (3, 60))
 
     def test_reproducibility(self) -> None:
@@ -400,8 +400,8 @@ class TestMarkovSwitchingSimulator(unittest.TestCase):
         time_series = self._make_time_series(length=300, seed=11)
         simulator.fit(time_series)
 
-        sample_a = simulator.transform(num_samples=2, seq_len=80, random_state=123)
-        sample_b = simulator.transform(num_samples=2, seq_len=80, random_state=123)
+        sample_a = simulator.transform(num_samples=2, seq_length=80, random_state=123)
+        sample_b = simulator.transform(num_samples=2, seq_length=80, random_state=123)
 
         self.assertTrue(np.allclose(sample_a, sample_b))
 

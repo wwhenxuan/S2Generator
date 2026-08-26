@@ -344,7 +344,7 @@ class TestForecastPFN(unittest.TestCase):
 
     def test_call_method(self):
         """Test the __call__ method"""
-        result = self.forecast_pfn(self.rng, n_inputs_points=100, input_dimension=2)
+        result = self.forecast_pfn(self.rng, seq_length=100, num_channels=2)
         self.assertIsInstance(result, np.ndarray)
         self.assertEqual(result.shape, (100, 2))
         self.assertEqual(result.dtype, self.forecast_pfn.dtype)
@@ -513,7 +513,7 @@ class TestForecastPFN(unittest.TestCase):
         fpfn = ForecastPFN()
 
         # Test basic generation
-        result = fpfn.generate(rng=self.rng, n_inputs_points=100, input_dimension=3)
+        result = fpfn.generate(rng=self.rng, seq_length=100, num_channels=3)
 
         self.assertIsInstance(result, np.ndarray)
         self.assertEqual(result.shape, (100, 3))
@@ -522,8 +522,8 @@ class TestForecastPFN(unittest.TestCase):
         # Test with different parameters (avoid random_walk=True due to bug)
         result_custom = fpfn.generate(
             rng=self.rng,
-            n_inputs_points=256,
-            input_dimension=1,
+            seq_length=256,
+            num_channels=1,
             freq_index=1,
             start=pd.Timestamp("2020-01-01"),
             random_walk=False,  # Avoid bug in random_walk mode
@@ -537,7 +537,7 @@ class TestForecastPFN(unittest.TestCase):
 
         # Test without random walk (avoiding the bug)
         result = fpfn.generate(
-            rng=self.rng, n_inputs_points=50, input_dimension=1, random_walk=False
+            rng=self.rng, seq_length=50, num_channels=1, random_walk=False
         )
 
         self.assertFalse(fpfn.random_walk)  # Should remain False
@@ -585,7 +585,7 @@ class TestForecastPFN(unittest.TestCase):
         self.assertIsInstance(fpfn, BaseExcitation)
 
         # Test that it can create zeros
-        zeros = fpfn.create_zeros(n_inputs_points=10, input_dimension=2)
+        zeros = fpfn.create_zeros(seq_length=10, num_channels=2)
         self.assertEqual(zeros.shape, (10, 2))
         np.testing.assert_array_equal(zeros, np.zeros((10, 2)))
 
@@ -593,7 +593,7 @@ class TestForecastPFN(unittest.TestCase):
         """Test that generated data respects the specified dtype"""
         for dtype in [np.float32, np.float64]:
             fpfn = ForecastPFN(dtype=dtype)
-            result = fpfn.generate(rng=self.rng, n_inputs_points=50, input_dimension=1)
+            result = fpfn.generate(rng=self.rng, seq_length=50, num_channels=1)
             self.assertEqual(result.dtype, dtype)
 
     def test_reproducibility(self):
@@ -604,8 +604,8 @@ class TestForecastPFN(unittest.TestCase):
         rng1 = np.random.RandomState(42)
         rng2 = np.random.RandomState(42)
 
-        result1 = fpfn1.generate(rng=rng1, n_inputs_points=100, input_dimension=1)
-        result2 = fpfn2.generate(rng=rng2, n_inputs_points=100, input_dimension=1)
+        result1 = fpfn1.generate(rng=rng1, seq_length=100, num_channels=1)
+        result2 = fpfn2.generate(rng=rng2, seq_length=100, num_channels=1)
 
         # Due to the complexity of the generation process and potential internal state,
         # we'll test that results are consistent in shape and finite values
@@ -618,9 +618,7 @@ class TestForecastPFN(unittest.TestCase):
         fpfn = ForecastPFN()
 
         for dim in [1, 2, 5, 10]:
-            result = fpfn.generate(
-                rng=self.rng, n_inputs_points=50, input_dimension=dim
-            )
+            result = fpfn.generate(rng=self.rng, seq_length=50, num_channels=dim)
             self.assertEqual(result.shape, (50, dim))
 
     def test_different_lengths(self):
@@ -628,9 +626,7 @@ class TestForecastPFN(unittest.TestCase):
         fpfn = ForecastPFN()
 
         for length in [32, 64, 128, 256, 512, 1024]:
-            result = fpfn.generate(
-                rng=self.rng, n_inputs_points=length, input_dimension=1
-            )
+            result = fpfn.generate(rng=self.rng, seq_length=length, num_channels=1)
             self.assertEqual(result.shape, (length, 1))
 
     def test_sub_day_vs_daily_behavior(self):
@@ -644,11 +640,9 @@ class TestForecastPFN(unittest.TestCase):
 
         # Generate series and check they work
         result_sub_day = fpfn_sub_day.generate(
-            rng=self.rng, n_inputs_points=100, input_dimension=1
+            rng=self.rng, seq_length=100, num_channels=1
         )
-        result_daily = fpfn_daily.generate(
-            rng=self.rng, n_inputs_points=100, input_dimension=1
-        )
+        result_daily = fpfn_daily.generate(rng=self.rng, seq_length=100, num_channels=1)
 
         self.assertEqual(result_sub_day.shape, (100, 1))
         self.assertEqual(result_daily.shape, (100, 1))
@@ -662,10 +656,10 @@ class TestForecastPFN(unittest.TestCase):
         fpfn_no_transition = ForecastPFN(transition=False)
 
         result_transition = fpfn_transition.generate(
-            rng=rng1, n_inputs_points=100, input_dimension=1
+            rng=rng1, seq_length=100, num_channels=1
         )
         result_no_transition = fpfn_no_transition.generate(
-            rng=rng2, n_inputs_points=100, input_dimension=1
+            rng=rng2, seq_length=100, num_channels=1
         )
 
         self.assertEqual(result_transition.shape, (100, 1))
@@ -694,8 +688,8 @@ class TestForecastPFN(unittest.TestCase):
         fpfn = ForecastPFN(random_walk=False)
         result = fpfn.generate(
             rng=np.random.RandomState(3),
-            n_inputs_points=64,
-            input_dimension=1,
+            seq_length=64,
+            num_channels=1,
             random_walk=True,
         )
         self.assertEqual(result.shape, (64, 1))
@@ -718,7 +712,7 @@ class TestForecastPFN(unittest.TestCase):
 
         with patch.object(fpfn, "_select_ndarray_from_dict", side_effect=flaky_select):
             result = fpfn.generate(
-                rng=np.random.RandomState(5), n_inputs_points=48, input_dimension=1
+                rng=np.random.RandomState(5), seq_length=48, num_channels=1
             )
 
         self.assertGreaterEqual(call_count["n"], 2)
@@ -737,7 +731,7 @@ class TestForecastPFN(unittest.TestCase):
         """All generated ForecastPFN values should be finite"""
         fpfn = ForecastPFN()
         result = fpfn.generate(
-            rng=np.random.RandomState(11), n_inputs_points=128, input_dimension=2
+            rng=np.random.RandomState(11), seq_length=128, num_channels=2
         )
         self.assertTrue(np.all(np.isfinite(result)))
 

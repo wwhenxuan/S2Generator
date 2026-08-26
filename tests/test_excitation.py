@@ -48,7 +48,7 @@ class TestExcitationInterface(unittest.TestCase):
         """__str__ and __call__ should work as documented"""
         exc = Excitation()
         self.assertEqual(str(exc), "Excitation")
-        out = exc(self.rng, n_inputs_points=64, input_dimension=1)
+        out = exc(self.rng, seq_length=64, num_channels=1)
         self.assertEqual(out.shape, (64, 1))
 
     def test_sampling_dict_keys_and_types(self) -> None:
@@ -113,7 +113,7 @@ class TestExcitationInterface(unittest.TestCase):
         """choice() returns one method name per dimension"""
         exc = Excitation()
         for dim in [1, 2, 4]:
-            choices = exc.choice(rng=self.rng, input_dimension=dim)
+            choices = exc.choice(rng=self.rng, num_channels=dim)
             self.assertEqual(len(choices), dim)
             for name in choices:
                 self.assertIn(name, exc.sampling_methods)
@@ -134,7 +134,7 @@ class TestExcitationInterface(unittest.TestCase):
             intrinsic_mode_function=0.0,
         )
         exc = Excitation(series_params=params)
-        choices = exc.choice(rng=np.random.RandomState(0), input_dimension=8)
+        choices = exc.choice(rng=np.random.RandomState(0), num_channels=8)
         self.assertTrue(np.all(choices == "autoregressive_moving_average"))
 
     def test_generate_shape_and_dtype(self) -> None:
@@ -142,9 +142,7 @@ class TestExcitationInterface(unittest.TestCase):
         params = SeriesParams(dtype=np.float64)
         exc = Excitation(series_params=params)
         for length, dim in [(32, 1), (64, 2), (128, 3)]:
-            series = exc.generate(
-                rng=self.rng, n_inputs_points=length, input_dimension=dim
-            )
+            series = exc.generate(rng=self.rng, seq_length=length, num_channels=dim)
             self.assertEqual(series.shape, (length, dim))
             self.assertEqual(series.dtype, np.float64)
             self.assertTrue(np.all(np.isfinite(series)))
@@ -154,8 +152,8 @@ class TestExcitationInterface(unittest.TestCase):
         exc = Excitation()
         series, choices = exc.generate(
             rng=self.rng,
-            n_inputs_points=48,
-            input_dimension=3,
+            seq_length=48,
+            num_channels=3,
             return_choice=True,
         )
         self.assertEqual(series.shape, (48, 3))
@@ -176,8 +174,8 @@ class TestExcitationInterface(unittest.TestCase):
         exc = Excitation(series_params=params)
         series = exc.generate(
             rng=np.random.RandomState(1),
-            n_inputs_points=256,
-            input_dimension=2,
+            seq_length=256,
+            num_channels=2,
             normalization="z-score",
         )
         for dim in range(series.shape[1]):
@@ -196,8 +194,8 @@ class TestExcitationInterface(unittest.TestCase):
         exc = Excitation(series_params=params)
         series = exc.generate(
             rng=np.random.RandomState(2),
-            n_inputs_points=256,
-            input_dimension=2,
+            seq_length=256,
+            num_channels=2,
             normalization="max-min",
         )
         for dim in range(series.shape[1]):
@@ -210,8 +208,8 @@ class TestExcitationInterface(unittest.TestCase):
         with self.assertRaises(ValueError):
             exc.generate(
                 rng=self.rng,
-                n_inputs_points=32,
-                input_dimension=1,
+                seq_length=32,
+                num_channels=1,
                 normalization="unknown",
             )
 

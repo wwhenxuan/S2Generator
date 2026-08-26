@@ -132,11 +132,11 @@ class MovingDecomp(object):
         elif len(shape) == 2:
             # The input is a one-dimensional multivariate signal
             # Get the number of input signals
-            n_vars, seq_len = shape
+            n_vars, seq_length = shape
 
             # Initialize the decomposed array
-            trend, seasonality = np.zeros(shape=(n_vars, seq_len)), np.zeros(
-                shape=(n_vars, seq_len)
+            trend, seasonality = np.zeros(shape=(n_vars, seq_length)), np.zeros(
+                shape=(n_vars, seq_length)
             )
 
             # The submitted decomposition list must be greater than or equal to the number of channels of the input signal
@@ -163,7 +163,7 @@ class MovingDecomp(object):
                     )
         else:
             raise ValueError(
-                "The input must be 1D univariate or multivariate signal with shape [seq_len] or [n_vars, seq_len]"
+                "The input must be 1D univariate or multivariate signal with shape [seq_length] or [n_vars, seq_length]"
             )
 
         # Return the decomposed result
@@ -205,7 +205,7 @@ class MovingDecomp(object):
 
         elif len(shape) == 2:
             # Get the number of input signals
-            n_vars, seq_len = shape
+            n_vars, seq_length = shape
             # Creating a drawing object
             fig, ax = plt.subplots(
                 nrows=3, ncols=n_vars, figsize=(4 * n_vars, 5), sharex=True
@@ -224,7 +224,7 @@ class MovingDecomp(object):
 
         else:
             raise ValueError(
-                "The input must be 1D univariate or multivariate signal with shape [seq_len] or [n_vars, seq_len]"
+                "The input must be 1D univariate or multivariate signal with shape [seq_length] or [n_vars, seq_length]"
             )
 
         return fig

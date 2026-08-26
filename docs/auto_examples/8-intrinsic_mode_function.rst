@@ -83,7 +83,7 @@ where, $w_k$ is the random weight for the IMFs :math:`u_k (t)` and is normalized
     rng = np.random.RandomState(42)
 
     # Generate the excitation through `generate` method
-    time_series = imfs.generate(rng=rng, input_dimension=1, n_inputs_points=512)
+    time_series = imfs.generate(rng=rng, num_channels=1, seq_length=512)
 
     print(
         f"The Excitation Method: {str(imfs)} and Generate the Time Series Data with Shape: {time_series.shape}"
@@ -174,7 +174,7 @@ For a time series of length :math:`n``, its energy :math:`E` can be represented 
     )
 
     # Generate the multi-channels time series
-    time_series = imfs.generate(rng=rng, input_dimension=4, n_inputs_points=512)
+    time_series = imfs.generate(rng=rng, num_channels=4, seq_length=512)
 
     # Visualization for the excitation
     fig, ax = plt.subplots(2, 2, figsize=(9, 3), dpi=160, sharex=True)

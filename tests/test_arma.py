@@ -38,7 +38,7 @@ class TestARMA(unittest.TestCase):
     def test_inheritance_base_excitation(self) -> None:
         """Test that ARMA inherits from BaseExcitation"""
         self.assertIsInstance(self.arma, BaseExcitation)
-        zeros = self.arma.create_zeros(n_inputs_points=16, input_dimension=2)
+        zeros = self.arma.create_zeros(seq_length=16, num_channels=2)
         self.assertEqual(zeros.shape, (16, 2))
 
     def test_create_autoregressive_params(self) -> None:
@@ -171,7 +171,7 @@ class TestARMA(unittest.TestCase):
                 for length in [32, 128, 256]:
                     for dim in [1, 3, 5]:
                         time_series = arma.generate(
-                            rng=self.rng, n_inputs_points=length, input_dimension=dim
+                            rng=self.rng, seq_length=length, num_channels=dim
                         )
                         self.assertIsInstance(time_series, np.ndarray)
                         self.assertEqual(time_series.shape, (length, dim))
@@ -182,7 +182,7 @@ class TestARMA(unittest.TestCase):
         upper_bound = 50.0
         arma = AutoregressiveMovingAverage(upper_bound=upper_bound)
         rng = np.random.RandomState(123)
-        series = arma.generate(rng=rng, n_inputs_points=128, input_dimension=3)
+        series = arma.generate(rng=rng, seq_length=128, num_channels=3)
         self.assertLessEqual(np.max(np.abs(series)), upper_bound + 1e-8)
 
     def test_dtype_on_generate(self) -> None:
@@ -190,7 +190,7 @@ class TestARMA(unittest.TestCase):
         for dtype in [np.float32, np.float64]:
             arma = AutoregressiveMovingAverage(dtype=dtype)
             series = arma.generate(
-                rng=np.random.RandomState(0), n_inputs_points=64, input_dimension=2
+                rng=np.random.RandomState(0), seq_length=64, num_channels=2
             )
             self.assertEqual(series.dtype, dtype)
 
@@ -199,10 +199,10 @@ class TestARMA(unittest.TestCase):
         arma1 = AutoregressiveMovingAverage()
         arma2 = AutoregressiveMovingAverage()
         out1 = arma1.generate(
-            rng=np.random.RandomState(42), n_inputs_points=128, input_dimension=2
+            rng=np.random.RandomState(42), seq_length=128, num_channels=2
         )
         out2 = arma2.generate(
-            rng=np.random.RandomState(42), n_inputs_points=128, input_dimension=2
+            rng=np.random.RandomState(42), seq_length=128, num_channels=2
         )
         np.testing.assert_array_equal(out1, out2)
 
@@ -212,7 +212,7 @@ class TestARMA(unittest.TestCase):
             p_min=2, p_max=4, stationary=False, upper_bound=80.0
         )
         series = arma.generate(
-            rng=np.random.RandomState(0), n_inputs_points=128, input_dimension=3
+            rng=np.random.RandomState(0), seq_length=128, num_channels=3
         )
         self.assertEqual(series.shape, (128, 3))
         self.assertTrue(np.all(np.isfinite(series)))
@@ -220,7 +220,7 @@ class TestARMA(unittest.TestCase):
 
     def test_call(self) -> None:
         """Test data generation class response"""
-        time_series = self.arma(rng=self.rng, n_inputs_points=256, input_dimension=1)
+        time_series = self.arma(rng=self.rng, seq_length=256, num_channels=1)
         self.assertIsInstance(time_series, np.ndarray)
         self.assertEqual(time_series.shape, (256, 1))
 

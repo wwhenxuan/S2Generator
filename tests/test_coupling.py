@@ -72,7 +72,7 @@ class TestBaseCoupling(unittest.TestCase):
 
     def test_create_zeros_shape_and_dtype(self):
         coupler = IdentityCoupling(dtype=np.float32)
-        out = coupler.create_zeros(n_inputs_points=8, input_dimension=3)
+        out = coupler.create_zeros(seq_length=8, num_channels=3)
         self.assertEqual(out.shape, (8, 3))
         self.assertEqual(out.dtype, np.float32)
         self.assertTrue(np.all(out == 0))
@@ -976,20 +976,18 @@ class TestCouplingPipelineGenerate(unittest.TestCase):
 
     def test_generate_shape(self):
         out = self.pipe.generate(
-            self.rng, 64, input_dimension=4, mechanism="linear_mixing"
+            self.rng, 64, num_channels=4, mechanism="linear_mixing"
         )
         self.assertEqual(out.shape, (64, 4))
 
     def test_generate_univariate_mechanism(self):
         """The univariate mechanism reduces the output to a single variate."""
-        out = self.pipe.generate(
-            self.rng, 64, input_dimension=4, mechanism="univariate"
-        )
+        out = self.pipe.generate(self.rng, 64, num_channels=4, mechanism="univariate")
         self.assertEqual(out.shape, (64, 1))
 
     def test_generate_metadata(self):
         out, meta = self.pipe.generate(
-            self.rng, 64, input_dimension=4, return_metadata=True
+            self.rng, 64, num_channels=4, return_metadata=True
         )
         self.assertIsInstance(meta, dict)
         self.assertIn("coupling_mechanism", meta)
@@ -997,19 +995,19 @@ class TestCouplingPipelineGenerate(unittest.TestCase):
 
     def test_generate_deterministic(self):
         r1, r2 = np.random.RandomState(7), np.random.RandomState(7)
-        o1 = self.pipe.generate(r1, 64, input_dimension=4)
-        o2 = self.pipe.generate(r2, 64, input_dimension=4)
+        o1 = self.pipe.generate(r1, 64, num_channels=4)
+        o2 = self.pipe.generate(r2, 64, num_channels=4)
         np.testing.assert_array_equal(o1, o2)
 
     def test_generate_specific_mechanism(self):
         out = self.pipe.generate(
-            self.rng, 64, input_dimension=4, mechanism="cointegration"
+            self.rng, 64, num_channels=4, mechanism="cointegration"
         )
         self.assertEqual(out.shape, (64, 4))
 
     def test_generate_without_postprocessing_no_nan(self):
         pipe = CouplingPipeline(patch_size=16)
-        out = pipe.generate(self.rng, 64, input_dimension=4, apply_postprocessing=False)
+        out = pipe.generate(self.rng, 64, num_channels=4, apply_postprocessing=False)
         self.assertTrue(np.all(np.isfinite(out)))
 
     def test_sample_mechanism(self):
@@ -1038,8 +1036,8 @@ class TestCouplingIntegration(unittest.TestCase):
         for i in range(10):
             x = pipe.generate(
                 np.random.RandomState(i),
-                n_inputs_points=128,
-                input_dimension=6,
+                seq_length=128,
+                num_channels=6,
                 mechanism="linear_mixing",
             )
             self.assertEqual(x.shape, (128, 6))
@@ -1060,15 +1058,15 @@ class TestCouplingIntegration(unittest.TestCase):
         rng1, rng2 = np.random.RandomState(42), np.random.RandomState(42)
         pipe1 = CouplingPipeline(patch_size=16)
         pipe2 = CouplingPipeline(patch_size=16)
-        o1 = pipe1.generate(rng1, 64, input_dimension=4)
-        o2 = pipe2.generate(rng2, 64, input_dimension=4)
+        o1 = pipe1.generate(rng1, 64, num_channels=4)
+        o2 = pipe2.generate(rng2, 64, num_channels=4)
         np.testing.assert_array_equal(o1, o2)
 
     def test_different_seeds_differ(self):
         rng1, rng2 = np.random.RandomState(1), np.random.RandomState(2)
         pipe = CouplingPipeline(patch_size=16)
-        o1 = pipe.generate(rng1, 64, input_dimension=4)
-        o2 = pipe.generate(rng2, 64, input_dimension=4)
+        o1 = pipe.generate(rng1, 64, num_channels=4)
+        o2 = pipe.generate(rng2, 64, num_channels=4)
         self.assertFalse(np.allclose(o1, o2))
 
     def test_postprocessing_introduces_features(self):
@@ -1077,9 +1075,7 @@ class TestCouplingIntegration(unittest.TestCase):
         rng = np.random.RandomState(0)
         saw_feature = False
         for i in range(20):
-            x = pipe.generate(
-                np.random.RandomState(i), n_inputs_points=64, input_dimension=4
-            )
+            x = pipe.generate(np.random.RandomState(i), seq_length=64, num_channels=4)
             if np.any(np.isnan(x)):
                 saw_feature = True
                 break
@@ -1110,20 +1106,20 @@ class TestCouplingRegression(unittest.TestCase):
                         self.assertTrue(np.all(np.isfinite(out)))
 
     def test_generate_single_variate_does_not_crash(self):
-        """generate(input_dimension=1) must never sample an incompatible mechanism."""
+        """generate(num_channels=1) must never sample an incompatible mechanism."""
         pipe = CouplingPipeline()
         for seed in range(50):
             out = pipe.generate(
                 np.random.RandomState(seed),
                 64,
-                input_dimension=1,
+                num_channels=1,
                 apply_postprocessing=False,
             )
             self.assertEqual(out.shape, (64, 1))
             self.assertTrue(np.all(np.isfinite(out)))
 
     def test_generate_auto_dimension_does_not_crash(self):
-        """generate(input_dimension=None) draws V ~ U{1..12}; Q=1 must be safe."""
+        """generate(num_channels=None) draws V ~ U{1..12}; Q=1 must be safe."""
         pipe = CouplingPipeline()
         for seed in range(200):
             pipe.generate(np.random.RandomState(seed), 128, apply_postprocessing=False)
@@ -1170,7 +1166,7 @@ class TestCouplingRegression(unittest.TestCase):
         _, meta = pipe.generate(
             np.random.RandomState(0),
             64,
-            input_dimension=4,
+            num_channels=4,
             apply_augmentation=True,
             return_metadata=True,
         )
@@ -1178,7 +1174,7 @@ class TestCouplingRegression(unittest.TestCase):
         _, meta2 = pipe.generate(
             np.random.RandomState(0),
             64,
-            input_dimension=4,
+            num_channels=4,
             apply_augmentation=False,
             return_metadata=True,
         )
@@ -1188,8 +1184,8 @@ class TestCouplingRegression(unittest.TestCase):
         """Augmentation consumes the pipeline rng, so output stays reproducible."""
         pipe = CouplingPipeline()
         r1, r2 = np.random.RandomState(7), np.random.RandomState(7)
-        o1 = pipe.generate(r1, 64, input_dimension=4, apply_postprocessing=False)
-        o2 = pipe.generate(r2, 64, input_dimension=4, apply_postprocessing=False)
+        o1 = pipe.generate(r1, 64, num_channels=4, apply_postprocessing=False)
+        o2 = pipe.generate(r2, 64, num_channels=4, apply_postprocessing=False)
         np.testing.assert_array_equal(o1, o2)
 
 
@@ -1254,7 +1250,7 @@ class TestCouplingLabeledInterface(unittest.TestCase):
         self.rng = np.random.RandomState(11)
 
     def test_generate_single_label(self):
-        x, y = self.pipe.generate(self.rng, 64, input_dimension=4, n_classes=5)
+        x, y = self.pipe.generate(self.rng, 64, num_channels=4, n_classes=5)
         self.assertEqual(x.shape, (64, 4))
         self.assertIsInstance(y, int)
         self.assertGreaterEqual(y, 0)
@@ -1262,7 +1258,7 @@ class TestCouplingLabeledInterface(unittest.TestCase):
 
     def test_generate_single_label_with_metadata(self):
         out = self.pipe.generate(
-            self.rng, 64, input_dimension=4, n_classes=3, return_metadata=True
+            self.rng, 64, num_channels=4, n_classes=3, return_metadata=True
         )
         self.assertEqual(len(out), 3)
         x, y, meta = out
@@ -1273,8 +1269,8 @@ class TestCouplingLabeledInterface(unittest.TestCase):
         batch = self.pipe.generate_batch(
             self.rng,
             n_samples=30,
-            n_inputs_points=64,
-            input_dimension=4,
+            seq_length=64,
+            num_channels=4,
             n_classes=3,
         )
         self.assertEqual(len(batch), 30)
@@ -1285,15 +1281,15 @@ class TestCouplingLabeledInterface(unittest.TestCase):
 
     def test_batch_returns_list(self):
         batch = self.pipe.generate_batch(
-            self.rng, n_samples=5, n_inputs_points=64, input_dimension=4
+            self.rng, n_samples=5, seq_length=64, num_channels=4
         )
         self.assertEqual(len(batch), 5)
         self.assertTrue(all(isinstance(x, np.ndarray) for x in batch))
 
     def test_label_deterministic(self):
         r1, r2 = np.random.RandomState(0), np.random.RandomState(0)
-        _, y1 = self.pipe.generate(r1, 64, input_dimension=4, n_classes=6)
-        _, y2 = self.pipe.generate(r2, 64, input_dimension=4, n_classes=6)
+        _, y1 = self.pipe.generate(r1, 64, num_channels=4, n_classes=6)
+        _, y2 = self.pipe.generate(r2, 64, num_channels=4, n_classes=6)
         self.assertEqual(y1, y2)
 
 
@@ -1347,7 +1343,7 @@ class TestCouplingAdjacencyInterface(unittest.TestCase):
         x = pipe.generate(
             self.rng,
             64,
-            input_dimension=4,
+            num_channels=4,
             mechanism="nonlinear_scm",
             adjacency=self.adj,
         )
@@ -1359,7 +1355,7 @@ class TestCouplingAdjacencyInterface(unittest.TestCase):
             pipe.generate(
                 self.rng,
                 64,
-                input_dimension=3,
+                num_channels=3,
                 mechanism="linear_scm",
                 adjacency=self.adj,
             )
@@ -1374,7 +1370,7 @@ class TestCouplingAdjacencyInterface(unittest.TestCase):
         batch = pipe.generate_batch(
             self.rng,
             n_samples=4,
-            n_inputs_points=64,
+            seq_length=64,
             mechanism="linear_scm",
             adjacency=self.adj,
         )

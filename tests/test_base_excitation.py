@@ -15,12 +15,10 @@ class ConcreteExcitation(BaseExcitation):
     """Concrete implementation of BaseExcitation for testing purposes"""
 
     def generate(
-        self, rng: np.random.RandomState, n_inputs_points: int = 512, input_dimension=1
+        self, rng: np.random.RandomState, seq_length: int = 512, num_channels=1
     ) -> np.ndarray:
         """Generate random time series data for testing"""
-        return rng.random(size=(n_inputs_points, input_dimension)).astype(
-            self.data_type
-        )
+        return rng.random(size=(seq_length, num_channels)).astype(self.data_type)
 
 
 class TestBaseExcitation(unittest.TestCase):
@@ -116,7 +114,7 @@ class TestBaseExcitation(unittest.TestCase):
         for n_points in [64, 128, 256, 1024]:
             for dimension in [1, 2, 3, 5, 10]:
                 zeros_array = self.excitation.create_zeros(
-                    n_inputs_points=n_points, input_dimension=dimension
+                    seq_length=n_points, num_channels=dimension
                 )
 
                 # Test output shape
@@ -142,9 +140,7 @@ class TestBaseExcitation(unittest.TestCase):
         """Test create_zeros method with different data types"""
         for dtype in [np.float32, np.float64, np.int32, np.int64]:
             excitation = ConcreteExcitation(dtype=dtype)
-            zeros_array = excitation.create_zeros(
-                n_inputs_points=100, input_dimension=2
-            )
+            zeros_array = excitation.create_zeros(seq_length=100, num_channels=2)
 
             # Test data type
             self.assertEqual(
@@ -159,7 +155,7 @@ class TestBaseExcitation(unittest.TestCase):
         for n_points in [32, 128, 256, 512]:
             for dimension in [1, 3, 5]:
                 time_series = self.excitation.generate(
-                    rng=self.rng, n_inputs_points=n_points, input_dimension=dimension
+                    rng=self.rng, seq_length=n_points, num_channels=dimension
                 )
 
                 # Test output data type

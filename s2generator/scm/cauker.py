@@ -665,8 +665,8 @@ class CaukerPipeline(object):
     def generate(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
-        input_dimension: Optional[int] = None,
+        seq_length: int,
+        num_channels: Optional[int] = None,
         adjacency: Optional[np.ndarray] = None,
         n_classes: Optional[int] = None,
         return_metadata: bool = False,
@@ -676,8 +676,8 @@ class CaukerPipeline(object):
         Implements Algorithm 1, lines 18-39.
 
         :param rng: The random number generator with fixed seed.
-        :param n_inputs_points: Target length L of each time series.
-        :param input_dimension: Number of observed variables d (output dimension).
+        :param seq_length: Target length L of each time series.
+        :param num_channels: Number of observed variables d (output dimension).
                                If None, randomly sampled from {1, ..., min(12, V)}.
         :param adjacency: Optional binary adjacency matrix of shape (V, V)
                           describing a DAG. If provided, it is used instead of
@@ -693,26 +693,26 @@ class CaukerPipeline(object):
                  given, returns ``(series, label)`` instead. A metadata dict is
                  appended when ``return_metadata`` is True.
         """
-        L = n_inputs_points
+        L = seq_length
         t_grid = np.linspace(0, 1, L, dtype=np.float64)
 
         if adjacency is not None:
             # User-specified graph: V is the graph size, d is sampled within it.
             V = adjacency.shape[0]
-            if input_dimension is None:
+            if num_channels is None:
                 d = rng.randint(1, max(2, min(13, V)))
             else:
-                d = input_dimension
+                d = num_channels
             if d > V:
-                raise ValueError(f"input_dimension ({d}) exceeds graph size ({V})")
+                raise ValueError(f"num_channels ({d}) exceeds graph size ({V})")
             parents, roots, edges = adjacency_to_dag(adjacency)
             E = len(edges)
         else:
             # Sample the number of observed variables and total nodes
-            if input_dimension is None:
+            if num_channels is None:
                 d = rng.randint(1, max(2, min(13, self._Vmax)))
             else:
-                d = input_dimension
+                d = num_channels
 
             V = rng.randint(max(d, 2), self._Vmax + 1)
 
@@ -860,8 +860,8 @@ class CaukerPipeline(object):
         self,
         rng: np.random.RandomState,
         n_samples: int,
-        n_inputs_points: int,
-        input_dimension: Optional[int] = None,
+        seq_length: int,
+        num_channels: Optional[int] = None,
         adjacency: Optional[np.ndarray] = None,
         n_classes: Optional[int] = None,
     ) -> List[Any]:
@@ -871,8 +871,8 @@ class CaukerPipeline(object):
 
         :param rng: The random number generator.
         :param n_samples: Number of samples to generate (N in Algorithm 1).
-        :param n_inputs_points: Target length of each time series.
-        :param input_dimension: Number of observed variables per sample.
+        :param seq_length: Target length of each time series.
+        :param num_channels: Number of observed variables per sample.
         :param adjacency: Optional binary adjacency matrix describing a DAG.
                           If provided, it is reused for every sample.
         :param n_classes: If given, assign each generated series a balanced
@@ -887,8 +887,8 @@ class CaukerPipeline(object):
         for _ in range(n_samples):
             x = self.generate(
                 rng=rng,
-                n_inputs_points=n_inputs_points,
-                input_dimension=input_dimension,
+                seq_length=seq_length,
+                num_channels=num_channels,
                 adjacency=adjacency,
                 return_metadata=False,
             )

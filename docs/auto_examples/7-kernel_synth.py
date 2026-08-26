@@ -63,7 +63,7 @@ rng = np.random.RandomState(0)
 
 # Generate the excitation through `generate` method
 time_series = kernel_synth.generate(
-    rng=np.random.RandomState(0), input_dimension=1, n_inputs_points=512
+    rng=np.random.RandomState(0), num_channels=1, seq_length=512
 )
 
 print(
@@ -134,7 +134,7 @@ for i in range(3):
         # Data generation using an object with a single kernel parameter
         kernel_synth = excitation_list[i * 2 + j]
         time_series = kernel_synth.generate(
-            rng=rng, input_dimension=1, n_inputs_points=512
+            rng=rng, num_channels=1, seq_length=512
         )
 
         # plot the time series data

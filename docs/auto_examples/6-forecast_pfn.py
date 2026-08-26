@@ -78,7 +78,7 @@ rng = np.random.RandomState(0)
 
 # Generate the excitation through `generate` method
 time_series = forecast_pfn.generate(
-    rng=np.random.RandomState(0), input_dimension=1, n_inputs_points=256
+    rng=np.random.RandomState(0), num_channels=1, seq_length=256
 )
 
 print(
@@ -138,7 +138,7 @@ print("Minute-level seasonality component weight(s)", forecast_pfn.minutely)
 
 # Generate the multi-dimension time series data
 time_series = forecast_pfn.generate(
-    rng=np.random.RandomState(666), input_dimension=4, n_inputs_points=512
+    rng=np.random.RandomState(666), num_channels=4, seq_length=512
 )
 print(
     f"The Excitation Method: {str(forecast_pfn)} and Generate the Time Series Data with Shape: {time_series.shape}"

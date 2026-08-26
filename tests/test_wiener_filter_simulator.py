@@ -60,9 +60,9 @@ class TestWienerFilterSimulator(unittest.TestCase):
         self.assertEqual(simulator.residuals.shape, time_series.shape)
 
         # Transform the input signal using the fitted model
-        simulation = simulator.transform(num_samples=5, seq_len=100)
+        simulation = simulator.transform(num_samples=5, seq_length=100)
 
-        # Check the shape of the simulated data (should be (num_samples, seq_len))
+        # Check the shape of the simulated data (should be (num_samples, seq_length))
         self.assertEqual(simulation.shape, (5, 100))
 
     def test_check_inputs(self) -> None:

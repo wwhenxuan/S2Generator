@@ -66,7 +66,7 @@ Below we will give a specific code example for excitation generation.
 
     # Generate the excitation through `generate` method
     time_series = mixed_distribution.generate(
-        rng=np.random.RandomState(0), input_dimension=1, n_inputs_points=256
+        rng=np.random.RandomState(0), num_channels=1, seq_length=256
     )
 
     print(
@@ -161,7 +161,7 @@ We can also generate mixed distribution sampling time series data of multiple di
 
     # Generate the multi-dimension time series data
     time_series = mixed_distribution.generate(
-        rng=np.random.RandomState(0), input_dimension=4, n_inputs_points=512
+        rng=np.random.RandomState(0), num_channels=4, seq_length=512
     )
     print(
         f"The Excitation Method: {str(mixed_distribution)} and Generate the Time Series Data with Shape: {time_series.shape}"
@@ -211,7 +211,7 @@ In addition to using random weighting to the mixed distribution, we can also gen
 
     # Generate the excitation through `generate` method
     time_series = mixed_distribution.generate(
-        rng=np.random.RandomState(0), input_dimension=4, n_inputs_points=256
+        rng=np.random.RandomState(0), num_channels=4, seq_length=256
     )
 
     # Visualize the multi-dimension time series data
@@ -247,18 +247,18 @@ We also provide an interface for generating Gaussian or uniform distribution sam
     n_centroids = 5
 
     # The length of series
-    n_inputs_points = 512
+    seq_length = 512
 
     # Randomly generate the weight values for each distribution
     weights = rng.uniform(0, 1, size=(n_centroids,))
     weights /= np.sum(weights)
-    n_points_comp = rng.multinomial(n_inputs_points, weights)
+    n_points_comp = rng.multinomial(seq_length, weights)
 
     # Generate the gaussian time series
     gaussian = mixed_distribution.generate_gaussian(
         rng=rng,
         n_points_comp=n_points_comp,
-        input_dimension=3,  # The dimension of series,
+        num_channels=3,  # The dimension of series,
         n_centroids=n_centroids,  # Number of mixed distributions
     )
 
@@ -266,7 +266,7 @@ We also provide an interface for generating Gaussian or uniform distribution sam
     uniform = mixed_distribution.generate_uniform(
         rng=rng,
         n_points_comp=n_points_comp,  # The length of series
-        input_dimension=3,  # The dimension of series,
+        num_channels=3,  # The dimension of series,
         n_centroids=5,  # Number of mixed distributions
     )
 

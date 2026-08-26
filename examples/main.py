@@ -81,7 +81,7 @@ def process_item(item: int) -> str:
             # Generate S2 data
             symbol, excitation, response = generator.run(
                 rng=rng,
-                n_inputs_points=args.length,
+                seq_length=args.length,
                 input_dimension=input_dim,
                 output_dimension=output_dim,
             )

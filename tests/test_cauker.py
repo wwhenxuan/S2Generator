@@ -538,7 +538,7 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         self.rng = np.random.RandomState(42)
 
     def test_generate_default_univariate(self):
-        x = self.pipe.generate(self.rng, n_inputs_points=64)
+        x = self.pipe.generate(self.rng, seq_length=64)
         self.assertIsInstance(x, np.ndarray)
         self.assertEqual(x.ndim, 2)
         self.assertEqual(x.shape[1], 64)  # L
@@ -547,30 +547,30 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
 
     def test_generate_specific_dimension(self):
         for d in [1, 3, 5]:
-            x = self.pipe.generate(self.rng, n_inputs_points=64, input_dimension=d)
+            x = self.pipe.generate(self.rng, seq_length=64, num_channels=d)
             self.assertEqual(x.shape, (d, 64))
 
     def test_generate_all_values_finite(self):
-        x = self.pipe.generate(self.rng, n_inputs_points=128, input_dimension=3)
+        x = self.pipe.generate(self.rng, seq_length=128, num_channels=3)
         self.assertTrue(np.all(np.isfinite(x)))
 
     def test_generate_deterministic_with_same_seed(self):
         rng1 = np.random.RandomState(99)
         rng2 = np.random.RandomState(99)
-        x1 = self.pipe.generate(rng1, n_inputs_points=64, input_dimension=2)
-        x2 = self.pipe.generate(rng2, n_inputs_points=64, input_dimension=2)
+        x1 = self.pipe.generate(rng1, seq_length=64, num_channels=2)
+        x2 = self.pipe.generate(rng2, seq_length=64, num_channels=2)
         np.testing.assert_array_equal(x1, x2)
 
     def test_generate_different_with_different_seeds(self):
         rng1 = np.random.RandomState(1)
         rng2 = np.random.RandomState(2)
-        x1 = self.pipe.generate(rng1, n_inputs_points=64, input_dimension=3)
-        x2 = self.pipe.generate(rng2, n_inputs_points=64, input_dimension=3)
+        x1 = self.pipe.generate(rng1, seq_length=64, num_channels=3)
+        x2 = self.pipe.generate(rng2, seq_length=64, num_channels=3)
         self.assertFalse(np.allclose(x1, x2))
 
     def test_generate_with_metadata(self):
         x, meta = self.pipe.generate(
-            self.rng, n_inputs_points=64, input_dimension=2, return_metadata=True
+            self.rng, seq_length=64, num_channels=2, return_metadata=True
         )
         self.assertIsInstance(x, np.ndarray)
         self.assertIsInstance(meta, dict)
@@ -587,7 +587,7 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
 
     def test_generate_not_all_constant(self):
         """Generated outputs should not all be constant (at least one channel has variance)."""
-        x = self.pipe.generate(self.rng, n_inputs_points=128, input_dimension=3)
+        x = self.pipe.generate(self.rng, seq_length=128, num_channels=3)
         # At least one channel should have meaningful variation
         stds = [np.std(x[i]) for i in range(x.shape[0])]
         self.assertGreater(
@@ -605,7 +605,7 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         pipe = CaukerPipeline(Kmax=5, Vmax=20, Pmax=4, target_length=128)
         for seed in range(200):
             x = pipe.generate(
-                np.random.RandomState(seed), n_inputs_points=128, input_dimension=8
+                np.random.RandomState(seed), seq_length=128, num_channels=8
             )
             stds = np.std(x, axis=1)
             self.assertTrue(
@@ -618,27 +618,23 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         pipe = CaukerPipeline(
             Kmax=5, Vmax=20, Pmax=4, target_length=128, min_node_std=0.0
         )
-        x = pipe.generate(
-            np.random.RandomState(1), n_inputs_points=128, input_dimension=8
-        )
+        x = pipe.generate(np.random.RandomState(1), seq_length=128, num_channels=8)
         self.assertEqual(x.shape, (8, 128))
         self.assertTrue(np.all(np.isfinite(x)))
 
     def test_generate_different_lengths(self):
         for L in [32, 64, 128, 256, 512]:
-            x = self.pipe.generate(self.rng, n_inputs_points=L, input_dimension=2)
+            x = self.pipe.generate(self.rng, seq_length=L, num_channels=2)
             self.assertEqual(x.shape, (2, L))
 
     def test_generate_dtype_float32(self):
         pipe = CaukerPipeline(Kmax=3, Vmax=8, Pmax=2, dtype=np.float32)
-        x = pipe.generate(
-            np.random.RandomState(0), n_inputs_points=64, input_dimension=2
-        )
+        x = pipe.generate(np.random.RandomState(0), seq_length=64, num_channels=2)
         self.assertEqual(x.dtype, np.float32)
 
     def test_generate_observed_nodes_unique(self):
         _, meta = self.pipe.generate(
-            self.rng, n_inputs_points=64, input_dimension=3, return_metadata=True
+            self.rng, seq_length=64, num_channels=3, return_metadata=True
         )
         observed = meta["observed_nodes"]
         self.assertEqual(len(observed), len(set(observed)))
@@ -647,7 +643,7 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         """Generate many times to catch rare edge cases."""
         for i in range(20):
             x = self.pipe.generate(
-                np.random.RandomState(i), n_inputs_points=64, input_dimension=2
+                np.random.RandomState(i), seq_length=64, num_channels=2
             )
             self.assertEqual(x.shape, (2, 64))
             self.assertTrue(np.all(np.isfinite(x)))
@@ -667,7 +663,7 @@ class TestCaukerPipelineBatch(unittest.TestCase):
 
     def test_batch_basic(self):
         dataset = self.pipe.generate_batch(
-            self.rng, n_samples=5, n_inputs_points=64, input_dimension=2
+            self.rng, n_samples=5, seq_length=64, num_channels=2
         )
         self.assertEqual(len(dataset), 5)
         for x in dataset:
@@ -678,22 +674,22 @@ class TestCaukerPipelineBatch(unittest.TestCase):
     def test_batch_large(self):
         """Stress test with larger batch size."""
         dataset = self.pipe.generate_batch(
-            self.rng, n_samples=50, n_inputs_points=64, input_dimension=1
+            self.rng, n_samples=50, seq_length=64, num_channels=1
         )
         self.assertEqual(len(dataset), 50)
 
     def test_batch_samples_different(self):
         """Different samples in a batch should not all be identical."""
         dataset = self.pipe.generate_batch(
-            self.rng, n_samples=10, n_inputs_points=64, input_dimension=1
+            self.rng, n_samples=10, seq_length=64, num_channels=1
         )
         # At least some of them should differ
         stacked = np.stack([d.flatten() for d in dataset])
         variances = np.var(stacked, axis=0).mean()
         self.assertGreater(variances, 0.0)
 
-    def test_batch_without_input_dimension(self):
-        dataset = self.pipe.generate_batch(self.rng, n_samples=3, n_inputs_points=64)
+    def test_batch_without_num_channels(self):
+        dataset = self.pipe.generate_batch(self.rng, n_samples=3, seq_length=64)
         self.assertEqual(len(dataset), 3)
         # Each sample may have different d (randomly sampled)
 
@@ -721,8 +717,8 @@ class TestCaukerIntegration(unittest.TestCase):
         dataset = pipe.generate_batch(
             rng=rng,
             n_samples=100,
-            n_inputs_points=512,
-            input_dimension=1,  # univariate for TSFMs
+            seq_length=512,
+            num_channels=1,  # univariate for TSFMs
         )
 
         self.assertEqual(len(dataset), 100)
@@ -740,7 +736,7 @@ class TestCaukerIntegration(unittest.TestCase):
         pipe = CaukerPipeline(Kmax=3, Vmax=15, Pmax=3, target_length=128)
         rng = np.random.RandomState(123)
         x, meta = pipe.generate(
-            rng, n_inputs_points=128, input_dimension=4, return_metadata=True
+            rng, seq_length=128, num_channels=4, return_metadata=True
         )
         self.assertEqual(x.shape, (4, 128))
         self.assertEqual(meta["n_observed"], 4)
@@ -757,8 +753,8 @@ class TestCaukerIntegration(unittest.TestCase):
         pipe1 = CaukerPipeline(Kmax=3, Vmax=10, Pmax=2, target_length=64)
         pipe2 = CaukerPipeline(Kmax=3, Vmax=10, Pmax=2, target_length=64)
 
-        x1 = pipe1.generate(rng1, n_inputs_points=64, input_dimension=2)
-        x2 = pipe2.generate(rng2, n_inputs_points=64, input_dimension=2)
+        x1 = pipe1.generate(rng1, seq_length=64, num_channels=2)
+        x2 = pipe2.generate(rng2, seq_length=64, num_channels=2)
         np.testing.assert_array_equal(x1, x2)
 
     def test_scaling_law_generation(self):
@@ -769,7 +765,7 @@ class TestCaukerIntegration(unittest.TestCase):
         scales = [10, 50, 100]  # small scale for test; paper uses 10K, 50K, 100K, ...
         for n in scales:
             dataset = pipe.generate_batch(
-                rng=rng, n_samples=n, n_inputs_points=512, input_dimension=1
+                rng=rng, n_samples=n, seq_length=512, num_channels=1
             )
             self.assertEqual(len(dataset), n)
 
@@ -788,7 +784,7 @@ class TestCaukerEdgeCases(unittest.TestCase):
     def test_minimal_configuration(self):
         """Smallest valid parameters: Kmax=1, Vmax=2, Pmax=1."""
         pipe = CaukerPipeline(Kmax=1, Vmax=2, Pmax=1, target_length=32)
-        x = pipe.generate(self.rng, n_inputs_points=32, input_dimension=1)
+        x = pipe.generate(self.rng, seq_length=32, num_channels=1)
         self.assertEqual(x.shape, (1, 32))
         self.assertTrue(np.all(np.isfinite(x)))
 
@@ -796,35 +792,35 @@ class TestCaukerEdgeCases(unittest.TestCase):
         """Many DAG nodes but only few observed variables."""
         pipe = CaukerPipeline(Kmax=3, Vmax=30, Pmax=5, target_length=64)
         x, meta = pipe.generate(
-            self.rng, n_inputs_points=64, input_dimension=2, return_metadata=True
+            self.rng, seq_length=64, num_channels=2, return_metadata=True
         )
         self.assertEqual(x.shape, (2, 64))
         self.assertGreater(meta["n_total_nodes"], 2)
 
-    def test_input_dimension_larger_than_vmax(self):
+    def test_num_channels_larger_than_vmax(self):
         """If d > Vmax, V is set to at least d."""
         pipe = CaukerPipeline(Kmax=2, Vmax=5, Pmax=2, target_length=64)
         # d=8 > Vmax=5, so V will be in [8, 5] → randint will clamp
         # This actually would cause ValueError from randint if d > Vmax
         # Let's test with d close to Vmax
-        x = pipe.generate(self.rng, n_inputs_points=64, input_dimension=5)
+        x = pipe.generate(self.rng, seq_length=64, num_channels=5)
         self.assertEqual(x.shape[0], 5)
 
     def test_very_short_sequence(self):
         pipe = CaukerPipeline(Kmax=1, Vmax=5, Pmax=1, target_length=4)
-        x = pipe.generate(self.rng, n_inputs_points=4, input_dimension=1)
+        x = pipe.generate(self.rng, seq_length=4, num_channels=1)
         self.assertEqual(x.shape, (1, 4))
 
     def test_very_long_sequence(self):
         pipe = CaukerPipeline(Kmax=2, Vmax=5, Pmax=1, target_length=2048)
-        x = pipe.generate(self.rng, n_inputs_points=2048, input_dimension=1)
+        x = pipe.generate(self.rng, seq_length=2048, num_channels=1)
         self.assertEqual(x.shape, (1, 2048))
         self.assertTrue(np.all(np.isfinite(x)))
 
     def test_single_kernel_no_composition(self):
         """Kmax=1 means no kernel composition (Step 2 is identity)."""
         pipe = CaukerPipeline(Kmax=1, Vmax=10, Pmax=2, target_length=64)
-        x = pipe.generate(self.rng, n_inputs_points=64, input_dimension=2)
+        x = pipe.generate(self.rng, seq_length=64, num_channels=2)
         self.assertEqual(x.shape, (2, 64))
         self.assertTrue(np.all(np.isfinite(x)))
 
@@ -832,7 +828,7 @@ class TestCaukerEdgeCases(unittest.TestCase):
         """Pmax=0 should create disconnected nodes (all roots)."""
         pipe = CaukerPipeline(Kmax=2, Vmax=10, Pmax=0, target_length=64)
         x, meta = pipe.generate(
-            self.rng, n_inputs_points=64, input_dimension=3, return_metadata=True
+            self.rng, seq_length=64, num_channels=3, return_metadata=True
         )
         self.assertEqual(x.shape, (3, 64))
         # With Pmax=0, all nodes are roots (no edges)
@@ -864,8 +860,8 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
     def test_generate_with_chain_adjacency(self):
         x, meta = self.pipe.generate(
             self.rng,
-            n_inputs_points=64,
-            input_dimension=3,
+            seq_length=64,
+            num_channels=3,
             adjacency=self.chain,
             return_metadata=True,
         )
@@ -880,8 +876,8 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
         adj = np.zeros((4, 4))
         _, meta = self.pipe.generate(
             self.rng,
-            n_inputs_points=64,
-            input_dimension=2,
+            seq_length=64,
+            num_channels=2,
             adjacency=adj,
             return_metadata=True,
         )
@@ -898,15 +894,15 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             self.pipe.generate(
-                self.rng, n_inputs_points=64, input_dimension=2, adjacency=cyclic
+                self.rng, seq_length=64, num_channels=2, adjacency=cyclic
             )
 
     def test_non_square_raises(self):
         with self.assertRaises(ValueError):
             self.pipe.generate(
                 self.rng,
-                n_inputs_points=64,
-                input_dimension=2,
+                seq_length=64,
+                num_channels=2,
                 adjacency=np.zeros((3, 4)),
             )
 
@@ -919,26 +915,24 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
             ]
         )
         with self.assertRaises(ValueError):
-            self.pipe.generate(
-                self.rng, n_inputs_points=64, input_dimension=2, adjacency=loop
-            )
+            self.pipe.generate(self.rng, seq_length=64, num_channels=2, adjacency=loop)
 
-    def test_input_dimension_exceeds_graph_raises(self):
+    def test_num_channels_exceeds_graph_raises(self):
         with self.assertRaises(ValueError):
             self.pipe.generate(
                 self.rng,
-                n_inputs_points=64,
-                input_dimension=5,
+                seq_length=64,
+                num_channels=5,
                 adjacency=self.chain,  # V=4
             )
 
     def test_deterministic_with_same_adjacency(self):
         rng1, rng2 = np.random.RandomState(7), np.random.RandomState(7)
         x1 = self.pipe.generate(
-            rng1, n_inputs_points=64, input_dimension=3, adjacency=self.chain
+            rng1, seq_length=64, num_channels=3, adjacency=self.chain
         )
         x2 = self.pipe.generate(
-            rng2, n_inputs_points=64, input_dimension=3, adjacency=self.chain
+            rng2, seq_length=64, num_channels=3, adjacency=self.chain
         )
         np.testing.assert_array_equal(x1, x2)
 
@@ -946,8 +940,8 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
         dataset = self.pipe.generate_batch(
             self.rng,
             n_samples=5,
-            n_inputs_points=64,
-            input_dimension=2,
+            seq_length=64,
+            num_channels=2,
             adjacency=self.chain,
         )
         self.assertEqual(len(dataset), 5)
@@ -969,9 +963,7 @@ class TestCaukerLabeledInterface(unittest.TestCase):
         self.rng = np.random.RandomState(7)
 
     def test_generate_single_label(self):
-        x, y = self.pipe.generate(
-            self.rng, n_inputs_points=64, input_dimension=2, n_classes=5
-        )
+        x, y = self.pipe.generate(self.rng, seq_length=64, num_channels=2, n_classes=5)
         self.assertEqual(x.shape, (2, 64))
         self.assertIsInstance(y, int)
         self.assertGreaterEqual(y, 0)
@@ -980,8 +972,8 @@ class TestCaukerLabeledInterface(unittest.TestCase):
     def test_generate_single_label_with_metadata(self):
         out = self.pipe.generate(
             self.rng,
-            n_inputs_points=64,
-            input_dimension=2,
+            seq_length=64,
+            num_channels=2,
             n_classes=4,
             return_metadata=True,
         )
@@ -994,8 +986,8 @@ class TestCaukerLabeledInterface(unittest.TestCase):
         batch = self.pipe.generate_batch(
             self.rng,
             n_samples=40,
-            n_inputs_points=64,
-            input_dimension=1,
+            seq_length=64,
+            num_channels=1,
             n_classes=4,
         )
         self.assertEqual(len(batch), 40)
@@ -1006,19 +998,15 @@ class TestCaukerLabeledInterface(unittest.TestCase):
 
     def test_batch_no_labels_unchanged(self):
         batch = self.pipe.generate_batch(
-            self.rng, n_samples=5, n_inputs_points=64, input_dimension=1
+            self.rng, n_samples=5, seq_length=64, num_channels=1
         )
         self.assertEqual(len(batch), 5)
         self.assertTrue(all(isinstance(x, np.ndarray) for x in batch))
 
     def test_label_deterministic(self):
         r1, r2 = np.random.RandomState(0), np.random.RandomState(0)
-        _, y1 = self.pipe.generate(
-            r1, n_inputs_points=64, input_dimension=2, n_classes=6
-        )
-        _, y2 = self.pipe.generate(
-            r2, n_inputs_points=64, input_dimension=2, n_classes=6
-        )
+        _, y1 = self.pipe.generate(r1, seq_length=64, num_channels=2, n_classes=6)
+        _, y2 = self.pipe.generate(r2, seq_length=64, num_channels=2, n_classes=6)
         self.assertEqual(y1, y2)
 
 

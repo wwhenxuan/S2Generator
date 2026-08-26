@@ -78,9 +78,9 @@ class TestMultivariateCorrelation(unittest.TestCase):
     def setUp(self) -> None:
         self.rng = np.random.RandomState(0)
         self.n_samples = 4
-        self.seq_len = 128
-        base = self.rng.randn(self.seq_len)
-        noise = self.rng.randn(self.n_samples, self.seq_len)
+        self.seq_length = 128
+        base = self.rng.randn(self.seq_length)
+        noise = self.rng.randn(self.n_samples, self.seq_length)
         self.data = np.vstack(
             [
                 base,

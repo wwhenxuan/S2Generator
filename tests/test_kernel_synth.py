@@ -457,14 +457,14 @@ class TestKernelSynthGeneration(unittest.TestCase):
 
     def test_generate_basic_functionality(self):
         """Test basic generate method functionality"""
-        result = self.ks.generate(self.rng, n_inputs_points=64, input_dimension=1)
+        result = self.ks.generate(self.rng, seq_length=64, num_channels=1)
         self.assertIsInstance(result, np.ndarray)
         self.assertEqual(result.shape, (64, 1))
         self.assertEqual(result.dtype, self.ks.dtype)
 
     def test_generate_multiple_dimensions(self):
         """Test generate method with multiple dimensions"""
-        result = self.ks.generate(self.rng, n_inputs_points=32, input_dimension=3)
+        result = self.ks.generate(self.rng, seq_length=32, num_channels=3)
         self.assertIsInstance(result, np.ndarray)
         self.assertEqual(result.shape, (32, 3))
 
@@ -474,7 +474,7 @@ class TestKernelSynthGeneration(unittest.TestCase):
         self.assertIsNone(self.ks.length)
 
         # Generate should set length automatically
-        result = self.ks.generate(self.rng, n_inputs_points=128, input_dimension=1)
+        result = self.ks.generate(self.rng, seq_length=128, num_channels=1)
         self.assertEqual(self.ks.length, 128)
         self.assertIsNotNone(self.ks._kernel_bank)
 
@@ -485,7 +485,7 @@ class TestKernelSynthGeneration(unittest.TestCase):
         initial_bank = self.ks._kernel_bank
 
         # Generate with different length should update bank
-        result = self.ks.generate(self.rng, n_inputs_points=128, input_dimension=1)
+        result = self.ks.generate(self.rng, seq_length=128, num_channels=1)
         self.assertEqual(self.ks.length, 128)
         self.assertIsNot(self.ks._kernel_bank, initial_bank)
 
@@ -496,7 +496,7 @@ class TestKernelSynthGeneration(unittest.TestCase):
         initial_bank = self.ks._kernel_bank
 
         # Generate with same length should preserve bank
-        result = self.ks.generate(self.rng, n_inputs_points=64, input_dimension=1)
+        result = self.ks.generate(self.rng, seq_length=64, num_channels=1)
         self.assertEqual(self.ks.length, 64)
         self.assertIs(self.ks._kernel_bank, initial_bank)
 
@@ -509,8 +509,8 @@ class TestKernelSynthGeneration(unittest.TestCase):
         ks1 = KernelSynth()
         ks2 = KernelSynth()
 
-        result1 = ks1.generate(rng1, n_inputs_points=32, input_dimension=1)
-        result2 = ks2.generate(rng2, n_inputs_points=32, input_dimension=1)
+        result1 = ks1.generate(rng1, seq_length=32, num_channels=1)
+        result2 = ks2.generate(rng2, seq_length=32, num_channels=1)
 
         # Should have same shape and be deterministic, but due to complex random processes
         # in kernel selection and GP sampling, exact equality may not be guaranteed
@@ -519,8 +519,8 @@ class TestKernelSynthGeneration(unittest.TestCase):
 
     def test_call_method(self):
         """Test __call__ method delegates to generate"""
-        result1 = self.ks(self.rng, n_inputs_points=32, input_dimension=2)
-        result2 = self.ks.generate(self.rng, n_inputs_points=32, input_dimension=2)
+        result1 = self.ks(self.rng, seq_length=32, num_channels=2)
+        result2 = self.ks.generate(self.rng, seq_length=32, num_channels=2)
 
         # Results should have same shape (may not be identical due to randomness)
         self.assertEqual(result1.shape, result2.shape)
@@ -535,15 +535,15 @@ class TestKernelSynthEdgeCases(unittest.TestCase):
         self.ks = KernelSynth()
         self.rng = np.random.RandomState(42)
 
-    def test_generate_with_zero_input_dimension(self):
+    def test_generate_with_zero_num_channels(self):
         """Test generation with zero input dimension"""
         # Original code will fail with ValueError when trying to vstack empty list
         with self.assertRaises(ValueError):
-            self.ks.generate(self.rng, n_inputs_points=64, input_dimension=0)
+            self.ks.generate(self.rng, seq_length=64, num_channels=0)
 
-    def test_generate_with_small_n_inputs_points(self):
-        """Test generation with very small n_inputs_points"""
-        result = self.ks.generate(self.rng, n_inputs_points=2, input_dimension=1)
+    def test_generate_with_small_seq_length(self):
+        """Test generation with very small seq_length"""
+        result = self.ks.generate(self.rng, seq_length=2, num_channels=1)
         self.assertIsInstance(result, np.ndarray)
         self.assertEqual(result.shape, (2, 1))
 
@@ -582,12 +582,12 @@ class TestKernelSynthEdgeCases(unittest.TestCase):
         # Should work but with empty kernel bank
         with self.assertRaises(ValueError):
             # This will fail when trying to choice from empty kernel bank
-            ks.generate(self.rng, n_inputs_points=64, input_dimension=1)
+            ks.generate(self.rng, seq_length=64, num_channels=1)
 
     def test_dtype_preservation(self):
         """Test that specified dtype is preserved in output"""
         ks = KernelSynth(dtype=np.float32)
-        result = ks.generate(self.rng, n_inputs_points=32, input_dimension=1)
+        result = ks.generate(self.rng, seq_length=32, num_channels=1)
         # Note: The actual implementation may not preserve dtype due to GP sampling
         # which uses float64 internally. Testing the intended behavior vs actual.
         self.assertIsInstance(result, np.ndarray)
@@ -629,7 +629,7 @@ class TestKernelSynthIntegration(unittest.TestCase):
 
         # Generate time series
         rng = np.random.RandomState(42)
-        result = ks.generate(rng, n_inputs_points=128, input_dimension=2)
+        result = ks.generate(rng, seq_length=128, num_channels=2)
 
         # Verify result
         self.assertIsInstance(result, np.ndarray)
@@ -647,7 +647,7 @@ class TestKernelSynthIntegration(unittest.TestCase):
         # Multiple generations
         results = []
         for i in range(3):
-            result = ks.generate(rng, n_inputs_points=64, input_dimension=1)
+            result = ks.generate(rng, seq_length=64, num_channels=1)
             results.append(result)
             self.assertEqual(result.shape, (64, 1))
 
@@ -672,9 +672,7 @@ class TestKernelSynthIntegration(unittest.TestCase):
     def test_generate_finite_values(self):
         """KernelSynth outputs should be finite"""
         ks = KernelSynth()
-        result = ks.generate(
-            np.random.RandomState(0), n_inputs_points=64, input_dimension=2
-        )
+        result = ks.generate(np.random.RandomState(0), seq_length=64, num_channels=2)
         self.assertEqual(result.shape, (64, 2))
         self.assertTrue(np.all(np.isfinite(result)))
 

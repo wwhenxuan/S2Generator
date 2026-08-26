@@ -44,7 +44,7 @@ arma = AutoregressiveMovingAverage(
 
 # Generate the excitation through `generate` method
 time_series = arma.generate(
-    rng=np.random.RandomState(0), input_dimension=1, n_inputs_points=256
+    rng=np.random.RandomState(0), num_channels=1, seq_length=256
 )
 
 print(
@@ -68,7 +68,7 @@ print("The params of ARMA(p, q) model:", arma.params)
 
 # Generate the multi-dimension time series data
 time_series = arma.generate(
-    rng=np.random.RandomState(0), input_dimension=4, n_inputs_points=512
+    rng=np.random.RandomState(0), num_channels=4, seq_length=512
 )
 print(
     f"The Excitation Method: {str(arma)} and Generate the Time Series Data with Shape: {time_series.shape}"

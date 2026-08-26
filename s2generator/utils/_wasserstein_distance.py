@@ -112,8 +112,8 @@ def wasserstein_distance(
 
     Where the first term measures the distance between the mean vectors, and the second term captures the difference between the covariance matrices. If two datasets are to be close to each other, they must not only have similar mean vectors, but also similar covariate matrices.
 
-    :param x: The first ndarray dataset in NumPy with [num_samples, seq_len].
-    :param y: The second ndarray dataset in NumPy with [num_samples, seq_len].
+    :param x: The first ndarray dataset in NumPy with [num_samples, seq_length].
+    :param y: The second ndarray dataset in NumPy with [num_samples, seq_length].
     :param mean_weight: The weight of the second norm of mean vector.
     :param covar_weight: The weight of the second norm of covariance matrix.
     :param return_all: If True, return all the tuple of (Wasserstein distances, mean_value, covar_value).

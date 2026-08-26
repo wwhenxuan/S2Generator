@@ -52,7 +52,7 @@ rng = np.random.RandomState(0)
 
 # Start generating symbolic expressions, sampling and generating series
 trees, x, y = generator.run(
-    rng, input_dimension=1, output_dimension=1, n_inputs_points=256
+    rng, num_channels=1, output_dimension=1, seq_length=256
 )
 # Print the expressions
 print(trees)
@@ -66,9 +66,9 @@ fig = plot_series(x, y)
 # Try to generate the 2-channels and longer time series
 trees, x, y = generator.run(
     rng,
-    input_dimension=2,
+    num_channels=2,
     output_dimension=2,
-    n_inputs_points=512,
+    seq_length=512,
     output_normalize="z-score",
 )
 print(trees)
@@ -80,9 +80,9 @@ fig = plot_series(x, y)
 # Try to generate the 3-channels time series
 trees, x, y = generator.run(
     rng,
-    input_dimension=3,
+    num_channels=3,
     output_dimension=3,
-    n_inputs_points=512,
+    seq_length=512,
     output_normalize="z-score",
 )
 print(trees)

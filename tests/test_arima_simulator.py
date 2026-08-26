@@ -86,7 +86,7 @@ class TestARIMASimulator(unittest.TestCase):
         Test the fit and transform workflow of ARIMASimulator.
 
         After fitting on a valid input sequence, residuals should be available and
-        transform should return simulated data with shape [num_samples, seq_len].
+        transform should return simulated data with shape [num_samples, seq_length].
         """
 
         simulator = self._make_simulator()
@@ -105,9 +105,9 @@ class TestARIMASimulator(unittest.TestCase):
         self.assertIsNotNone(simulator.d_order)
 
         # Generate new sequences from the fitted model
-        simulation = simulator.transform(num_samples=5, seq_len=100, random_state=7)
+        simulation = simulator.transform(num_samples=5, seq_length=100, random_state=7)
 
-        # Output shape should be [num_samples, seq_len]
+        # Output shape should be [num_samples, seq_length]
         self.assertEqual(simulation.shape, (5, 100))
         self.assertFalse(np.isnan(simulation).any())
 
@@ -131,7 +131,7 @@ class TestARIMASimulator(unittest.TestCase):
         self.assertGreaterEqual(simulator.q_order, 0)
         self.assertLessEqual(simulator.q_order, simulator.max_q)
 
-        generated = simulator.transform(num_samples=2, seq_len=80, random_state=3)
+        generated = simulator.transform(num_samples=2, seq_length=80, random_state=3)
         self.assertEqual(generated.shape, (2, 80))
 
     def test_check_inputs(self) -> None:
@@ -247,7 +247,7 @@ class TestARIMASimulator(unittest.TestCase):
 
         # transform must refuse to run before fit
         with self.assertRaises(ValueError):
-            simulator.transform(num_samples=1, seq_len=50)
+            simulator.transform(num_samples=1, seq_length=50)
 
     def test_adf_test(self) -> None:
         """
@@ -422,7 +422,7 @@ class TestARIMASimulator(unittest.TestCase):
         self.assertIsNone(simulator.mean)
         self.assertIsNone(simulator.std)
 
-        generated = simulator.transform(num_samples=3, seq_len=60, random_state=15)
+        generated = simulator.transform(num_samples=3, seq_length=60, random_state=15)
         self.assertEqual(generated.shape, (3, 60))
 
     def test_not_white_alarm(self) -> None:

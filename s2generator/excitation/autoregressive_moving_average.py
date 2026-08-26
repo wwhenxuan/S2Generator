@@ -159,13 +159,11 @@ class AutoregressiveMovingAverage(BaseExcitation):
     def __call__(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int = 512,
-        input_dimension: int = 1,
+        seq_length: int = 512,
+        num_channels: int = 1,
     ) -> np.ndarray:
         """Call the `generate` method to stimulate time series generation"""
-        return self.generate(
-            rng=rng, n_inputs_points=n_inputs_points, input_dimension=input_dimension
-        )
+        return self.generate(rng=rng, seq_length=seq_length, num_channels=num_channels)
 
     def __str__(self) -> str:
         """Get the name of the time series generator"""
@@ -339,8 +337,8 @@ class AutoregressiveMovingAverage(BaseExcitation):
     def generate(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int = 512,
-        input_dimension: int = 1,
+        seq_length: int = 512,
+        num_channels: int = 1,
     ) -> np.ndarray:
         """
         Generate ARMA time series of the requested length and dimension.
@@ -351,25 +349,25 @@ class AutoregressiveMovingAverage(BaseExcitation):
         loop cannot run forever.
 
         :param rng: The random number generator of NumPy with fixed seed.
-        :param n_inputs_points: The number of input points.
-        :param input_dimension: The dimension of the time series.
-        :return: Array of shape ``(n_inputs_points, input_dimension)``.
+        :param seq_length: The number of input points.
+        :param num_channels: The dimension of the time series.
+        :return: Array of shape ``(seq_length, num_channels)``.
         """
         time_series = self.create_zeros(
-            n_inputs_points=n_inputs_points, input_dimension=input_dimension
+            seq_length=seq_length, num_channels=num_channels
         )
 
         # Independent retry budget per column.  Non-stationary roots can
         # overflow; we would rather clip than spin indefinitely.
         max_attempts = 48
 
-        for col in range(input_dimension):
+        for col in range(num_channels):
             accepted = False
             last = None
             for _ in range(max_attempts):
                 self.create_params(rng=rng)
                 # Fresh buffer: arma_series writes in place.
-                buffer = np.zeros(n_inputs_points, dtype=np.float64)
+                buffer = np.zeros(seq_length, dtype=np.float64)
                 last = self.arma_series(
                     rng=rng,
                     time_series=buffer,
@@ -384,9 +382,7 @@ class AutoregressiveMovingAverage(BaseExcitation):
             if not accepted:
                 # Last-resort finite path: clip the most recent draw.
                 fallback = (
-                    np.zeros(n_inputs_points, dtype=np.float64)
-                    if last is None
-                    else last
+                    np.zeros(seq_length, dtype=np.float64) if last is None else last
                 )
                 fallback = np.nan_to_num(
                     fallback, nan=0.0, posinf=self.upper_bound, neginf=-self.upper_bound
@@ -406,6 +402,6 @@ if __name__ == "__main__":
     for i in range(10):
         rng = np.random.RandomState(i)
 
-        time = arma.generate(rng=rng, n_inputs_points=256)
+        time = arma.generate(rng=rng, seq_length=256)
         plt.plot(time)
         plt.show()

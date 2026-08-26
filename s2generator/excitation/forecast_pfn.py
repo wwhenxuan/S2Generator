@@ -492,13 +492,11 @@ class ForecastPFN(BaseExcitation):
     def __call__(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int = 512,
-        input_dimension: int = 1,
+        seq_length: int = 512,
+        num_channels: int = 1,
     ) -> np.ndarray:
         """Call the `generate` method to stimulate time series generation"""
-        return self.generate(
-            rng=rng, n_inputs_points=n_inputs_points, input_dimension=input_dimension
-        )
+        return self.generate(rng=rng, seq_length=seq_length, num_channels=num_channels)
 
     def __str__(self) -> str:
         """Get the name of the time series generator"""
@@ -903,8 +901,8 @@ class ForecastPFN(BaseExcitation):
     def generate(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int = 512,
-        input_dimension: int = 1,
+        seq_length: int = 512,
+        num_channels: int = 1,
         freq_index: Optional[int] = None,
         start: Optional[pd.Timestamp] = None,
         options: Optional[Dict] = None,
@@ -924,13 +922,13 @@ class ForecastPFN(BaseExcitation):
         4. Optional random walk transformation
 
         :param rng: Seeded random number generator for reproducibility.
-        :param n_inputs_points: Number of time points to generate per dimension
-        :param input_dimension: Number of independent time series dimensions to generate
+        :param seq_length: Number of time points to generate per dimension
+        :param num_channels: Number of independent time series dimensions to generate
         :param freq_index: Index of frequency configuration to use (0-4 for sub-daily)
         :param start: Custom start timestamp for the series. Uses class default if None.
         :param options: Additional generation options (reserved for future extensions)
         :param random_walk: Enable random walk transformation. Overrides class default.
-        :return: Generated time series array of shape (n_inputs_points, input_dimension)
+        :return: Generated time series array of shape (seq_length, num_channels)
         """
         # Handle random walk override
         if random_walk is not None:
@@ -938,15 +936,15 @@ class ForecastPFN(BaseExcitation):
 
         # Initialize output array
         time_series = self.create_zeros(
-            n_inputs_points=n_inputs_points, input_dimension=input_dimension
+            seq_length=seq_length, num_channels=num_channels
         )
 
         # Generate each dimension independently
         index = 0
-        while index < input_dimension:
+        while index < num_channels:
             generated_series = self._select_ndarray_from_dict(
                 rng=rng,
-                length=n_inputs_points,
+                length=seq_length,
                 freq_index=freq_index,
                 start=start,
                 options=options,
@@ -1019,7 +1017,7 @@ if __name__ == "__main__":
 
     for i in range(2):
         time_series = forecast_pfn.generate(
-            rng=np.random.RandomState(i), n_inputs_points=256, input_dimension=1
+            rng=np.random.RandomState(i), seq_length=256, num_channels=1
         )
         plt.plot(time_series)
         plt.show()

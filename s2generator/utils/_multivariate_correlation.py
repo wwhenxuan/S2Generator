@@ -72,13 +72,13 @@ def _validate_multivariate(time_series: np.ndarray) -> np.ndarray:
             "time_series must have shape [num_samples, seq_length], "
             f"got shape {data.shape}"
         )
-    n_samples, seq_len = data.shape
+    n_samples, seq_length = data.shape
     if n_samples < 2:
         raise ValueError(
             f"num_samples must be >= 2 for correlation matrices, got {n_samples}"
         )
-    if seq_len < 2:
-        raise ValueError(f"seq_length must be >= 2, got {seq_len}")
+    if seq_length < 2:
+        raise ValueError(f"seq_length must be >= 2, got {seq_length}")
     return data
 
 
@@ -162,10 +162,10 @@ def autocorrelation_similarity_matrix(
     Similarity of ACF shapes: Pearson correlation between ACF vectors of each pair.
     """
     data = _validate_multivariate(time_series)
-    n_samples, seq_len = data.shape
+    n_samples, seq_length = data.shape
     if nlags is None:
-        nlags = min(40, max(1, seq_len // 4))
-    nlags = int(min(nlags, seq_len - 1))
+        nlags = min(40, max(1, seq_length // 4))
+    nlags = int(min(nlags, seq_length - 1))
 
     acf_mat = np.stack([_safe_acf(data[i], nlags=nlags) for i in range(n_samples)])
     # Constant ACF rows → corrcoef may warn / yield NaN
@@ -247,15 +247,15 @@ def wasserstein_distance_correlation_matrix(
     Returns a **distance** matrix (diagonal 0); smaller means more similar.
     """
     data = _validate_multivariate(time_series)
-    n_samples, seq_len = data.shape
+    n_samples, seq_length = data.shape
     dist = np.zeros((n_samples, n_samples), dtype=np.float64)
 
-    window = min(32, max(4, seq_len // 8))
-    use_dataset_metric = seq_len >= 2 * window
+    window = min(32, max(4, seq_length // 8))
+    use_dataset_metric = seq_length >= 2 * window
 
     def _as_dataset(series: np.ndarray) -> np.ndarray:
         # Non-overlapping windows → [n_windows, window]
-        n_win = seq_len // window
+        n_win = seq_length // window
         trimmed = series[: n_win * window].reshape(n_win, window)
         return trimmed
 

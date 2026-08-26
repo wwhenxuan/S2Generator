@@ -124,7 +124,7 @@ class MarkovSwitchingSimulator(object):
         """
         Fit a Markov switching autoregression model to the input time series.
 
-        :param time_series: Input series with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        :param time_series: Input series with shape 1D [seq_length, ] or 2D [num_samples, seq_length].
         :param select_order: If True, select ``(k_regimes, order)`` by BIC over the search grid.
 
         :return: None
@@ -182,7 +182,7 @@ class MarkovSwitchingSimulator(object):
         )
 
     def transform(
-        self, num_samples: int, seq_len: int, random_state: Optional[int] = None
+        self, num_samples: int, seq_length: int, random_state: Optional[int] = None
     ) -> np.ndarray:
         """
         Generate new time series by simulating the fitted MSAR dynamics.
@@ -191,10 +191,10 @@ class MarkovSwitchingSimulator(object):
         Gaussian innovations, then propagating the switching autoregressive recursion.
 
         :param num_samples: Number of independent sample paths to generate.
-        :param seq_len: Length of each generated sequence.
+        :param seq_length: Length of each generated sequence.
         :param random_state: Random seed for reproducibility. Uses the instance seed if None.
 
-        :return: Generated series with shape [num_samples, seq_len].
+        :return: Generated series with shape [num_samples, seq_length].
         """
         if self.model is None:
             raise ValueError(
@@ -202,13 +202,13 @@ class MarkovSwitchingSimulator(object):
             )
 
         seed = random_state if random_state is not None else self.random_state
-        simulated_series = np.zeros((num_samples, seq_len), dtype=np.float64)
+        simulated_series = np.zeros((num_samples, seq_length), dtype=np.float64)
 
         for i in range(num_samples):
             # Use a distinct but reproducible seed for each generated path
             sample_seed = None if seed is None else int(seed) + i
             simulated_series[i, :] = self._simulate(
-                seq_len=seq_len, random_state=sample_seed
+                seq_length=seq_length, random_state=sample_seed
             )
 
         # Inverse normalization to restore the original scale of the input series
@@ -292,7 +292,7 @@ class MarkovSwitchingSimulator(object):
         """
         Check whether the input time series satisfies the modeling requirements.
 
-        :param time_series: Input with shape 1D [seq_len, ] or 2D [num_samples, seq_len].
+        :param time_series: Input with shape 1D [seq_length, ] or 2D [num_samples, seq_length].
 
         :return: Validated one-dimensional ``np.ndarray``.
         """
@@ -303,8 +303,8 @@ class MarkovSwitchingSimulator(object):
 
         if len(time_series.shape) > 2:
             raise ValueError(
-                "Input time series must be 1-dimensional with [seq_len, ] or "
-                "2-dimensional with [num_samples, seq_len]."
+                "Input time series must be 1-dimensional with [seq_length, ] or "
+                "2-dimensional with [num_samples, seq_length]."
             )
 
         # Flatten two-dimensional batch input into a single series for fitting
@@ -407,7 +407,9 @@ class MarkovSwitchingSimulator(object):
 
         return const, ar, variance
 
-    def _simulate(self, seq_len: int, random_state: Optional[int] = None) -> np.ndarray:
+    def _simulate(
+        self, seq_length: int, random_state: Optional[int] = None
+    ) -> np.ndarray:
         """
         Simulate a single MSAR sample path from the fitted parameters.
 
@@ -415,10 +417,10 @@ class MarkovSwitchingSimulator(object):
 
             y_t = a_{S_t} + sum_j phi_{j, S_t} (y_{t-j} - a_{S_{t-j}}) + epsilon_t
 
-        :param seq_len: Length of the simulated sequence.
+        :param seq_length: Length of the simulated sequence.
         :param random_state: Random seed for reproducibility.
 
-        :return: Simulated series with shape [seq_len, ].
+        :return: Simulated series with shape [seq_length, ].
         """
         rng = np.random.RandomState(seed=random_state)
         k_regimes = self.model.k_regimes
@@ -432,9 +434,9 @@ class MarkovSwitchingSimulator(object):
         current_regime = rng.choice(k_regimes, p=initial_prob)
         y_history = [const[current_regime]] * order
         regime_history = [current_regime] * order
-        simulated = np.zeros(seq_len, dtype=np.float64)
+        simulated = np.zeros(seq_length, dtype=np.float64)
 
-        for t in range(seq_len):
+        for t in range(seq_length):
             # Sample the next regime from the Markov transition matrix
             current_regime = rng.choice(k_regimes, p=transition[:, regime_history[-1]])
 

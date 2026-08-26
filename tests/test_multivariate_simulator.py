@@ -22,7 +22,7 @@ class TestMultivariateSimulator(unittest.TestCase):
 
     @staticmethod
     def _make_multivariate_series(
-        seq_len: int = 200, n_channels: int = 3, seed: int = 0
+        seq_length: int = 200, n_channels: int = 3, seed: int = 0
     ) -> np.ndarray:
         """
         Build a reproducible multivariate series by filtering shared white noise.
@@ -31,7 +31,7 @@ class TestMultivariateSimulator(unittest.TestCase):
         so the resulting channels are cross-correlated.
         """
         rng = np.random.RandomState(seed)
-        white_noise = rng.normal(size=seq_len + 8)
+        white_noise = rng.normal(size=seq_length + 8)
         filters = [
             np.array([1.0, 0.6, -0.2, 0.1, 0.0, 0.0]),
             np.array([1.0, -0.4, 0.3, 0.2, 0.0, 0.0]),
@@ -44,7 +44,7 @@ class TestMultivariateSimulator(unittest.TestCase):
         channels = []
         for coeff in filters[:n_channels]:
             filtered = np.convolve(white_noise, coeff, mode="valid")
-            channels.append(filtered[:seq_len])
+            channels.append(filtered[:seq_length])
 
         return np.stack(channels, axis=1)
 
@@ -54,14 +54,14 @@ class TestMultivariateSimulator(unittest.TestCase):
 
         Verify output shape and that shared-excitation channels remain cross-correlated.
         """
-        time_series = self._make_multivariate_series(seq_len=200, n_channels=3)
+        time_series = self._make_multivariate_series(seq_length=200, n_channels=3)
         simulator = MultivariateSimulator(
             WienerFilterSimulator(filter_order=6, random_state=42),
             n_jobs=1,
         )
 
         simulator.fit(time_series)
-        generated = simulator.transform(num_samples=4, seq_len=120, random_state=7)
+        generated = simulator.transform(num_samples=4, seq_length=120, random_state=7)
 
         self.assertEqual(len(simulator.simulators), 3)
         self.assertEqual(generated.shape, (4, 120, 3))
@@ -77,7 +77,7 @@ class TestMultivariateSimulator(unittest.TestCase):
         When the list is shorter than the number of channels, remaining channels should
         still be fitted and generated successfully.
         """
-        time_series = self._make_multivariate_series(seq_len=200, n_channels=4)
+        time_series = self._make_multivariate_series(seq_length=200, n_channels=4)
         simulator = MultivariateSimulator(
             [
                 WienerFilterSimulator(filter_order=5, random_state=0),
@@ -87,7 +87,7 @@ class TestMultivariateSimulator(unittest.TestCase):
         )
 
         simulator.fit(time_series)
-        generated = simulator.transform(num_samples=2, seq_len=100, random_state=3)
+        generated = simulator.transform(num_samples=2, seq_length=100, random_state=3)
 
         self.assertEqual(len(simulator.simulators), 4)
         self.assertIsInstance(simulator.simulators[0], WienerFilterSimulator)
@@ -103,7 +103,7 @@ class TestMultivariateSimulator(unittest.TestCase):
         Parallel fitting should produce the same number of fitted channel simulators as
         the input channel count.
         """
-        time_series = self._make_multivariate_series(seq_len=180, n_channels=6)
+        time_series = self._make_multivariate_series(seq_length=180, n_channels=6)
         simulator = MultivariateSimulator(
             WienerFilterSimulator(filter_order=5, random_state=42),
             n_jobs=-1,

@@ -47,16 +47,16 @@ class Excitation(object):
     def __call__(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
-        input_dimension: Optional[int] = 1,
+        seq_length: int,
+        num_channels: Optional[int] = 1,
         normalization: Optional[str] = None,
         return_choice: Optional[bool] = None,
     ) -> Union[np.ndarray, List[str]]:
         """Call the `generate` method to stimulate time series generation"""
         return self.generate(
             rng=rng,
-            n_inputs_points=n_inputs_points,
-            input_dimension=input_dimension,
+            seq_length=seq_length,
+            num_channels=num_channels,
             normalization=normalization,
             return_choice=return_choice,
         )
@@ -106,20 +106,16 @@ class Excitation(object):
 
         return sampling_dict
 
-    def choice(
-        self, rng: np.random.RandomState, input_dimension: int = 1
-    ) -> np.ndarray:
+    def choice(self, rng: np.random.RandomState, num_channels: int = 1) -> np.ndarray:
         """
         Randomly select n specific methods based on the probability of selecting each
         method for generating the stimulus time series data.
-        n is `input_dimension`, which is the dimension of the generated time series data.
+        n is `num_channels`, which is the dimension of the generated time series data.
 
         :param: rng: The random number generator in NumPy with fixed seed.
         :return: A numpy array of the random data generation methods.
         """
-        return rng.choice(
-            self.sampling_methods, size=input_dimension, p=self.prob_array
-        )
+        return rng.choice(self.sampling_methods, size=num_channels, p=self.prob_array)
 
     def create_mixed_distribution(
         self, series_params: Optional[SeriesParams] = None
@@ -282,8 +278,8 @@ class Excitation(object):
     def generate(
         self,
         rng: np.random.RandomState,
-        n_inputs_points: int,
-        input_dimension: Optional[int] = 1,
+        seq_length: int,
+        num_channels: Optional[int] = 1,
         normalization: Optional[str] = None,
         return_choice: Optional[bool] = False,
     ) -> Union[np.ndarray, Tuple[np.ndarray, Union[List[Any], np.ndarray]]]:
@@ -299,23 +295,23 @@ class Excitation(object):
         hyperparameter, as specified in the SeriesParams object.
 
         :param rng: The random number generator in NumPy with fixed seed.
-        :param n_inputs_points: The length of time series data to be generated.
-        :param input_dimension: The dimension of time series data to be generated.
+        :param seq_length: The length of time series data to be generated.
+        :param num_channels: The dimension of time series data to be generated.
         :param normalization: The normalization method to use, None for no normalization, choice in ["z-score", "max-min"].
         :param return_choice: If True, return a list of the selected methods.
 
         :return: The generated time series data and the selected methods (Optional).
         """
         # 1. Randomly select different sampling methods according to the specified probability
-        choice_list = self.choice(rng=rng, input_dimension=input_dimension)
+        choice_list = self.choice(rng=rng, num_channels=num_channels)
 
         # 2. Traverse the array to get the specific runnable instantiation object from the sampling dictionary
         time_series = np.hstack(
             [
                 self.sampling_dict[name].generate(
                     rng=rng,
-                    n_inputs_points=n_inputs_points,
-                    input_dimension=1,
+                    seq_length=seq_length,
+                    num_channels=1,
                 )
                 for name in choice_list
             ]
@@ -325,10 +321,10 @@ class Excitation(object):
         if normalization is None:
             pass
         elif normalization == "z-score":
-            for dim in range(input_dimension):
+            for dim in range(num_channels):
                 time_series[:, dim] = z_score_normalization(x=time_series[:, dim])
         elif normalization == "max-min":
-            for dim in range(input_dimension):
+            for dim in range(num_channels):
                 time_series[:, dim] = max_min_normalization(x=time_series[:, dim])
         else:
             raise ValueError(

@@ -89,7 +89,7 @@ class TestGaussianMixtureSimulator(unittest.TestCase):
 
         After fitting on a valid regime-switching input sequence, residuals and
         smoothed probabilities should be available, and transform should return
-        simulated data with shape [num_samples, seq_len].
+        simulated data with shape [num_samples, seq_length].
         """
         simulator = self._make_simulator()
         time_series = self._make_time_series(length=300, seed=0)
@@ -102,7 +102,7 @@ class TestGaussianMixtureSimulator(unittest.TestCase):
         self.assertEqual(simulator.smoothed_probabilities.shape[1], simulator.k_regimes)
         self.assertEqual(simulator.k_regimes, 2)
 
-        simulation = simulator.transform(num_samples=5, seq_len=100, random_state=7)
+        simulation = simulator.transform(num_samples=5, seq_length=100, random_state=7)
         self.assertEqual(simulation.shape, (5, 100))
         self.assertFalse(np.isnan(simulation).any())
 
@@ -121,7 +121,7 @@ class TestGaussianMixtureSimulator(unittest.TestCase):
         self.assertGreaterEqual(simulator.k_regimes, 1)
         self.assertLessEqual(simulator.k_regimes, simulator.max_n_components)
 
-        generated = simulator.transform(num_samples=2, seq_len=80, random_state=3)
+        generated = simulator.transform(num_samples=2, seq_length=80, random_state=3)
         self.assertEqual(generated.shape, (2, 80))
 
     def test_check_inputs(self) -> None:
@@ -210,7 +210,7 @@ class TestGaussianMixtureSimulator(unittest.TestCase):
         self.assertEqual(transition.shape, (simulator.k_regimes, simulator.k_regimes))
         self.assertTrue(np.allclose(transition.sum(axis=0), 1.0))
 
-        sample = simulator.transform(num_samples=1, seq_len=500, random_state=11)[0]
+        sample = simulator.transform(num_samples=1, seq_length=500, random_state=11)[0]
         diffs = np.abs(np.diff(sample))
         self.assertGreater(np.percentile(diffs, 50), 0.0)
 
@@ -223,7 +223,7 @@ class TestGaussianMixtureSimulator(unittest.TestCase):
         simulator = self._make_simulator()
 
         with self.assertRaises(ValueError):
-            simulator.transform(num_samples=1, seq_len=50)
+            simulator.transform(num_samples=1, seq_length=50)
 
     def test_model_summary_and_properties(self) -> None:
         """
@@ -274,7 +274,7 @@ class TestGaussianMixtureSimulator(unittest.TestCase):
         time_series = self._make_time_series(length=300, seed=7)
         simulator.fit(time_series)
 
-        generated = simulator.transform(num_samples=3, seq_len=120, random_state=8)
+        generated = simulator.transform(num_samples=3, seq_length=120, random_state=8)
         self.assertGreater(np.std(generated), 0.0)
         self.assertFalse(np.allclose(generated, 0.0))
 

@@ -63,7 +63,7 @@ class TestParseSymbol(unittest.TestCase):
             rng = np.random.RandomState(seed)
             trees, _, _ = self.generator.run(
                 rng,
-                n_inputs_points=32,
+                seq_length=32,
                 input_dimension=2,
                 output_dimension=2,
             )
@@ -85,7 +85,7 @@ class TestCustomSymbolGenerator(unittest.TestCase):
         symbol, x, y = generator.run_from_symbol(
             rng,
             symbol="(x_0 add sin(x_0))",
-            n_inputs_points=64,
+            seq_length=64,
         )
         self.assertIsNotNone(symbol)
         self.assertEqual(x.shape, (64, 1))
@@ -98,7 +98,7 @@ class TestCustomSymbolGenerator(unittest.TestCase):
         self.assertEqual(custom.output_dimension, 2)
 
         rng = np.random.RandomState(7)
-        symbol, x, y = custom.run(rng, n_inputs_points=48)
+        symbol, x, y = custom.run(rng, seq_length=48)
         self.assertIsNotNone(symbol)
         self.assertEqual(x.shape, (48, 1))
         self.assertEqual(y.shape, (48, 2))
@@ -107,7 +107,7 @@ class TestCustomSymbolGenerator(unittest.TestCase):
         custom = CustomSymbolGenerator("add,x_0,mul,2,x_1")
         self.assertEqual(custom.input_dimension, 2)
         rng = np.random.RandomState(3)
-        symbol, x, y = custom.run(rng, n_inputs_points=40, input_dimension=2)
+        symbol, x, y = custom.run(rng, seq_length=40, input_dimension=2)
         self.assertEqual(x.shape[1], 2)
         self.assertEqual(y.shape[1], 1)
 

@@ -77,7 +77,7 @@ class TestKalmanFilterSimulator(unittest.TestCase):
         Test the fit and transform workflow of KalmanFilterSimulator.
 
         After fitting on a valid input sequence, residuals and innovations should
-        be available, and transform should return data with shape [num_samples, seq_len].
+        be available, and transform should return data with shape [num_samples, seq_length].
         """
 
         simulator = self._make_simulator(state_order=5)
@@ -99,9 +99,9 @@ class TestKalmanFilterSimulator(unittest.TestCase):
         self.assertEqual(H.shape, (1, simulator.state_order - 1))
 
         # Generate new sequences from the fitted model
-        simulation = simulator.transform(num_samples=5, seq_len=100, random_state=7)
+        simulation = simulator.transform(num_samples=5, seq_length=100, random_state=7)
 
-        # Output shape should be [num_samples, seq_len]
+        # Output shape should be [num_samples, seq_length]
         self.assertEqual(simulation.shape, (5, 100))
         self.assertFalse(np.isnan(simulation).any())
 
@@ -314,7 +314,7 @@ class TestKalmanFilterSimulator(unittest.TestCase):
         simulator = self._make_simulator(state_order=5)
 
         with self.assertRaises(ValueError):
-            simulator.transform(num_samples=1, seq_len=50)
+            simulator.transform(num_samples=1, seq_length=50)
 
     def test_acf(self) -> None:
         """
@@ -351,7 +351,7 @@ class TestKalmanFilterSimulator(unittest.TestCase):
         self.assertIsNone(simulator.mean)
         self.assertIsNone(simulator.std)
 
-        generated = simulator.transform(num_samples=3, seq_len=60, random_state=8)
+        generated = simulator.transform(num_samples=3, seq_length=60, random_state=8)
         self.assertEqual(generated.shape, (3, 60))
 
     def test_reproducibility(self) -> None:
@@ -366,8 +366,8 @@ class TestKalmanFilterSimulator(unittest.TestCase):
         time_series = self._make_time_series(length=100, seed=9)
         simulator.fit(time_series)
 
-        sample_a = simulator.transform(num_samples=2, seq_len=80, random_state=123)
-        sample_b = simulator.transform(num_samples=2, seq_len=80, random_state=123)
+        sample_a = simulator.transform(num_samples=2, seq_length=80, random_state=123)
+        sample_b = simulator.transform(num_samples=2, seq_length=80, random_state=123)
 
         self.assertTrue(np.allclose(sample_a, sample_b))
 

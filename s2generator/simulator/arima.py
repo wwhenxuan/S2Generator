@@ -164,15 +164,15 @@ class ARIMASimulator(object):
         )
 
     def transform(
-        self, num_samples: int, seq_len: int, random_state: Optional[int] = None
+        self, num_samples: int, seq_length: int, random_state: Optional[int] = None
     ) -> np.ndarray:
         """
         Transform the input time series data using the fitted ARIMA model.
 
         :param num_samples: Number of samples to generate.
-        :param seq_len: Length of each generated sequence.
+        :param seq_length: Length of each generated sequence.
 
-        :return: Transformed time series data with shape (num_samples, seq_len).
+        :return: Transformed time series data with shape (num_samples, seq_length).
         """
         # Check if the model has been fitted
         if not hasattr(self, "model") or self.model is None:
@@ -180,7 +180,7 @@ class ARIMASimulator(object):
 
         # Generate new time series data
         generated_series = self.model.simulate(
-            nsimulations=seq_len,
+            nsimulations=seq_length,
             repetitions=num_samples,
             random_state=(
                 random_state if random_state is not None else self.random_state
@@ -236,7 +236,7 @@ class ARIMASimulator(object):
         # Check the shape of the input time series
         if len(time_series.shape) > 2:
             raise ValueError(
-                "Input time series must be 1-dimensional with [seq_len, ] or 2-dimensional with [num_samples, seq_len]."
+                "Input time series must be 1-dimensional with [seq_length, ] or 2-dimensional with [num_samples, seq_length]."
             )
 
         # Two-dimensional data needs to be flattened into one-dimensional data for use.
