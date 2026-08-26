@@ -17,6 +17,7 @@ from s2generator.augmentation import (
     frequency_perturbation,
     wiener_filter,
     add_linear_trend,
+    add_piecewise_linear_trend,
     time_series_mixup,
     spike_injection,
 )
@@ -213,6 +214,49 @@ class TestDataAugmentation(unittest.TestCase):
             np.array_equal(trended_series, series),
             msg="Trended series is identical to original series in `test_add_linear_trend` method",
         )
+
+    def test_add_piecewise_linear_trend(self) -> None:
+        """Test multi-segment linear trend augmentation."""
+        t = np.linspace(0, 1, 120)
+        series = np.sin(2 * np.pi * 4 * t)
+
+        # Explicit per-segment range and direction
+        out = add_piecewise_linear_trend(
+            series,
+            num_segments=3,
+            trend_strengths=(0.5, 1.5, 1.0),
+            directions=("upward", "downward", "upward"),
+            normalize=False,
+        )
+        # On a zero series without renormalization, segment slopes match directions
+        zeros = np.zeros(90)
+        piecewise = add_piecewise_linear_trend(
+            zeros,
+            num_segments=3,
+            trend_strengths=(1.0, 1.0, 1.0),
+            directions=("upward", "downward", "upward"),
+            normalize=False,
+        )
+        self.assertGreater(piecewise[29], piecewise[0])
+        self.assertLess(piecewise[59], piecewise[30])
+        self.assertGreater(piecewise[89], piecewise[60])
+
+        # Random init is deterministic with a fixed seed
+        r1 = add_piecewise_linear_trend(series, num_segments=4, seed=7)
+        r2 = add_piecewise_linear_trend(series, num_segments=4, seed=7)
+        np.testing.assert_array_equal(r1, r2)
+
+        with self.assertRaises(ValueError):
+            add_piecewise_linear_trend(
+                series,
+                num_segments=2,
+                trend_strengths=(1.0,),
+                directions=("upward", "downward"),
+            )
+        with self.assertRaises(ValueError):
+            add_piecewise_linear_trend(
+                series, num_segments=2, directions=("sideways", "upward")
+            )
 
     def test_empirical_mode_modulation(self) -> None:
         """Test the function for performing empirical mode modulation on time series data."""

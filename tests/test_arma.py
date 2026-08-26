@@ -42,16 +42,35 @@ class TestARMA(unittest.TestCase):
         self.assertEqual(zeros.shape, (16, 2))
 
     def test_create_autoregressive_params(self) -> None:
-        """Test whether the parameters of the autoregressive process can be generated normally"""
+        """Stationary AR coefficients must have all roots inside the unit circle."""
         for p_order in [1, 2, 3, 4]:
             p_params = self.arma.create_autoregressive_params(
-                rng=self.rng, p_order=p_order
+                rng=self.rng, p_order=p_order, stationary=True
             )
 
             self.assertEqual(len(p_params), p_order)
             self.assertIsInstance(p_params, np.ndarray)
-            self.assertTrue(np.sum(p_params) < 1)
-            self.assertTrue(np.abs(p_params[-1]) < 1)
+            roots = np.roots(np.concatenate(([1.0], -p_params)))
+            self.assertTrue(
+                np.all(np.abs(roots) < 1.0 + 1e-8),
+                msg="stationary AR roots must lie inside the unit circle",
+            )
+
+    def test_create_autoregressive_params_nonstationary(self) -> None:
+        """With stationary=False, moduli are allowed to reach or exceed 1."""
+        arma = AutoregressiveMovingAverage(stationary=False)
+        max_moduli = []
+        rng = np.random.RandomState(1)
+        for _ in range(40):
+            phi = arma.create_autoregressive_params(
+                rng=rng, p_order=2, stationary=False
+            )
+            roots = np.roots(np.concatenate(([1.0], -phi)))
+            max_moduli.append(float(np.max(np.abs(roots))))
+        self.assertTrue(
+            max(max_moduli) >= 1.0 - 1e-8,
+            msg="non-stationary draws should be able to leave the unit disk",
+        )
 
     def test_create_moving_average_params(self) -> None:
         """Test whether the parameters of the moving average process can be generated normally"""
@@ -186,6 +205,18 @@ class TestARMA(unittest.TestCase):
             rng=np.random.RandomState(42), n_inputs_points=128, input_dimension=2
         )
         np.testing.assert_array_equal(out1, out2)
+
+    def test_generate_nonstationary_respects_upper_bound(self) -> None:
+        """Non-stationary draws may explode internally but the output is clipped."""
+        arma = AutoregressiveMovingAverage(
+            p_min=2, p_max=4, stationary=False, upper_bound=80.0
+        )
+        series = arma.generate(
+            rng=np.random.RandomState(0), n_inputs_points=128, input_dimension=3
+        )
+        self.assertEqual(series.shape, (128, 3))
+        self.assertTrue(np.all(np.isfinite(series)))
+        self.assertLessEqual(np.max(np.abs(series)), 80.0 + 1e-8)
 
     def test_call(self) -> None:
         """Test data generation class response"""
