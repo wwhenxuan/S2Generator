@@ -26,6 +26,7 @@ similar to the original data.
 Available implementations
 -------------------------
 - ``WienerFilterSimulator``: Yule-Walker / whitening filter formulation
+- ``HammersteinWienerSimulator``: Hammerstein–Wiener nonlinear–linear–nonlinear blocks
 - ``KalmanFilterSimulator``: companion state-space AR model with Kalman filtering
 - ``ARIMASimulator``: differencing + ARMA model with maximum-likelihood fitting
 - ``MarkovSwitchingSimulator``: Markov-switching autoregression for piecewise dynamics
@@ -38,6 +39,7 @@ All simulators expose a unified ``fit`` / ``transform`` interface for downstream
 __all__ = [
     "ARIMASimulator",
     "GaussianMixtureSimulator",
+    "HammersteinWienerSimulator",
     "KalmanFilterSimulator",
     "LowPassFilter",
     "MarkovSwitchingSimulator",
@@ -49,6 +51,8 @@ __all__ = [
 from .arima import ARIMASimulator
 
 from .gaussian_mixture import GaussianMixtureSimulator
+
+from .hammerstein_wiener_filter import HammersteinWienerSimulator
 
 from .kalman_filtering import KalmanFilterSimulator
 
