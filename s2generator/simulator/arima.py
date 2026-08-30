@@ -6,6 +6,7 @@ Created on 2026/02/12 12:53:15
 """
 
 from typing import Union, Optional, Tuple, List, Dict, Any
+import inspect
 
 import numpy as np
 import pandas as pd
@@ -178,20 +179,29 @@ class ARIMASimulator(object):
         if not hasattr(self, "model") or self.model is None:
             raise ValueError("The model must be fitted before calling transform.")
 
-        # Generate new time series data
-        generated_series = self.model.simulate(
-            nsimulations=seq_length,
-            repetitions=num_samples,
-            random_state=(
-                random_state if random_state is not None else self.random_state
-            ),
-        )
+        # statsmodels>=0.15 prefers ``rng`` (SPEC-007); older releases only
+        # accept ``random_state``. Passing both raises TypeError on newer stacks.
+        seed = random_state if random_state is not None else self.random_state
+        simulate_kwargs: Dict[str, Any] = {
+            "nsimulations": seq_length,
+            "repetitions": num_samples,
+        }
+        if "rng" in inspect.signature(self.model.simulate).parameters:
+            simulate_kwargs["rng"] = seed
+        else:
+            simulate_kwargs["random_state"] = seed
 
-        simulated = (
-            generated_series.values.T * self.std + self.mean
-            if self.revin
-            else generated_series.values.T
+        generated_series = self.model.simulate(**simulate_kwargs)
+        # DataFrame (pandas endog) or ndarray (numpy endog) depending on fit input
+        generated = np.asarray(
+            generated_series.values
+            if hasattr(generated_series, "values")
+            else generated_series
         )
+        # Shape is [seq_length, repetitions] or [seq_length, k_endog, repetitions]
+        if generated.ndim == 3:
+            generated = generated[:, 0, :]
+        simulated = generated.T * self.std + self.mean if self.revin else generated.T
         return maybe_apply_lowpass(self, simulated)
 
     @property
