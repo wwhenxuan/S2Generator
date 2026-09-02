@@ -704,6 +704,7 @@ class TestForecastPFN(unittest.TestCase):
         original = fpfn._select_ndarray_from_dict
 
         def flaky_select(*args, **kwargs):
+            """Inject NaN on the first call so generate() must retry a finite series."""
             call_count["n"] += 1
             values = np.asarray(original(*args, **kwargs), dtype=float).copy()
             if call_count["n"] == 1:

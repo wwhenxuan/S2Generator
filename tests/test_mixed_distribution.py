@@ -790,10 +790,12 @@ class TestOriginalCodeIssues(unittest.TestCase):
         original_uniform = md.generate_uniform
 
         def wrap_gaussian(*args, **kwargs):
+            """Count Gaussian sampler calls while delegating to the original method."""
             calls["gaussian"] += 1
             return original_gaussian(*args, **kwargs)
 
         def wrap_uniform(*args, **kwargs):
+            """Count uniform sampler calls while delegating to the original method."""
             calls["uniform"] += 1
             return original_uniform(*args, **kwargs)
 

@@ -49,6 +49,7 @@ class TestKernelBank(unittest.TestCase):
     """Test the 36-kernel bank construction and covariance functions."""
 
     def setUp(self):
+        """Prepare fixtures used by the Kernel Bank tests."""
         self.kernel_bank = _build_kernel_bank()
         self.t_grid = np.linspace(0, 1, 64)
 
@@ -79,12 +80,14 @@ class TestKernelBank(unittest.TestCase):
     # --- Covariance function correctness ---
 
     def test_cov_exp_sine_squared_shape(self):
+        """The exp-sine-squared covariance matrix should be square with the series length."""
         K = _cov_exp_sine_squared(
             self.t_grid, self.t_grid, {"periodicity": 20.0, "length_scale": 10.0}
         )
         self.assertEqual(K.shape, (64, 64))
 
     def test_cov_exp_sine_squared_symmetry(self):
+        """The exp-sine-squared covariance matrix should be symmetric."""
         K = _cov_exp_sine_squared(
             self.t_grid, self.t_grid, {"periodicity": 20.0, "length_scale": 10.0}
         )
@@ -99,6 +102,7 @@ class TestKernelBank(unittest.TestCase):
         self.assertTrue(np.all(np.diag(K) > 0.99))
 
     def test_cov_dot_product_shape(self):
+        """The dot-product covariance matrix should match the requested length."""
         K = _cov_dot_product(self.t_grid, self.t_grid, {"sigma_0": 1.0})
         self.assertEqual(K.shape, (64, 64))
 
@@ -109,6 +113,7 @@ class TestKernelBank(unittest.TestCase):
         self.assertGreater(K[-1, -1], K[0, 0])
 
     def test_cov_rbf_diagonal_one(self):
+        """An RBF kernel covariance should have ones on the diagonal."""
         K = _cov_rbf(self.t_grid, self.t_grid, {"length_scale": 1.0})
         np.testing.assert_allclose(np.diag(K), 1.0, atol=1e-10)
 
@@ -118,12 +123,14 @@ class TestKernelBank(unittest.TestCase):
         self.assertGreater(K[0, 0], K[0, 10])
 
     def test_cov_rational_quadratic_diagonal_one(self):
+        """A rational-quadratic kernel covariance should have ones on the diagonal."""
         K = _cov_rational_quadratic(
             self.t_grid, self.t_grid, {"length_scale": 1.0, "alpha": 1.0}
         )
         np.testing.assert_allclose(np.diag(K), 1.0, atol=1e-10)
 
     def test_cov_white_diagonal_only(self):
+        """A white-noise kernel should be diagonal (off-diagonal entries near zero)."""
         K = _cov_white(self.t_grid, self.t_grid, {"noise_level": 0.5})
         self.assertEqual(K.shape, (64, 64))
         # Diagonal should be noise_level
@@ -134,6 +141,7 @@ class TestKernelBank(unittest.TestCase):
         np.testing.assert_allclose(off_diag, 0, atol=1e-10)
 
     def test_cov_constant_all_same(self):
+        """A constant kernel should fill the covariance matrix with the same value."""
         K = _cov_constant(self.t_grid, self.t_grid, {"constant_value": 3.0})
         np.testing.assert_allclose(K, 3.0, atol=1e-10)
 
@@ -164,29 +172,35 @@ class TestMeanBank(unittest.TestCase):
     """Test the 4 mean function types."""
 
     def setUp(self):
+        """Prepare fixtures used by the Mean Bank tests."""
         self.rng = np.random.RandomState(42)
         self.mean_bank = _build_mean_bank()
 
     def test_bank_has_4_functions(self):
+        """The mean-function bank should expose four registered generators."""
         self.assertEqual(len(self.mean_bank), 4)
 
     def test_each_mean_has_required_keys(self):
+        """Each mean-function entry should include the required metadata keys."""
         for m in self.mean_bank:
             self.assertIn("name", m)
             self.assertIn("generate", m)
             self.assertTrue(callable(m["generate"]))
 
     def test_mean_names(self):
+        """Mean-function names should match the documented bank."""
         names = [m["name"] for m in self.mean_bank]
         self.assertEqual(names, ["zero", "linear", "exponential", "sparse_anomalies"])
 
     def test_mean_zero(self):
+        """The zero mean function should return an all-zero series."""
         t_grid = np.linspace(0, 1, 100)
         result = _mean_zero(self.rng, t_grid)
         self.assertEqual(result.shape, (100,))
         np.testing.assert_allclose(result, 0.0, atol=1e-10)
 
     def test_mean_linear_shape_and_range(self):
+        """The linear mean should have the requested length and a bounded range."""
         t_grid = np.linspace(0, 1, 100)
         result = _mean_linear(self.rng, t_grid)
         self.assertEqual(result.shape, (100,))
@@ -194,12 +208,14 @@ class TestMeanBank(unittest.TestCase):
         self.assertFalse(np.allclose(result, 0.0))
 
     def test_mean_exponential_shape_and_finite(self):
+        """The exponential mean should be finite and match the requested length."""
         t_grid = np.linspace(0, 1, 100)
         result = _mean_exponential(self.rng, t_grid)
         self.assertEqual(result.shape, (100,))
         self.assertTrue(np.all(np.isfinite(result)))
 
     def test_mean_sparse_anomalies(self):
+        """The sparse-anomaly mean should insert a limited number of spikes."""
         t_grid = np.linspace(0, 1, 100)
         result = _mean_sparse_anomalies(self.rng, t_grid)
         self.assertEqual(result.shape, (100,))
@@ -209,6 +225,7 @@ class TestMeanBank(unittest.TestCase):
         self.assertLess(n_nonzero, 10)  # at most L//50 + 1 ≈ 3 anomalies
 
     def test_mean_deterministic_with_seed(self):
+        """Mean-function sampling should be deterministic under a fixed seed."""
         t_grid = np.linspace(0, 1, 50)
         rng1 = np.random.RandomState(123)
         rng2 = np.random.RandomState(123)
@@ -229,14 +246,17 @@ class TestActivationBank(unittest.TestCase):
     """Test the 6 activation function types."""
 
     def setUp(self):
+        """Prepare fixtures used by the Activation Bank tests."""
         self.rng = np.random.RandomState(42)
         self.act_bank = _build_activation_bank(self.rng)
         self.x = np.array([-2.0, -1.0, 0.0, 1.0, 2.0, 5.0])
 
     def test_bank_has_6_activations(self):
+        """The activation bank should expose six registered functions."""
         self.assertEqual(len(self.act_bank), 6)
 
     def test_each_activation_has_required_keys(self):
+        """Each activation entry should include the required metadata keys."""
         for a in self.act_bank:
             self.assertIn("name", a)
             self.assertIn("params", a)
@@ -244,6 +264,7 @@ class TestActivationBank(unittest.TestCase):
             self.assertTrue(callable(a["apply"]))
 
     def test_activation_names(self):
+        """Activation names should match the documented bank."""
         names = [a["name"] for a in self.act_bank]
         self.assertIn("linear", names)
         self.assertIn("relu", names)
@@ -253,6 +274,7 @@ class TestActivationBank(unittest.TestCase):
         self.assertIn("leaky_relu", names)
 
     def test_relu_output(self):
+        """ReLU should zero out negative values and keep positives."""
         relu = self.act_bank[1]
         self.assertEqual(relu["name"], "relu")
         out = relu["apply"](self.x)
@@ -261,6 +283,7 @@ class TestActivationBank(unittest.TestCase):
         np.testing.assert_allclose(out[self.x > 0], self.x[self.x > 0])
 
     def test_sigmoid_range(self):
+        """Sigmoid activations should stay in (0, 1)."""
         sigmoid = self.act_bank[2]
         self.assertEqual(sigmoid["name"], "sigmoid")
         out = sigmoid["apply"](self.x)
@@ -269,12 +292,14 @@ class TestActivationBank(unittest.TestCase):
         self.assertAlmostEqual(out[2], 0.5, places=6)
 
     def test_sin_output(self):
+        """Sine activations should stay in [-1, 1] and remain finite."""
         sin_act = self.act_bank[3]
         self.assertEqual(sin_act["name"], "sin")
         out = sin_act["apply"](self.x)
         self.assertTrue(np.all(np.abs(out) <= 1.0))
 
     def test_modulo_output(self):
+        """Modulo activations should wrap values into the expected interval."""
         mod = self.act_bank[4]
         self.assertEqual(mod["name"], "modulo")
         # Pass stored params explicitly (lambda re-samples otherwise)
@@ -283,6 +308,7 @@ class TestActivationBank(unittest.TestCase):
         self.assertTrue(np.all(out >= 0) and np.all(out < c))
 
     def test_leaky_relu_negative_slope(self):
+        """Leaky ReLU should apply a negative slope to values below zero."""
         lrelu = self.act_bank[5]
         self.assertEqual(lrelu["name"], "leaky_relu")
         # Pass stored params explicitly (lambda re-samples otherwise)
@@ -294,6 +320,7 @@ class TestActivationBank(unittest.TestCase):
         np.testing.assert_allclose(out[self.x > 0], self.x[self.x > 0])
 
     def test_all_activations_return_finite(self):
+        """Every activation in the bank should return finite values."""
         for a in self.act_bank:
             out = a["apply"](self.x)
             self.assertTrue(
@@ -310,12 +337,14 @@ class TestGPSampling(unittest.TestCase):
     """Test composite kernel sampling, mean composition, and GP draws."""
 
     def setUp(self):
+        """Prepare fixtures used by the GP Sampling tests."""
         self.rng = np.random.RandomState(42)
         self.kernel_bank = _build_kernel_bank()
         self.mean_bank = _build_mean_bank()
         self.t_grid = np.linspace(0, 1, 128)
 
     def test_composite_kernel_returns_callable(self):
+        """Composing kernels should return a callable covariance function."""
         cov_fn = _sample_composite_kernel(self.rng, self.kernel_bank, Kmax=5)
         self.assertTrue(callable(cov_fn))
 
@@ -344,11 +373,13 @@ class TestGPSampling(unittest.TestCase):
         self.assertEqual(K.shape, (128, 128))
 
     def test_sample_mean_shape(self):
+        """Sampled mean functions should match the requested series length."""
         mean = _sample_mean(self.rng, self.mean_bank, self.t_grid)
         self.assertEqual(mean.shape, (128,))
         self.assertTrue(np.all(np.isfinite(mean)))
 
     def test_sample_mean_different_outputs(self):
+        """Repeated mean samples should not all be identical."""
         rng1 = np.random.RandomState(1)
         rng2 = np.random.RandomState(2)
         m1 = _sample_mean(rng1, self.mean_bank, self.t_grid)
@@ -356,6 +387,7 @@ class TestGPSampling(unittest.TestCase):
         self.assertFalse(np.allclose(m1, m2))
 
     def test_sample_gp_basic(self):
+        """Sampling from the GP prior should return a finite series of the requested length."""
         mean = np.zeros(128)
         cov_fn = _sample_composite_kernel(self.rng, self.kernel_bank, Kmax=3)
         sample = _sample_gp(self.rng, mean, cov_fn, self.t_grid)
@@ -378,6 +410,7 @@ class TestGPSampling(unittest.TestCase):
         np.testing.assert_allclose(grand_mean, mean, atol=2.0)
 
     def test_sample_gp_deterministic(self):
+        """GP sampling should be deterministic under a fixed seed."""
         mean = np.zeros(64)
         t_grid = np.linspace(0, 1, 64)
         cov_fn = _sample_composite_kernel(
@@ -408,9 +441,11 @@ class TestDAGGeneration(unittest.TestCase):
     """Test random DAG generation validity."""
 
     def setUp(self):
+        """Prepare fixtures used by the DAG Generation tests."""
         self.rng = np.random.RandomState(42)
 
     def test_dag_structure(self):
+        """Generated parent maps should describe a valid DAG over the node set."""
         parents, roots, edges = _generate_random_dag(self.rng, V=10, Pmax=4)
         self.assertIsInstance(parents, list)
         self.assertEqual(len(parents), 10)
@@ -418,6 +453,7 @@ class TestDAGGeneration(unittest.TestCase):
         self.assertIsInstance(edges, list)
 
     def test_no_self_loops(self):
+        """Generated DAGs should contain no self-loops."""
         parents, _, edges = _generate_random_dag(self.rng, V=15, Pmax=4)
         for child, child_parents in enumerate(parents):
             self.assertNotIn(child, child_parents)
@@ -446,6 +482,7 @@ class TestDAGGeneration(unittest.TestCase):
         )
 
     def test_root_nodes_have_no_parents(self):
+        """Root nodes reported by the generator should have empty parent sets."""
         parents, roots, _ = _generate_random_dag(self.rng, V=10, Pmax=3)
         for r in roots:
             self.assertEqual(len(parents[r]), 0)
@@ -457,11 +494,13 @@ class TestDAGGeneration(unittest.TestCase):
             self.assertGreater(len(roots), 0)
 
     def test_parent_count_within_bounds(self):
+        """Each node should have a parent count within the configured bounds."""
         parents, _, _ = _generate_random_dag(self.rng, V=10, Pmax=3)
         for child, child_parents in enumerate(parents):
             self.assertLessEqual(len(child_parents), 3)
 
     def test_edges_consistent_with_parents(self):
+        """The edge list should be consistent with the parent map."""
         parents, _, edges = _generate_random_dag(self.rng, V=8, Pmax=3)
         edge_set = set(edges)
         for child, child_parents in enumerate(parents):
@@ -485,6 +524,7 @@ class TestCaukerPipelineInit(unittest.TestCase):
     """Test CaukerPipeline initialization and properties."""
 
     def test_default_initialization(self):
+        """Construct the object with default constructor arguments."""
         pipe = CaukerPipeline()
         self.assertEqual(pipe._Kmax, 5)
         self.assertEqual(pipe._Vmax, 20)
@@ -493,6 +533,7 @@ class TestCaukerPipelineInit(unittest.TestCase):
         self.assertEqual(pipe._dtype, np.float64)
 
     def test_custom_initialization(self):
+        """Construct the object with custom constructor arguments."""
         pipe = CaukerPipeline(
             Kmax=3, Vmax=10, Pmax=2, target_length=256, dtype=np.float32
         )
@@ -503,24 +544,29 @@ class TestCaukerPipelineInit(unittest.TestCase):
         self.assertEqual(pipe._dtype, np.float32)
 
     def test_str_method(self):
+        """Verify the string representation of the object."""
         pipe = CaukerPipeline()
         self.assertEqual(str(pipe), "CaukerPipeline")
 
     def test_kernel_bank_property(self):
+        """The kernel_bank property should expose the registered covariance kernels."""
         pipe = CaukerPipeline()
         bank = pipe.kernel_bank
         self.assertEqual(len(bank), 36)
 
     def test_mean_bank_property(self):
+        """The mean_bank property should expose the registered mean functions."""
         pipe = CaukerPipeline()
         bank = pipe.mean_bank
         self.assertEqual(len(bank), 4)
 
     def test_n_kernels_property(self):
+        """n_kernels should equal the number of enabled covariance kernels."""
         pipe = CaukerPipeline()
         self.assertEqual(pipe.n_kernels, 36)
 
     def test_n_mean_functions_property(self):
+        """n_mean_functions should equal the number of enabled mean functions."""
         pipe = CaukerPipeline()
         self.assertEqual(pipe.n_mean_functions, 4)
 
@@ -534,10 +580,12 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
     """Test the main generate() method of CaukerPipeline."""
 
     def setUp(self):
+        """Prepare fixtures used by the Cauker Pipeline Generate tests."""
         self.pipe = CaukerPipeline(Kmax=3, Vmax=10, Pmax=2, target_length=64)
         self.rng = np.random.RandomState(42)
 
     def test_generate_default_univariate(self):
+        """Default generate() should return a finite univariate series."""
         x = self.pipe.generate(self.rng, seq_length=64)
         self.assertIsInstance(x, np.ndarray)
         self.assertEqual(x.ndim, 2)
@@ -546,15 +594,18 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         self.assertEqual(x.dtype, np.float64)
 
     def test_generate_specific_dimension(self):
+        """generate() should honor an explicit number of channels."""
         for d in [1, 3, 5]:
             x = self.pipe.generate(self.rng, seq_length=64, num_channels=d)
             self.assertEqual(x.shape, (d, 64))
 
     def test_generate_all_values_finite(self):
+        """Generated Cauker series should contain only finite values."""
         x = self.pipe.generate(self.rng, seq_length=128, num_channels=3)
         self.assertTrue(np.all(np.isfinite(x)))
 
     def test_generate_deterministic_with_same_seed(self):
+        """The same seed should reproduce Cauker generate() output."""
         rng1 = np.random.RandomState(99)
         rng2 = np.random.RandomState(99)
         x1 = self.pipe.generate(rng1, seq_length=64, num_channels=2)
@@ -562,6 +613,7 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         np.testing.assert_array_equal(x1, x2)
 
     def test_generate_different_with_different_seeds(self):
+        """Different seeds should change Cauker generate() output."""
         rng1 = np.random.RandomState(1)
         rng2 = np.random.RandomState(2)
         x1 = self.pipe.generate(rng1, seq_length=64, num_channels=3)
@@ -569,6 +621,7 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         self.assertFalse(np.allclose(x1, x2))
 
     def test_generate_with_metadata(self):
+        """generate() should return metadata describing the sampled graph and kernels."""
         x, meta = self.pipe.generate(
             self.rng, seq_length=64, num_channels=2, return_metadata=True
         )
@@ -623,16 +676,19 @@ class TestCaukerPipelineGenerate(unittest.TestCase):
         self.assertTrue(np.all(np.isfinite(x)))
 
     def test_generate_different_lengths(self):
+        """generate() should honor several requested sequence lengths."""
         for L in [32, 64, 128, 256, 512]:
             x = self.pipe.generate(self.rng, seq_length=L, num_channels=2)
             self.assertEqual(x.shape, (2, L))
 
     def test_generate_dtype_float32(self):
+        """Generated Cauker series should use float32 when configured."""
         pipe = CaukerPipeline(Kmax=3, Vmax=8, Pmax=2, dtype=np.float32)
         x = pipe.generate(np.random.RandomState(0), seq_length=64, num_channels=2)
         self.assertEqual(x.dtype, np.float32)
 
     def test_generate_observed_nodes_unique(self):
+        """Observed-node indices in metadata should be unique."""
         _, meta = self.pipe.generate(
             self.rng, seq_length=64, num_channels=3, return_metadata=True
         )
@@ -658,10 +714,12 @@ class TestCaukerPipelineBatch(unittest.TestCase):
     """Test batch generation."""
 
     def setUp(self):
+        """Prepare fixtures used by the Cauker Pipeline Batch tests."""
         self.pipe = CaukerPipeline(Kmax=3, Vmax=10, Pmax=2, target_length=64)
         self.rng = np.random.RandomState(42)
 
     def test_batch_basic(self):
+        """Generate a basic batch and check shapes and finiteness."""
         dataset = self.pipe.generate_batch(
             self.rng, n_samples=5, seq_length=64, num_channels=2
         )
@@ -689,6 +747,7 @@ class TestCaukerPipelineBatch(unittest.TestCase):
         self.assertGreater(variances, 0.0)
 
     def test_batch_without_num_channels(self):
+        """Batch generation should work when num_channels is left unspecified."""
         dataset = self.pipe.generate_batch(self.rng, n_samples=3, seq_length=64)
         self.assertEqual(len(dataset), 3)
         # Each sample may have different d (randomly sampled)
@@ -779,6 +838,7 @@ class TestCaukerEdgeCases(unittest.TestCase):
     """Test boundary conditions and edge cases."""
 
     def setUp(self):
+        """Prepare fixtures used by the Cauker Edge Cases tests."""
         self.rng = np.random.RandomState(42)
 
     def test_minimal_configuration(self):
@@ -807,11 +867,13 @@ class TestCaukerEdgeCases(unittest.TestCase):
         self.assertEqual(x.shape[0], 5)
 
     def test_very_short_sequence(self):
+        """Cauker should still generate a finite series for a very short length."""
         pipe = CaukerPipeline(Kmax=1, Vmax=5, Pmax=1, target_length=4)
         x = pipe.generate(self.rng, seq_length=4, num_channels=1)
         self.assertEqual(x.shape, (1, 4))
 
     def test_very_long_sequence(self):
+        """Cauker should still generate a finite series for a long length."""
         pipe = CaukerPipeline(Kmax=2, Vmax=5, Pmax=1, target_length=2048)
         x = pipe.generate(self.rng, seq_length=2048, num_channels=1)
         self.assertEqual(x.shape, (1, 2048))
@@ -845,6 +907,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
     """Test generation with a user-supplied adjacency matrix."""
 
     def setUp(self):
+        """Prepare fixtures used by the Cauker Pipeline Custom Graph tests."""
         self.pipe = CaukerPipeline(Kmax=3, Vmax=10, Pmax=2, target_length=64)
         self.rng = np.random.RandomState(42)
         # Chain DAG: 0 -> 1 -> 2 -> 3
@@ -858,6 +921,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
         )
 
     def test_generate_with_chain_adjacency(self):
+        """Generate data from a user-supplied chain adjacency graph."""
         x, meta = self.pipe.generate(
             self.rng,
             seq_length=64,
@@ -873,6 +937,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
         self.assertEqual(set(meta["edge_list"]), {(0, 1), (1, 2), (2, 3)})
 
     def test_generate_zero_adjacency_no_edges(self):
+        """A zero adjacency matrix should introduce no causal edges."""
         adj = np.zeros((4, 4))
         _, meta = self.pipe.generate(
             self.rng,
@@ -885,6 +950,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
         self.assertEqual(meta["n_roots"], 4)
 
     def test_cycle_raises(self):
+        """Raise an error when the adjacency graph contains a cycle."""
         cyclic = np.array(
             [
                 [0, 1, 0],
@@ -898,6 +964,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
             )
 
     def test_non_square_raises(self):
+        """Raise an error when the adjacency matrix is not square."""
         with self.assertRaises(ValueError):
             self.pipe.generate(
                 self.rng,
@@ -907,6 +974,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
             )
 
     def test_self_loop_raises(self):
+        """Raise an error when the adjacency graph contains a self-loop."""
         loop = np.array(
             [
                 [1, 1, 0],
@@ -918,6 +986,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
             self.pipe.generate(self.rng, seq_length=64, num_channels=2, adjacency=loop)
 
     def test_num_channels_exceeds_graph_raises(self):
+        """Requesting more channels than graph nodes should raise ValueError."""
         with self.assertRaises(ValueError):
             self.pipe.generate(
                 self.rng,
@@ -927,6 +996,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
             )
 
     def test_deterministic_with_same_adjacency(self):
+        """The same seed and adjacency graph should reproduce the same output."""
         rng1, rng2 = np.random.RandomState(7), np.random.RandomState(7)
         x1 = self.pipe.generate(
             rng1, seq_length=64, num_channels=3, adjacency=self.chain
@@ -937,6 +1007,7 @@ class TestCaukerPipelineCustomGraph(unittest.TestCase):
         np.testing.assert_array_equal(x1, x2)
 
     def test_batch_with_adjacency(self):
+        """Generate a batch of samples from a user-supplied adjacency graph."""
         dataset = self.pipe.generate_batch(
             self.rng,
             n_samples=5,
@@ -959,10 +1030,12 @@ class TestCaukerLabeledInterface(unittest.TestCase):
     """Test the n_classes classification-label interface (RML2016-style)."""
 
     def setUp(self):
+        """Prepare fixtures used by the Cauker Labeled Interface tests."""
         self.pipe = CaukerPipeline(Kmax=3, Vmax=10, Pmax=2, target_length=64)
         self.rng = np.random.RandomState(7)
 
     def test_generate_single_label(self):
+        """Generate a single labeled sample for classification-style use."""
         x, y = self.pipe.generate(self.rng, seq_length=64, num_channels=2, n_classes=5)
         self.assertEqual(x.shape, (2, 64))
         self.assertIsInstance(y, int)
@@ -970,6 +1043,7 @@ class TestCaukerLabeledInterface(unittest.TestCase):
         self.assertLess(y, 5)
 
     def test_generate_single_label_with_metadata(self):
+        """Labeled generation should also return consistent metadata."""
         out = self.pipe.generate(
             self.rng,
             seq_length=64,
@@ -983,6 +1057,7 @@ class TestCaukerLabeledInterface(unittest.TestCase):
         self.assertEqual(meta["n_classes"], 4)
 
     def test_batch_labels_balanced(self):
+        """Batch labels should be approximately balanced across classes."""
         batch = self.pipe.generate_batch(
             self.rng,
             n_samples=40,
@@ -997,6 +1072,7 @@ class TestCaukerLabeledInterface(unittest.TestCase):
         self.assertLessEqual(counts.max() - counts.min(), 2)
 
     def test_batch_no_labels_unchanged(self):
+        """Batch generation without labels should leave the unlabeled API unchanged."""
         batch = self.pipe.generate_batch(
             self.rng, n_samples=5, seq_length=64, num_channels=1
         )
@@ -1004,6 +1080,7 @@ class TestCaukerLabeledInterface(unittest.TestCase):
         self.assertTrue(all(isinstance(x, np.ndarray) for x in batch))
 
     def test_label_deterministic(self):
+        """Labeled generation should be deterministic under a fixed seed."""
         r1, r2 = np.random.RandomState(0), np.random.RandomState(0)
         _, y1 = self.pipe.generate(r1, seq_length=64, num_channels=2, n_classes=6)
         _, y2 = self.pipe.generate(r2, seq_length=64, num_channels=2, n_classes=6)

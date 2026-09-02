@@ -349,9 +349,7 @@ class HammersteinWienerSimulator(object):
         )
 
         # ---- 3) Wiener g: law(G(f(w))) → law(y) ----
-        w_ref = self.rng.normal(
-            0.0, 1.0, size=max(len(y) * 2, 512) + self.filter_order
-        )
+        w_ref = self.rng.normal(0.0, 1.0, size=max(len(y) * 2, 512) + self.filter_order)
         u_ref = apply_static_map(w_ref, self._input_xq, self._input_yq)
         v_ref = self._linear_filter(u_ref)
         v_std = float(np.std(v_ref))
@@ -390,11 +388,7 @@ class HammersteinWienerSimulator(object):
             (treated as approximately unit Gaussian; only lightly re-scaled).
         :return: Simulated series of length ``seq_len`` (normalized space if ``revin``).
         """
-        if (
-            self._coeffs is None
-            or self._input_xq is None
-            or self._output_xq is None
-        ):
+        if self._coeffs is None or self._input_xq is None or self._output_xq is None:
             raise ValueError("Model is not fitted; call `fit` first.")
 
         white_noise = np.asarray(white_noise, dtype=np.float64).ravel()

@@ -38,6 +38,7 @@ def _wasserstein1(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def stats_skew(x: np.ndarray) -> float:
+    """Compute the sample skewness of a one-dimensional array."""
     x = np.asarray(x, dtype=np.float64).ravel()
     x = x - np.mean(x)
     s = float(np.std(x))
@@ -48,11 +49,15 @@ def stats_skew(x: np.ndarray) -> float:
 
 
 class TestHammersteinWienerSimulator(unittest.TestCase):
+    """The Unittest for HammersteinWienerSimulator class."""
+
     def setUp(self) -> None:
+        """Prepare fixtures used by the Hammerstein Wiener Simulator tests."""
         self.rng = np.random.RandomState(0)
         self.target = _make_nonlinear_target(640, seed=1)
 
     def test_create_instance(self) -> None:
+        """Construct HammersteinWienerSimulator instances across orders and revin flags."""
         for order in (3, 5, 7):
             for revin in (True, False):
                 sim = HammersteinWienerSimulator(
@@ -62,12 +67,14 @@ class TestHammersteinWienerSimulator(unittest.TestCase):
                 self.assertEqual(str(sim), "HammersteinWienerSimulator")
 
     def test_invalid_constructor(self) -> None:
+        """Reject constructor arguments that violate model constraints."""
         with self.assertRaises(ValueError):
             HammersteinWienerSimulator(filter_order=1)
         with self.assertRaises(ValueError):
             HammersteinWienerSimulator(input_degree=-1)
 
     def test_polynomial_helpers(self) -> None:
+        """apply_polynomial and ridge fitting should recover known polynomial coefficients."""
         x = np.linspace(-1.0, 1.0, 50)
         coeffs = np.array([0.5, -0.2, 0.1])
         y = apply_polynomial(x, coeffs)
@@ -77,6 +84,7 @@ class TestHammersteinWienerSimulator(unittest.TestCase):
         np.testing.assert_allclose(fitted, coeffs, rtol=1e-5, atol=1e-5)
 
     def test_check_inputs(self) -> None:
+        """check_inputs should reject invalid arrays and flatten valid 2-D batches."""
         sim = HammersteinWienerSimulator(filter_order=4)
         with self.assertRaises(ValueError):
             sim.check_inputs([1, 2, 3])  # type: ignore[arg-type]
@@ -91,6 +99,7 @@ class TestHammersteinWienerSimulator(unittest.TestCase):
         self.assertEqual(flat.size, 160)
 
     def test_transform_before_fit_raises(self) -> None:
+        """transform and coeffs should raise if the simulator has not been fitted."""
         sim = HammersteinWienerSimulator(filter_order=4)
         with self.assertRaises(ValueError):
             sim.transform(num_samples=1, seq_length=64)
@@ -98,6 +107,7 @@ class TestHammersteinWienerSimulator(unittest.TestCase):
             _ = sim.coeffs
 
     def test_fit_transform_shapes(self) -> None:
+        """fit_transform should populate coefficients and emit finite samples of the requested shape."""
         sim = HammersteinWienerSimulator(
             filter_order=5, input_degree=3, output_degree=3, random_state=0
         )
@@ -115,6 +125,7 @@ class TestHammersteinWienerSimulator(unittest.TestCase):
         self.assertTrue(np.all(np.isfinite(out)))
 
     def test_reproducibility(self) -> None:
+        """The same random_state should reproduce identical simulated trajectories."""
         a = HammersteinWienerSimulator(filter_order=5, random_state=7)
         b = HammersteinWienerSimulator(filter_order=5, random_state=7)
         a.fit(self.target)
@@ -124,6 +135,7 @@ class TestHammersteinWienerSimulator(unittest.TestCase):
         np.testing.assert_array_equal(y1, y2)
 
     def test_invoke_padding(self) -> None:
+        """invoke should reject short noise and return a finite series after padding."""
         sim = HammersteinWienerSimulator(filter_order=4, random_state=0)
         sim.fit(self.target)
         with self.assertRaises(ValueError):
@@ -134,6 +146,7 @@ class TestHammersteinWienerSimulator(unittest.TestCase):
         self.assertTrue(np.all(np.isfinite(y)))
 
     def test_lowpass_option_finite(self) -> None:
+        """Enabling the low-pass option should keep simulated trajectories finite."""
         sim = HammersteinWienerSimulator(
             filter_order=5,
             lowpass=True,

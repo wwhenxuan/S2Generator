@@ -28,10 +28,12 @@ class TestParseSymbol(unittest.TestCase):
     """Tests for parsing user-provided symbolic expressions."""
 
     def setUp(self) -> None:
+        """Prepare fixtures used by the Parse Symbol tests."""
         self.params = SymbolParams()
         self.generator = SeriesSymbolGenerator(symbol_params=self.params)
 
     def test_parse_infix_simple(self) -> None:
+        """Parse a simple infix expression and infer input/output dimensions."""
         trees = parse_symbol("(x_0 add sin(x_0))", self.params)
         self.assertIsInstance(trees, NodeList)
         self.assertEqual(trees.prefix(), "add,x_0,sin,x_0")
@@ -39,26 +41,31 @@ class TestParseSymbol(unittest.TestCase):
         self.assertEqual(infer_output_dimension(trees), 1)
 
     def test_parse_prefix_string(self) -> None:
+        """Parse a prefix-token string into an infix tree with two variables."""
         trees = parse_symbol("mul,x_0,cos,x_1", self.params)
         self.assertEqual(trees.infix(), "(x_0 mul cos(x_1))")
         self.assertEqual(infer_input_dimension(trees), 2)
 
     def test_parse_multi_output_infix(self) -> None:
+        """A pipe-separated infix string should yield two output dimensions."""
         trees = parse_symbol("(x_0 add 1) | sin(x_1)", self.params)
         self.assertEqual(infer_output_dimension(trees), 2)
         self.assertEqual(infer_input_dimension(trees), 2)
 
     def test_parse_pow2_suffix(self) -> None:
+        """The '**2' suffix should be parsed as a pow2 operator."""
         trees = parse_symbol("((x_0 add 1))**2", self.params)
         self.assertEqual(trees.prefix(), "pow2,add,x_0,1")
 
     def test_parse_node_passthrough(self) -> None:
+        """An existing Node should pass through parse_symbol unchanged."""
         node = Node("x_0", self.params)
         trees = parse_symbol(node, self.params)
         self.assertEqual(len(trees.nodes), 1)
         self.assertEqual(trees.nodes[0].value, "x_0")
 
     def test_roundtrip_random_expressions(self) -> None:
+        """Random generated infix strings should round-trip through parse_symbol."""
         for seed in range(8):
             rng = np.random.RandomState(seed)
             trees, _, _ = self.generator.run(
@@ -77,9 +84,11 @@ class TestCustomSymbolGenerator(unittest.TestCase):
     """Tests for CustomSymbolGenerator and SeriesSymbolGenerator.run_from_symbol."""
 
     def test_generator_alias(self) -> None:
+        """Generator should be an alias of SeriesSymbolGenerator."""
         self.assertIs(Generator, SeriesSymbolGenerator)
 
     def test_run_from_symbol(self) -> None:
+        """run_from_symbol should evaluate a user-provided expression to finite series."""
         generator = SeriesSymbolGenerator()
         rng = np.random.RandomState(0)
         symbol, x, y = generator.run_from_symbol(
@@ -93,6 +102,7 @@ class TestCustomSymbolGenerator(unittest.TestCase):
         self.assertFalse(np.isnan(y).any())
 
     def test_custom_symbol_generator(self) -> None:
+        """CustomSymbolGenerator should infer dimensions and evaluate multi-output symbols."""
         custom = CustomSymbolGenerator("(x_0 mul cos(x_0)) | (x_0 add 1)")
         self.assertEqual(custom.input_dimension, 1)
         self.assertEqual(custom.output_dimension, 2)
@@ -104,6 +114,7 @@ class TestCustomSymbolGenerator(unittest.TestCase):
         self.assertEqual(y.shape, (48, 2))
 
     def test_custom_symbol_with_prefix(self) -> None:
+        """CustomSymbolGenerator should accept a prefix-form symbol string."""
         custom = CustomSymbolGenerator("add,x_0,mul,2,x_1")
         self.assertEqual(custom.input_dimension, 2)
         rng = np.random.RandomState(3)

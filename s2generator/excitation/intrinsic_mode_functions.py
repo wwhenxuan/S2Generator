@@ -482,9 +482,7 @@ class IntrinsicModeFunction(BaseExcitation):
         scale = float(np.clip(scale, 0.25, 4.0))
         return float(amplitude) * scale
 
-    def _sample_envelope(
-        self, t: np.ndarray, rng: np.random.RandomState
-    ) -> np.ndarray:
+    def _sample_envelope(self, t: np.ndarray, rng: np.random.RandomState) -> np.ndarray:
         """Sample a random localized (or inverted) envelope on ``t``."""
         c_lo, c_hi = self.envelope_center_range
         w_lo, w_hi = self.envelope_width_range
@@ -595,9 +593,7 @@ class IntrinsicModeFunction(BaseExcitation):
         if self.max_base_imfs <= 0:
             return imfs
 
-        base_number = rng.randint(
-            low=self.min_base_imfs, high=self.max_base_imfs + 1
-        )
+        base_number = rng.randint(low=self.min_base_imfs, high=self.max_base_imfs + 1)
         t = _unit_time(seq_length)
 
         for use_cos, amplitude, frequency in zip(
@@ -763,9 +759,7 @@ class IntrinsicModeFunction(BaseExcitation):
         for i in range(num_channels):
             channel = np.zeros(seq_length, dtype=np.float64)
             channel = self.get_base_imfs(imfs=channel, rng=rng, seq_length=seq_length)
-            channel = self.get_choice_imfs(
-                imfs=channel, rng=rng, seq_length=seq_length
-            )
+            channel = self.get_choice_imfs(imfs=channel, rng=rng, seq_length=seq_length)
             channel = self.get_wavelet_imfs(
                 imfs=channel, rng=rng, seq_length=seq_length
             )

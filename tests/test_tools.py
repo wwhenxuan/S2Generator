@@ -369,6 +369,7 @@ class TestSaveTable(unittest.TestCase):
     """Tests for exporting (N, P) tables to CSV / Excel."""
 
     def setUp(self) -> None:
+        """Prepare fixtures used by the Save Table tests."""
         self.X = np.array(
             [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]],
             dtype=np.float64,
@@ -376,6 +377,7 @@ class TestSaveTable(unittest.TestCase):
         self.y = np.array([0, 1, 0], dtype=np.int64)
 
     def test_save_csv_features_only(self) -> None:
+        """Save a feature-only table to CSV and reload the original values."""
         import tempfile
 
         import pandas as pd
@@ -388,6 +390,7 @@ class TestSaveTable(unittest.TestCase):
             np.testing.assert_allclose(loaded.to_numpy(), self.X)
 
     def test_save_csv_with_target_tuple(self) -> None:
+        """Save (X, y) to CSV with an appended target column."""
         import tempfile
 
         import pandas as pd
@@ -404,6 +407,7 @@ class TestSaveTable(unittest.TestCase):
         "openpyxl is required to write .xlsx files",
     )
     def test_save_xlsx_roundtrip(self) -> None:
+        """Save a named Excel table and reload columns, features, and labels."""
         import tempfile
 
         import pandas as pd
@@ -423,6 +427,7 @@ class TestSaveTable(unittest.TestCase):
             np.testing.assert_array_equal(loaded["label"].to_numpy(), self.y)
 
     def test_rejects_unknown_extension(self) -> None:
+        """Raise TypeError when the output path has an unsupported extension."""
         with self.assertRaises(TypeError):
             save_table(self.X, "table.parquet")
 

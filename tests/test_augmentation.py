@@ -371,41 +371,50 @@ class TestSpikeInjection(unittest.TestCase):
     """Test the synthetic spike injection augmentation (TiRex-2 Stage 1)."""
 
     def setUp(self):
+        """Prepare fixtures used by the Spike Injection tests."""
         self.rng = np.random.RandomState(42)
         self.series = np.zeros(100)
 
     def test_shape(self):
+        """Verify that the output shape matches the input series."""
         out = spike_injection(self.series, rng=self.rng)
         self.assertEqual(out.shape, self.series.shape)
 
     def test_output_finite(self):
+        """Verify that every generated or transformed value is finite."""
         out = spike_injection(self.series, num_spikes=5, rng=self.rng)
         self.assertTrue(np.all(np.isfinite(out)))
 
     def test_changes_input(self):
+        """Verify that the transform actually changes the input series."""
         out = spike_injection(self.series, num_spikes=3, rng=self.rng)
         self.assertFalse(np.allclose(out, self.series))
 
     def test_does_not_mutate_input(self):
+        """Verify that the call does not modify the input array in place."""
         series = self.series.copy()
         spike_injection(series, num_spikes=3, rng=self.rng)
         np.testing.assert_array_equal(series, self.series)
 
     def test_all_kernels(self):
+        """Gaussian, triangular, and rectangular kernels should all run successfully."""
         for k in ["gaussian", "triangular", "rectangular"]:
             out = spike_injection(self.series, num_spikes=2, kernel=k, rng=self.rng)
             self.assertEqual(out.shape, self.series.shape)
             self.assertTrue(np.all(np.isfinite(out)))
 
     def test_invalid_kernel_raises(self):
+        """Raise ValueError when an unknown spike kernel name is requested."""
         with self.assertRaises(ValueError):
             spike_injection(self.series, kernel="unknown", rng=self.rng)
 
     def test_invalid_ndim_raises(self):
+        """Raise ValueError when the input series is not one-dimensional."""
         with self.assertRaises(ValueError):
             spike_injection(np.zeros((10, 2)), rng=self.rng)
 
     def test_deterministic_with_seed(self):
+        """The same random seed should reproduce the same output."""
         r1, r2 = np.random.RandomState(7), np.random.RandomState(7)
         np.testing.assert_array_equal(
             spike_injection(self.series, num_spikes=3, rng=r1),
@@ -413,6 +422,7 @@ class TestSpikeInjection(unittest.TestCase):
         )
 
     def test_different_seeds_differ(self):
+        """Different random seeds should produce different outputs."""
         r1, r2 = np.random.RandomState(1), np.random.RandomState(2)
         o1 = spike_injection(self.series, num_spikes=3, rng=r1)
         o2 = spike_injection(self.series, num_spikes=3, rng=r2)
