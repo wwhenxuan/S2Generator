@@ -7,12 +7,15 @@ import numpy as np
 import pandas as pd
 
 from s2generator.utils.data import (
+    AVAILABLE_DEEPMIMO_DATASETS,
     AVAILABLE_MULTIVARIATE_DATASETS,
     AVAILABLE_SYNTHETIC_GENERATORS,
     AVAILABLE_UNIVARIATE_DATASETS,
     generate,
     generate_triangle_wave,
     list_datasets,
+    list_deepmimo_speeds,
+    load_deepmimo_iq,
     load_multivariate,
     load_univariate,
 )
@@ -36,6 +39,7 @@ class TestDataLoader(unittest.TestCase):
         self.assertEqual(
             list_datasets("synthetic"), list(AVAILABLE_SYNTHETIC_GENERATORS)
         )
+        self.assertEqual(list_datasets("deepmimo"), list(AVAILABLE_DEEPMIMO_DATASETS))
         self.assertIn("arma_samples", list_datasets("synthetic"))
         with self.assertRaises(ValueError):
             list_datasets("unknown")
@@ -110,6 +114,41 @@ class TestDataLoader(unittest.TestCase):
             load_univariate("not-a-dataset")
         with self.assertRaises(ValueError):
             load_multivariate("")
+
+    def test_load_deepmimo_iq(self) -> None:
+        """Packaged Seoul CSI should flatten to (N, 128, 2) and stay under 1 MB."""
+        from importlib.resources import as_file, files
+
+        traces = load_deepmimo_iq()
+        self.assertEqual(traces.shape[-2:], (128, 2))
+        self.assertEqual(traces.ndim, 3)
+        self.assertEqual(traces.dtype, np.float64)
+        self.assertTrue(np.isfinite(traces).all())
+        self.assertEqual(traces.shape[0], 10 * 2 * 4)
+
+        one_speed = load_deepmimo_iq(speed_kmh=50, subcarrier=10, user=0)
+        self.assertEqual(one_speed.shape, (1, 128, 2))
+        np.testing.assert_array_equal(
+            load_deepmimo_iq(name="seoul", speed_kmh=10)[:1],
+            load_deepmimo_iq(speed_kmh=10)[:1],
+        )
+
+        data_res = files("s2generator.utils.data").joinpath("city_37_seoul_3p5.npy")
+        meta_res = files("s2generator.utils.data").joinpath(
+            "city_37_seoul_3p5_meta.npy"
+        )
+        with as_file(data_res) as data_path, as_file(meta_res) as meta_path:
+            total = data_path.stat().st_size + meta_path.stat().st_size
+        self.assertLess(total, 1024 * 1024)
+
+    def test_list_deepmimo_speeds(self) -> None:
+        """list_deepmimo_speeds should return the ten packaged km/h values."""
+        speeds = list_deepmimo_speeds()
+        self.assertEqual(speeds, [10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+        with self.assertRaises(ValueError):
+            load_deepmimo_iq(speed_kmh=15)
+        with self.assertRaises(ValueError):
+            load_deepmimo_iq(name="not-a-scenario")
 
 
 if __name__ == "__main__":
