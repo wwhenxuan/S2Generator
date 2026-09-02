@@ -32,6 +32,7 @@ Available implementations
 - ``MarkovSwitchingSimulator``: Markov-switching autoregression for piecewise dynamics
 - ``GaussianMixtureSimulator``: Markov-switching Gaussian mixture for segment-like emissions
 - ``MultivariateSimulator``: shared-excitation wrapper for multivariate time series
+- ``IQSimulator``: real series → complex IQ with a fitted two-sided / analytic PSD
 
 All simulators expose a unified ``fit`` / ``transform`` interface for downstream use.
 """
@@ -40,6 +41,7 @@ __all__ = [
     "ARIMASimulator",
     "GaussianMixtureSimulator",
     "HammersteinWienerSimulator",
+    "IQSimulator",
     "KalmanFilterSimulator",
     "LowPassFilter",
     "MarkovSwitchingSimulator",
@@ -53,6 +55,8 @@ from .arima import ARIMASimulator
 from .gaussian_mixture import GaussianMixtureSimulator
 
 from .hammerstein_wiener_filter import HammersteinWienerSimulator
+
+from .iq_simulator import IQSimulator
 
 from .kalman_filtering import KalmanFilterSimulator
 
