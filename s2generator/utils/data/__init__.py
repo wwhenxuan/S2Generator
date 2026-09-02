@@ -15,8 +15,11 @@ Created on 2026/08/22
 from typing import List
 
 from .loader import (
+    AVAILABLE_DEEPMIMO_DATASETS,
     AVAILABLE_MULTIVARIATE_DATASETS,
     AVAILABLE_UNIVARIATE_DATASETS,
+    list_deepmimo_speeds,
+    load_deepmimo_iq,
     load_multivariate,
     load_univariate,
 )
@@ -44,10 +47,13 @@ from .synthetic import (
 )
 
 __all__ = [
+    "AVAILABLE_DEEPMIMO_DATASETS",
     "AVAILABLE_MULTIVARIATE_DATASETS",
     "AVAILABLE_UNIVARIATE_DATASETS",
     "AVAILABLE_SYNTHETIC_GENERATORS",
     "list_datasets",
+    "list_deepmimo_speeds",
+    "load_deepmimo_iq",
     "load_multivariate",
     "load_univariate",
     "generate",
@@ -81,10 +87,14 @@ def list_datasets(kind: str = "all") -> List[str]:
         - ``\"real\"``: alias of ``\"univariate\"``.
         - ``\"synthetic\"``: parametric generator names
           (see :data:`AVAILABLE_SYNTHETIC_GENERATORS`).
+        - ``\"deepmimo\"``: packaged DeepMIMO CSI subsets
+          (see :data:`AVAILABLE_DEEPMIMO_DATASETS`).
     :return: Canonical names in a stable order.
     """
     if kind == "synthetic":
         return list(AVAILABLE_SYNTHETIC_GENERATORS)
+    if kind == "deepmimo":
+        return list(AVAILABLE_DEEPMIMO_DATASETS)
     if kind == "real":
         kind = "univariate"
     return _list_real_datasets(kind)

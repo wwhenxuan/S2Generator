@@ -72,10 +72,13 @@ __all__ = [
     "generate_electroencephalogram",
     "AVAILABLE_UNIVARIATE_DATASETS",
     "AVAILABLE_MULTIVARIATE_DATASETS",
+    "AVAILABLE_DEEPMIMO_DATASETS",
     "AVAILABLE_SYNTHETIC_GENERATORS",
     "list_datasets",
+    "list_deepmimo_speeds",
     "load_univariate",
     "load_multivariate",
+    "load_deepmimo_iq",
     "generate",
     "save_table",
 ]
@@ -158,10 +161,13 @@ from ._multivariate_correlation import multivariate_correlation
 
 # Bundled real slices and parametric synthetic generators
 from .data import (
+    AVAILABLE_DEEPMIMO_DATASETS,
     AVAILABLE_MULTIVARIATE_DATASETS,
     AVAILABLE_UNIVARIATE_DATASETS,
     AVAILABLE_SYNTHETIC_GENERATORS,
     list_datasets,
+    list_deepmimo_speeds,
+    load_deepmimo_iq,
     load_multivariate,
     load_univariate,
     generate,
