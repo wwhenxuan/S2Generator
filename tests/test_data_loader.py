@@ -8,7 +8,10 @@ import pandas as pd
 
 from s2generator.utils.data import (
     AVAILABLE_MULTIVARIATE_DATASETS,
+    AVAILABLE_SYNTHETIC_GENERATORS,
     AVAILABLE_UNIVARIATE_DATASETS,
+    generate,
+    generate_triangle_wave,
     list_datasets,
     load_multivariate,
     load_univariate,
@@ -29,8 +32,28 @@ class TestDataLoader(unittest.TestCase):
             list_datasets("multivariate"), list(AVAILABLE_MULTIVARIATE_DATASETS)
         )
         self.assertEqual(list_datasets("all"), list(AVAILABLE_UNIVARIATE_DATASETS))
+        self.assertEqual(list_datasets("real"), list(AVAILABLE_UNIVARIATE_DATASETS))
+        self.assertEqual(
+            list_datasets("synthetic"), list(AVAILABLE_SYNTHETIC_GENERATORS)
+        )
+        self.assertIn("arma_samples", list_datasets("synthetic"))
         with self.assertRaises(ValueError):
             list_datasets("unknown")
+
+    def test_generate_by_name(self) -> None:
+        """Named synthetic generators should match the dedicated helpers."""
+        np.random.seed(0)
+        named = generate("triangle_wave", seq_length=32, noise_std=0.0)
+        np.random.seed(0)
+        direct = generate_triangle_wave(seq_length=32, noise_std=0.0)
+        np.testing.assert_array_equal(named, direct)
+
+        series = generate("arma", seq_length=64)
+        self.assertEqual(series.shape, (64,))
+        self.assertTrue(np.isfinite(series).all())
+        self.assertEqual(generate("ecg", seq_length=40).shape, (40,))
+        with self.assertRaises(ValueError):
+            generate("not-a-generator", seq_length=16)
 
     def test_load_univariate_csv_ot(self) -> None:
         """Univariate loaders should return a finite 4096-step OT slice."""

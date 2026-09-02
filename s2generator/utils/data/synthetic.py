@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+Parametric (regular) univariate time-series generators.
+
+These sit beside the bundled real-data loaders in ``s2generator.utils.data``
+so examples can mix synthetic waveforms with ETT / weather / electricity
+slices from one package.
+
 Created on 2025/08/23 17:09:18
 @author: Whenxuan Wang
 @email: wwhenxuan@gmail.com
@@ -24,6 +30,8 @@ __all__ = [
     "generate_stock_price",
     "generate_electrocardiogram",
     "generate_electroencephalogram",
+    "AVAILABLE_SYNTHETIC_GENERATORS",
+    "generate",
 ]
 
 from typing import Union, Tuple, Optional, Sequence
@@ -1159,26 +1167,70 @@ def generate_electroencephalogram(
     return signal
 
 
-if __name__ == "__main__":
-    from matplotlib import pyplot as plt
+_GENERATOR_FUNCS = {
+    "arma_samples": generate_arma_samples,
+    "nonstationary_sine": generate_nonstationary_sine,
+    "variable_frequency_sine": generate_variable_frequency_sine,
+    "sine_with_local_frequency_changes": generate_sine_with_local_frequency_changes,
+    "triangle_wave": generate_triangle_wave,
+    "square_wave": generate_square_wave,
+    "sawtooth_wave": generate_sawtooth_wave,
+    "damped_oscillation": generate_damped_oscillation,
+    "chirp_signal": generate_chirp_signal,
+    "impulse_signal": generate_impulse_signal,
+    "step_signal": generate_step_signal,
+    "ramp_signal": generate_ramp_signal,
+    "exponential_signal": generate_exponential_signal,
+    "logarithmic_signal": generate_logarithmic_signal,
+    "stock_price": generate_stock_price,
+    "electrocardiogram": generate_electrocardiogram,
+    "electroencephalogram": generate_electroencephalogram,
+}
 
-    # sample = generate_ramp_signal(
-    #     1000, start_position=[0.1, 0.5], end_position=[0.3, 0.7], ramp_height=[1, -1]
-    # )
-    # sample = generate_exponential_signal(
-    #     1000, growth_rate=0.1, sample_rate=100, amp=1.5, offset=0.5, decay=True
-    # )
-    # sample = generate_logarithmic_signal(
-    #     1000,
-    #     sample_rate=10,
-    #     amp=4,
-    #     offset=0.5,
-    #     log_base=10,
-    #     growth_rate=1,
-    #     noise_std=0.05,
-    # )
-    # sample = generate_stock_price(1000)
-    # sample = generate_electrocardiogram(1000)
-    sample = generate_electroencephalogram(1000)
-    plt.plot(sample)
-    plt.show()
+_GENERATOR_ALIASES = {
+    "arma": "arma_samples",
+    "ecg": "electrocardiogram",
+    "eeg": "electroencephalogram",
+    "chirp": "chirp_signal",
+    "triangle": "triangle_wave",
+    "square": "square_wave",
+    "sawtooth": "sawtooth_wave",
+    "impulse": "impulse_signal",
+    "step": "step_signal",
+    "ramp": "ramp_signal",
+    "exponential": "exponential_signal",
+    "logarithmic": "logarithmic_signal",
+    "stock": "stock_price",
+}
+
+AVAILABLE_SYNTHETIC_GENERATORS: Tuple[str, ...] = tuple(_GENERATOR_FUNCS.keys())
+
+
+def generate(
+    name: str,
+    seq_length: int,
+    **kwargs,
+) -> np.ndarray:
+    """Generate a parametric series by catalog name.
+
+    This is the synthetic counterpart of :func:`s2generator.utils.data.load_univariate`.
+
+    :param name: Generator name (see :data:`AVAILABLE_SYNTHETIC_GENERATORS`)
+                 or a short alias such as ``\"arma\"``, ``\"ecg\"``, ``\"eeg\"``.
+    :param seq_length: Length of the generated series.
+    :param kwargs: Forwarded to the underlying ``generate_*`` function.
+    :return: One-dimensional ``ndarray``.
+    """
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("generator name must be a non-empty string")
+    key = name.strip()
+    if key.startswith("generate_"):
+        key = key[len("generate_") :]
+    canonical = key if key in _GENERATOR_FUNCS else _GENERATOR_ALIASES.get(key.lower())
+    if canonical is None or canonical not in _GENERATOR_FUNCS:
+        raise ValueError(
+            f"unknown synthetic generator {name!r}; "
+            f"choose from {AVAILABLE_SYNTHETIC_GENERATORS}"
+        )
+    kwargs.pop("seq_length", None)
+    return _GENERATOR_FUNCS[canonical](seq_length=seq_length, **kwargs)

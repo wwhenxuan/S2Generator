@@ -10,7 +10,7 @@ import unittest
 
 import numpy as np
 
-from s2generator.utils._data import (
+from s2generator.utils.data import (
     generate_arma_samples,
     generate_chirp_signal,
     generate_damped_oscillation,
@@ -32,7 +32,7 @@ from s2generator.utils._data import (
 
 
 class TestUtilsData(unittest.TestCase):
-    """Unit tests for synthetic time-series generation helpers in ``utils._data``."""
+    """Unit tests for synthetic time-series generation helpers in ``utils.data``."""
 
     SEQ_LENGTH = 128
 

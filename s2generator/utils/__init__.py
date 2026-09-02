@@ -47,6 +47,8 @@ __all__ = [
     "plot_graph",
     "plot_multivariate_time_series",
     "plot_correlation",
+    "plot_iq_series",
+    "plot_iq_analysis",
     "multivariate_correlation",
     "plot_symbol",
     "plot_shapiro_wilk",
@@ -70,9 +72,11 @@ __all__ = [
     "generate_electroencephalogram",
     "AVAILABLE_UNIVARIATE_DATASETS",
     "AVAILABLE_MULTIVARIATE_DATASETS",
+    "AVAILABLE_SYNTHETIC_GENERATORS",
     "list_datasets",
     "load_univariate",
     "load_multivariate",
+    "generate",
     "save_table",
 ]
 
@@ -143,6 +147,8 @@ from .visualization import (
     plot_graph,
     plot_multivariate_time_series,
     plot_correlation,
+    plot_iq_series,
+    plot_iq_analysis,
     plot_symbol,
     plot_shapiro_wilk,
     plot_simulator_statistics,
@@ -150,8 +156,15 @@ from .visualization import (
 
 from ._multivariate_correlation import multivariate_correlation
 
-# The generate the time series data through the ARMA model
-from ._data import (
+# Bundled real slices and parametric synthetic generators
+from .data import (
+    AVAILABLE_MULTIVARIATE_DATASETS,
+    AVAILABLE_UNIVARIATE_DATASETS,
+    AVAILABLE_SYNTHETIC_GENERATORS,
+    list_datasets,
+    load_multivariate,
+    load_univariate,
+    generate,
     generate_arma_samples,
     generate_nonstationary_sine,
     generate_variable_frequency_sine,
@@ -169,14 +182,6 @@ from ._data import (
     generate_stock_price,
     generate_electrocardiogram,
     generate_electroencephalogram,
-)
-
-from .data import (
-    AVAILABLE_MULTIVARIATE_DATASETS,
-    AVAILABLE_UNIVARIATE_DATASETS,
-    list_datasets,
-    load_multivariate,
-    load_univariate,
 )
 
 from ._tools import save_table
