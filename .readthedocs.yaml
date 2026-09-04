@@ -1,0 +1,23 @@
+# Read the Docs configuration file for Sphinx projects
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+#
+# TODO (author): connect this repository to a Read the Docs project and
+# confirm the Python version / gallery-cache release if examples time out.
+
+version: 2
+
+formats: []
+
+build:
+  os: "ubuntu-24.04"
+  tools:
+    python: "3.10"
+
+sphinx:
+  configuration: docs/source/conf.py
+
+python:
+  install:
+    - method: pip
+      path: .
+    - requirements: docs/requirements.txt

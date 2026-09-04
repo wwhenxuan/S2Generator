@@ -11,11 +11,88 @@
   max-width: 88%;  /* default is 88rem */
 }
 
-.sphx-glr-download-link-note,
-.binder-badge,
-.lite-badge,
-.sphx-glr-download-jupyter,
-.sphx-glr-download-python,
-.sphx-glr-download-zip {
-    display: none !important;
+/* Light-gray code surfaces (match scikit-image tables: #f3f4f5). */
+html[data-theme="light"] code.literal,
+html[data-theme="light"] :not(pre) > code {
+  background-color: #f3f4f5;
+}
+
+html[data-theme="light"] pre,
+html[data-theme="light"] div.highlight,
+html[data-theme="light"] div.highlight pre,
+html[data-theme="light"] .highlight {
+  background-color: #f3f4f5;
+}
+
+html[data-theme="light"] div.highlight button.copybtn {
+  background-color: #f3f4f5;
+}
+
+/* Autodoc class / function signatures (otherwise same white as the page). */
+html[data-theme="light"] dt.sig.sig-object {
+  background-color: #f3f4f5;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.25rem;
+}
+
+/* Active header tab: primary (#91a9f6) is too close to the light-blue bar. */
+html[data-theme="light"] .bd-header ul.navbar-nav > li.nav-item.current > .nav-link {
+  color: var(--pst-color-secondary);
+  font-weight: 600;
+}
+
+html[data-theme="light"] .bd-header ul.navbar-nav > li.nav-item.current > .nav-link:before {
+  border-bottom: 3px solid var(--pst-color-secondary);
+}
+
+/* Sphinx-Gallery thumbnail cards (scikit-image style). */
+html[data-theme="light"] .sphx-glr-thumbcontainer {
+  background: #ffffff;
+  border: 1px solid var(--pst-color-border);
+  box-shadow: 0 1px 3px var(--pst-color-shadow);
+}
+
+html[data-theme="light"] .sphx-glr-thumbcontainer:hover {
+  box-shadow: 0 2px 8px var(--pst-color-shadow);
+}
+
+.sphx-glr-thumbcontainer .figure {
+  margin: 0;
+}
+
+/* PyData maps card body/header to --pst-color-on-background (#9cccf8). */
+html[data-theme="light"] .bd-content .sd-card,
+html[data-theme="light"] .bd-content .sd-card .sd-card-body,
+html[data-theme="light"] .bd-content .sd-card .sd-card-header,
+html[data-theme="light"] .bd-content .sd-card .sd-card-footer {
+  background-color: #ffffff;
+}
+
+html[data-theme="light"] .sphx-glr-download a code,
+html[data-theme="light"] .sphx-glr-download code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Navbar project badge (circular PNG). */
+.navbar-brand img {
+  max-height: 2.85rem;
+  width: auto;
+}
+
+.navbar-brand .logo__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+html[data-theme="light"] .version-switcher__button {
+  border-color: rgba(0, 0, 0, 0.22);
+  font-weight: 600;
+}
+
+/* Hide the floating Read the Docs flyout so the header uses our logo.
+   You can also uncheck Addons → Flyout in the RTD dashboard. */
+readthedocs-flyout {
+  display: none !important;
 }

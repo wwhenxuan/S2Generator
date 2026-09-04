@@ -27,14 +27,11 @@ venv/
 /data/
 
 # ignore the doc examples files
-/docs/auto_examples/images
-/docs/auto_examples/*.ipynb
-/docs/auto_examples/*.py
-/docs/auto_examples/*.zip
-/docs/auto_examples/*.json
-/docs/auto_examples/*.md5
-
+/docs/source/auto_examples/
+/docs/build/
 /docs/_build/
+/docs/auto_examples/
+/docs/source/sg_execution_times.rst
 
 .vscode/
 .vscode

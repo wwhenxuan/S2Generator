@@ -1,7 +1,10 @@
-sphinx
+sphinx>=8.0
 sphinx-copybutton
-sphinx-design
-pydata-sphinx-theme
-pysdkit
-myst-parser
-sphinx-gallery
+sphinx_design>=0.5
+pydata-sphinx-theme>=0.16
+sphinx_gitstamp
+sphinx-gallery>=0.18
+ipython
+nbformat
+pillow
+sphinx-github-changelog

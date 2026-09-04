@@ -1,41 +1,16 @@
-S2Generator package
-===================
+s2generator
+===========
 
-Subpackages
------------
+Top-level package. Import a subpackage, or the two greeting helpers.
 
+.. currentmodule:: s2generator
 
-S2Generator.base module
-.................................
+.. autosummary::
+   :nosignatures:
 
-.. automodule:: S2Generator.base
-   :members:
-   :special-members: __init__
-   :undoc-members:
-   :show-inheritance:
+   print_ascii
+   print_hello
 
-S2Generator.encoders module
-.................................
+.. autofunction:: print_ascii
 
-.. automodule:: S2Generator.encoders
-   :members:
-   :special-members: __init__
-   :undoc-members:
-   :show-inheritance:
-
-S2Generator.generators module
-.................................
-
-.. automodule:: S2Generator.generators
-   :members:
-   :special-members: __init__
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: S2Generator
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. autofunction:: print_hello
