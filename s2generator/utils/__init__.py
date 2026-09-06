@@ -81,6 +81,23 @@ __all__ = [
     "load_deepmimo_iq",
     "generate",
     "save_table",
+    "discrete_entropy",
+    "spectral_entropy",
+    "omega",
+    "mvspectrum",
+    "normalize_mvspectrum",
+    "spectrum_of_linear_combination",
+    "univariate_spectrum",
+    "sqrt_matrix",
+    "whiten",
+    "WhitenResult",
+    "SlowFeatureAnalysis",
+    "ForeCA",
+    "initialize_weightvector",
+    "plot_omega",
+    "plot_spectrum",
+    "plot_foreca",
+    "plot_sfa",
 ]
 
 # Transform the symbol from string to latex
@@ -155,6 +172,10 @@ from .visualization import (
     plot_symbol,
     plot_shapiro_wilk,
     plot_simulator_statistics,
+    plot_omega,
+    plot_spectrum,
+    plot_foreca,
+    plot_sfa,
 )
 
 from ._multivariate_correlation import multivariate_correlation
@@ -191,3 +212,19 @@ from .data import (
 )
 
 from ._tools import save_table
+
+from .forecastability import (
+    ForeCA,
+    SlowFeatureAnalysis,
+    WhitenResult,
+    discrete_entropy,
+    initialize_weightvector,
+    mvspectrum,
+    normalize_mvspectrum,
+    omega,
+    spectral_entropy,
+    spectrum_of_linear_combination,
+    univariate_spectrum,
+    sqrt_matrix,
+    whiten,
+)

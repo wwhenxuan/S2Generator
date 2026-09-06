@@ -17,6 +17,7 @@ from .statistics import plot_shapiro_wilk, plot_simulator_statistics
 from .graph import plot_adjacency_matrix, plot_graph
 from .correlation import plot_correlation
 from .iq import plot_iq_series, plot_iq_analysis
+from .forecastability import plot_omega, plot_spectrum, plot_foreca, plot_sfa
 
 __all__ = [
     "plot_univariate_time_series",
@@ -30,4 +31,8 @@ __all__ = [
     "plot_correlation",
     "plot_iq_series",
     "plot_iq_analysis",
+    "plot_omega",
+    "plot_spectrum",
+    "plot_foreca",
+    "plot_sfa",
 ]
