@@ -100,66 +100,45 @@ __all__ = [
     "plot_sfa",
 ]
 
-# Transform the symbol from string to latex
 from s2generator.symbol.print_symbol import symbol_to_markdown
 
-# The z-score standardization
-from ._tools import z_score_normalization
-
-# The min-max normalization
-from ._tools import max_min_normalization
-
-# Get the datetime now
-from ._tools import get_time_now
-
-# The function to save and load the S2 data
-from ._tools import save_s2data, load_s2data
-
-# The Fast Fourier Transform
-from ._tools import fft, fftshift, ifft, ifftshift
-
-# The EACF function to determine the order of ARMA model
-from ._tools import eacf_rlike
-
-# The Yule-Walker method to estimate the parameters of AR model
-from ._tools import yule_walker
-
-# The interpolation methods for time series data, including linear interpolation, cubic spline interpolation, and Lagrange interpolation
-from ._tools import (
-    linear_interpolation,
+from .tools import (
     cubic_spline_interpolation,
+    eacf_rlike,
+    fft,
+    fftshift,
+    get_time_now,
+    ifft,
+    ifftshift,
     lagrange_interpolation,
+    linear_interpolation,
+    load_s2data,
+    max_min_normalization,
+    save_s2data,
+    save_table,
+    yule_walker,
+    z_score_normalization,
 )
 
-# Print the Generation Status
-from ._print_status import PrintStatus
+from .distance import (
+    plot_wasserstein_heatmap,
+    wasserstein_distance,
+    wasserstein_distance_matrix,
+)
 
-# The Wasserstein distance used to measure the similarity between two datasets
-from ._wasserstein_distance import wasserstein_distance
-
-# Calculate the distance matrix between multiple time series data sets using the Wasserstein distance formula
-from ._wasserstein_distance import wasserstein_distance_matrix
-
-# Visualization the Wasserstein distance though the heatmap
-from ._wasserstein_distance import plot_wasserstein_heatmap
-
-# The smooth method for 1D time series data of signal
-from ._smooth import (
-    simple_moving_average,
-    weighted_moving_average,
+from .smooth import (
+    exponential_smoothing,
     gaussian_smoothing,
     savgol_smoothing,
-    exponential_smoothing,
+    simple_moving_average,
     smooth_show_info,
+    weighted_moving_average,
 )
 
-# The moving decomposition method for time series
-from ._decomposition import MovingDecomp
+from .decomposition import MovingDecomp, STL, STLResult
 
-# The Seasonal-Trend decomposition using LOESS (STL)
-from ._decomposition import STL, STLResult
+from .correlation import multivariate_correlation
 
-# The Shapiro-Wilk test for normality of the residuals
 from .visualization import (
     plot_univariate_time_series,
     plot_symbol_series,
@@ -178,14 +157,12 @@ from .visualization import (
     plot_sfa,
 )
 
-from ._multivariate_correlation import multivariate_correlation
-
-# Bundled real slices and parametric synthetic generators
 from .data import (
     AVAILABLE_DEEPMIMO_DATASETS,
     AVAILABLE_MULTIVARIATE_DATASETS,
     AVAILABLE_UNIVARIATE_DATASETS,
     AVAILABLE_SYNTHETIC_GENERATORS,
+    PrintStatus,
     list_datasets,
     list_deepmimo_speeds,
     load_deepmimo_iq,
@@ -210,8 +187,6 @@ from .data import (
     generate_electrocardiogram,
     generate_electroencephalogram,
 )
-
-from ._tools import save_table
 
 from .forecastability import (
     ForeCA,

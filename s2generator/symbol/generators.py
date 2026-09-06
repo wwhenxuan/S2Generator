@@ -35,12 +35,12 @@ from s2generator.symbol.parse_symbol import (
     infer_output_dimension,
 )
 from s2generator.symbol.check_symbol import check_symbol
-from s2generator.utils._tools import (
+from s2generator.utils.tools import (
     z_score_normalization,
     max_min_normalization,
     save_s2data,
 )
-from s2generator.utils._print_status import PrintStatus
+from s2generator.utils.data import PrintStatus
 
 
 class SeriesSymbolGenerator(object):

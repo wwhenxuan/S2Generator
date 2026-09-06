@@ -35,7 +35,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
-from ..utils._dag import adjacency_to_dag
+from ..utils.tools import adjacency_to_dag
 
 
 # ===========================================================================

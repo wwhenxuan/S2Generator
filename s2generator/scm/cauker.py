@@ -35,8 +35,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from ..utils._dag import adjacency_to_dag
-from ..utils._label import discretize_labels, label_single, summarize_series
+from ..utils.tools import adjacency_to_dag
+from ..utils.tools import discretize_labels, label_single, summarize_series
 
 
 # ===========================================================================

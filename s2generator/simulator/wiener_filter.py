@@ -13,7 +13,7 @@ from scipy import signal
 from scipy.linalg import toeplitz
 from statsmodels.tsa.stattools import acf
 
-from s2generator.utils._tools import yule_walker
+from s2generator.utils.tools import yule_walker
 from s2generator.simulator.low_pass_filter import (
     maybe_attach_lowpass,
     maybe_apply_lowpass,

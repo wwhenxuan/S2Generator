@@ -8,7 +8,7 @@ Created on 2026/03/04 22:52:40
 
 import numpy as np
 
-from s2generator.utils._tools import (
+from s2generator.utils.tools import (
     linear_interpolation,
     cubic_spline_interpolation,
     lagrange_interpolation,

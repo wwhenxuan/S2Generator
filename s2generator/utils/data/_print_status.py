@@ -20,7 +20,7 @@ from typing import Optional, Union, List, Tuple
 
 from s2generator.symbol.params import SeriesParams, SymbolParams
 from s2generator.symbol.base import Node, NodeList
-from s2generator.utils import get_time_now
+from ..tools import get_time_now
 
 
 class PrintStatus(object):

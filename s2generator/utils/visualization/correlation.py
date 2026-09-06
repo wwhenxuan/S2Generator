@@ -32,7 +32,7 @@ def plot_correlation(
                    ``bins``, ``mean_weight``, ``covar_weight``).
     :return: Matplotlib Figure with one subplot per requested measure.
     """
-    from s2generator.utils._multivariate_correlation import (
+    from s2generator.utils.correlation import (
         multivariate_correlation,
         parse_correlation_measures,
     )

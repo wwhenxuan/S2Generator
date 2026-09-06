@@ -17,7 +17,7 @@ from statsmodels.stats.diagnostic import acorr_ljungbox
 from statsmodels.tsa.api import acf, pacf
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-from s2generator.utils._tools import eacf_rlike
+from s2generator.utils.tools import eacf_rlike
 from s2generator.utils.visualization import plot_shapiro_wilk
 from s2generator.simulator.low_pass_filter import (
     maybe_attach_lowpass,

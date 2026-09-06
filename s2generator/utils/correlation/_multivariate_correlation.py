@@ -30,7 +30,7 @@ import numpy as np
 from scipy import signal, stats
 from statsmodels.tsa.stattools import acf
 
-from ._wasserstein_distance import wasserstein_distance
+from ..distance import wasserstein_distance
 
 # Canonical measure names exposed to users
 AVAILABLE_CORRELATION_MEASURES = (

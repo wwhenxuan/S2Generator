@@ -39,7 +39,7 @@ from s2generator.augmentation import (
     spike_injection,
 )
 
-from ...utils._label import discretize_labels, label_single, summarize_series
+from ...utils.tools import discretize_labels, label_single, summarize_series
 
 from ..cauker import (
     _build_kernel_bank,
