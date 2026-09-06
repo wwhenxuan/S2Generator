@@ -12,7 +12,7 @@ import numpy as np
 from scipy.linalg import toeplitz
 
 from s2generator.simulator import WienerFilterSimulator
-from s2generator.utils._tools import yule_walker
+from s2generator.utils.tools import yule_walker
 
 
 class TestWienerFilterSimulator(unittest.TestCase):

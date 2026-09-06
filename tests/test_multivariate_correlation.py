@@ -13,7 +13,7 @@ import unittest
 import numpy as np
 
 from s2generator.utils import multivariate_correlation
-from s2generator.utils._multivariate_correlation import (
+from s2generator.utils.correlation import (
     AVAILABLE_CORRELATION_MEASURES,
     parse_correlation_measures,
     pearson_correlation_matrix,
