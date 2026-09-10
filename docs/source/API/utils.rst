@@ -85,6 +85,10 @@ Plots
    plot_simulator_statistics
    plot_shapiro_wilk
    plot_wasserstein_heatmap
+   plot_omega
+   plot_spectrum
+   plot_foreca
+   plot_sfa
 
 .. autofunction:: plot_symbol_series
 
@@ -95,6 +99,14 @@ Plots
 .. autofunction:: plot_graph
 
 .. autofunction:: plot_correlation
+
+.. autofunction:: plot_omega
+
+.. autofunction:: plot_spectrum
+
+.. autofunction:: plot_foreca
+
+.. autofunction:: plot_sfa
 
 Analysis
 --------
@@ -113,6 +125,13 @@ Analysis
    eacf_rlike
    z_score_normalization
    max_min_normalization
+   discrete_entropy
+   spectral_entropy
+   omega
+   mvspectrum
+   whiten
+   ForeCA
+   SlowFeatureAnalysis
 
 .. autoclass:: STL
    :members:
@@ -137,3 +156,21 @@ Analysis
 .. autofunction:: multivariate_correlation
 
 .. autofunction:: yule_walker
+
+.. autofunction:: discrete_entropy
+
+.. autofunction:: spectral_entropy
+
+.. autofunction:: omega
+
+.. autofunction:: mvspectrum
+
+.. autofunction:: whiten
+
+.. autoclass:: ForeCA
+   :members:
+   :show-inheritance:
+
+.. autoclass:: SlowFeatureAnalysis
+   :members:
+   :show-inheritance:

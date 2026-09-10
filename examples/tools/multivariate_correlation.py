@@ -51,7 +51,7 @@ from s2generator.utils import (
     plot_multivariate_time_series,
     load_multivariate,
 )
-from s2generator.utils._multivariate_correlation import (
+from s2generator.utils.correlation import (
     AVAILABLE_CORRELATION_MEASURES,
 )
 

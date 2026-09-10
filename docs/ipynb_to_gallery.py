@@ -29,7 +29,7 @@ SECTION_BLURBS = {
     "simulator": "Fit white-noise-to-signal models (ARIMA, Wiener, Kalman, IQ, …) and draw new traces.",
     "scm": "Multivariate coupling pipelines from TiRex-2, CauKer, and TabPFN-3.",
     "augmentation": "Trends, mixup, resampling, spikes, modulation, and related transforms.",
-    "tools": "IQ visualisation, DeepMIMO CSI, STL, Wasserstein distance, and correlation.",
+    "tools": "IQ visualisation, DeepMIMO CSI, STL, Wasserstein, correlation, and ForeCA.",
 }
 
 HEADING_UNDERLINES = {1: "=", 2: "-", 3: "~", 4: "^", 5: '"'}

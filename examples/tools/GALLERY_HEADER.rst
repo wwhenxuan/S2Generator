@@ -1,4 +1,5 @@
 Utilities and analysis
 ======================
 
-IQ visualisation, DeepMIMO CSI, STL, Wasserstein distance, and correlation.
+IQ visualisation, DeepMIMO CSI, STL, Wasserstein distance, correlation,
+and ForeCA forecastability scores.

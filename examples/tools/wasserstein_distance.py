@@ -32,7 +32,7 @@ from s2generator.utils import (
     wasserstein_distance_matrix,
     plot_wasserstein_heatmap,
 )
-from s2generator.utils._wasserstein_distance import time_series_to_distribution
+from s2generator.utils.distance._wasserstein_distance import time_series_to_distribution
 
 # %%
 # Wasserstein distance requires first calculating the mean vector and covariance matrix of the two datasets, and then calculating the distance value using the formula above. Users can control the importance of the mean vector and covariance matrix in the distance calculation by adjusting their weights, thus better assessing the similarity between different datasets.
